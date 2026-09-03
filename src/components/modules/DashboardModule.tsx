@@ -37,6 +37,7 @@ import {
 import { useHRM } from '@/context/HRMContext';
 import {
   exportToExcel,
+  exportMultiSheetExcel,
   exportBaoCaoNhanSuTongHop,
   exportBaoCaoDonTuVaNoiQuy,
   exportBaoCaoQuyLuong,
@@ -88,22 +89,45 @@ export const DashboardModule: React.FC = () => {
     } else if (activeReportTab === 'TURNOVER') {
       exportBaoCaoBienDongNhanSu(hrGeneralData);
     } else if (activeReportTab === 'RECRUITMENT_TRAINING') {
-      const headers = ['Mã Khóa / Vị Trí', 'Tên Khóa Đào Tạo / Kế Hoạch', 'Hình Thức / Nguồn', 'Quy Mô (Người)', 'Tổng Chi Phí (VNĐ)', 'Đánh Giá / Tiến Độ'];
-      const rows = [
-        ...trainingCourses.map((c) => [c.code, c.title, c.method, c.participantsCount, c.totalCost, `${c.feedbackScore}/5.0 (Đỗ ${c.examPassRate}%)`]),
-        ...recruitmentReportData.byDepartmentNeeds.map((r) => [r.dept, `Kế hoạch tuyển ${r.dept}`, 'Tuyển dụng', r.target, 1500000 * r.hired, `Đạt ${r.rate}`]),
-      ];
-      exportToExcel(
-        'BÁO CÁO TỔNG HỢP HIỆU QUẢ ĐÀO TẠO & TUYỂN DỤNG NHÂN SỰ',
-        'Bao_Cao_Dao_Tao_Va_Tuyen_Dung',
-        headers,
-        rows,
+      const s1Headers = ['STT', 'Đơn Vị Có Nhu Cầu', 'Chỉ Tiêu Tuyển', 'Đã Tuyển Được', 'Tỷ Lệ Đạt (%)', 'Chi Phí Tuyển Dụng (VNĐ)', 'Kênh Tuyển Dụng Trọng Tâm'];
+      const s1Rows = recruitmentReportData.byDepartmentNeeds.map((r, idx) => [
+        idx + 1,
+        r.dept,
+        r.target,
+        r.hired,
+        r.rate,
+        1500000 * r.hired,
+        idx === 0 ? 'Giới thiệu nội bộ địa phương (62%)' : idx === 1 ? 'Ngày hội việc làm Tỉnh Bình Dương (45%)' : 'Mạng xã hội & Zalo tuyển dụng',
+      ]);
+
+      const s2Headers = ['STT', 'Mã Khóa', 'Tên Khóa Đào Tạo', 'Hình Thức Đào Tạo', 'Số Lượng Học Viên', 'Tổng Chi Phí (VNĐ)', 'Điểm Đánh Giá Sát Hạch', 'Mức Độ Áp Dụng Thực Tế'];
+      const s2Rows = trainingCourses.map((c, idx) => [
+        idx + 1,
+        c.code,
+        c.title,
+        c.method,
+        c.participantsCount,
+        c.totalCost,
+        `${c.feedbackScore}/5.0 (Đỗ ${c.examPassRate}%)`,
+        c.applicationLevel,
+      ]);
+
+      exportMultiSheetExcel('Bao_Cao_Dao_Tao_Va_Tuyen_Dung_2Sheets', [
         {
-          'Tổng khóa đào tạo': trainingCourses.length,
-          'Tổng học viên': trainingCourses.reduce((a, b) => a + b.participantsCount, 0),
-          'Chỉ tiêu tuyển': `${recruitmentReportData.totalTarget} người`,
-        }
-      );
+          sheetName: 'Kế hoạch & Phễu tuyển dụng',
+          title: 'BÁO CÁO KẾ HOẠCH TUYỂN DỤNG & PHỄU CHUYỂN ĐỔI 5 VÒNG',
+          headers: s1Headers,
+          rows: s1Rows,
+          summaryStats: { 'Chỉ tiêu toàn công ty': `${recruitmentReportData.totalTarget} người`, 'Đã tuyển': `${recruitmentReportData.totalHired} người` },
+        },
+        {
+          sheetName: 'Các khóa đào tạo nghiệp vụ',
+          title: 'BÁO CÁO CÁC KHÓA ĐÀO TẠO NGHIỆP VỤ & ĐÁNH GIÁ ỨNG DỤNG',
+          headers: s2Headers,
+          rows: s2Rows,
+          summaryStats: { 'Tổng khóa học': trainingCourses.length, 'Tổng học viên': trainingCourses.reduce((a, b) => a + b.participantsCount, 0) },
+        },
+      ]);
     }
     showToast('✓ Đã xuất file Báo cáo Excel thành công!');
   };
