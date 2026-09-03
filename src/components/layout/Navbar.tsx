@@ -21,7 +21,9 @@ import {
   Tractor,
   Building2,
   ClipboardCheck,
-  Award
+  Award,
+  Smartphone,
+  Download
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
 import { UserRole } from '@/types';
@@ -123,57 +125,42 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
     {
       role: 'ADMIN',
       label: 'Lê Việt Thắng (Tổng Giám Đốc)',
-      desc: '5. Ban TGĐ: Dashboard điều hành & Duyệt 1-click',
+      desc: 'Ban TGĐ: Dashboard điều hành & Duyệt 1-click',
       icon: Award,
       color: 'text-purple-600 bg-purple-50',
     },
     {
       role: 'HR_MANAGER',
       label: 'Phạm Thùy Linh (Trưởng Phòng HCTH)',
-      desc: '4. Phòng HCTH: Tổng hợp VP+NT & Chốt công tính lương',
+      desc: 'Phòng HCTH: Tổng hợp VP+NT & Chốt công tính lương',
       icon: ClipboardCheck,
       color: 'text-amber-600 bg-amber-50',
     },
     {
       role: 'PLANTATION_DIRECTOR',
       label: 'Nguyễn Văn Hùng (GĐ Nông Trường)',
-      desc: '2. BGĐ Nông Trường: Check-in lô cạo & Duyệt công tổ',
+      desc: 'BGĐ Nông Trường: Check-in lô cạo & Duyệt công tổ',
       icon: Tractor,
       color: 'text-blue-600 bg-blue-50',
     },
     {
       role: 'TEAM_LEADER',
       label: 'Nguyễn Văn Lực (Tổ Trưởng)',
-      desc: '1. Tổ Trưởng: Chấm công tổ 1-chạm & Giao nộp mủ (Offline)',
+      desc: 'Tổ Trưởng: Chấm công tổ 1-chạm & Giao nộp mủ (Offline)',
       icon: TreePine,
-      color: 'text-orange-600 bg-orange-50',
+      color: 'text-emerald-700 bg-emerald-50',
     },
     {
       role: 'DEPARTMENT_LEAD',
       label: 'Trần Thị Huệ (Khối Văn Phòng)',
-      desc: '3. Khối Văn Phòng: FaceID/Vân tay & Duyệt đơn',
+      desc: 'Khối Văn Phòng: FaceID/Vân tay & Duyệt đơn trực tuyến',
       icon: Building2,
       color: 'text-emerald-600 bg-emerald-50',
     },
   ];
 
-  const getNotifIcon = (type: NotificationItem['type']) => {
-    switch (type) {
-      case 'leave':
-        return <FileText className="w-4 h-4 text-blue-600" />;
-      case 'attendance':
-        return <Clock className="w-4 h-4 text-emerald-600" />;
-      case 'salary':
-        return <DollarSign className="w-4 h-4 text-amber-600" />;
-      case 'okr':
-        return <Target className="w-4 h-4 text-purple-600" />;
-      default:
-        return <Sparkles className="w-4 h-4 text-orange-600" />;
-    }
-  };
-
   return (
-    <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-30 shadow-xs">
+    <header className="h-14 bg-white border-b border-[#E2E8F0] px-6 flex items-center justify-between sticky top-0 z-30 shadow-2xs">
       {/* Search Bar */}
       <div className="flex items-center gap-3 w-96">
         <div className="relative w-full">
@@ -181,31 +168,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
           <input
             type="text"
             placeholder="Tìm kiếm nhân sự, lô cạo, tổ sản xuất, đơn từ..."
-            className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+            className="w-full pl-9 pr-4 py-1.5 text-xs bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#047857]/20 focus:border-[#047857] transition-all placeholder:text-slate-400 text-[#0F172A]"
           />
         </div>
       </div>
 
       {/* Actions & Role Switcher */}
       <div className="flex items-center gap-3">
-        {/* Direct Download App Modal Button */}
-        {onOpenDownloadModal && (
-          <button
-            onClick={onOpenDownloadModal}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-lg text-xs font-bold transition-all shadow-xs border border-slate-800 hover:border-slate-700 cursor-pointer"
-          >
-            <span className="text-orange-400 font-bold">📲</span>
-            <span>Cài App Di Động</span>
-          </button>
-        )}
-
         {/* Quick GPS Punch In button */}
         <button
           onClick={() => handleCheckIn('Mobile GPS', 'Trụ sở chính 1HRM - Five Star')}
-          className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all shadow-xs cursor-pointer ${
+          className={`btn-primary text-xs py-1.5 px-3.5 ${
             isCheckedInToday
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
-              : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 shadow-orange-500/20'
+              ? 'bg-[#ECFDF5] text-[#047857] border border-[#BBF7D0] hover:bg-[#D1FAE5]'
+              : ''
           }`}
         >
           <Clock className="w-3.5 h-3.5" />
@@ -214,26 +190,26 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
 
         {/* Role Switcher dropdown */}
         <div className="relative group">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 hover:bg-slate-200/80 border border-slate-200 rounded-lg cursor-pointer transition-all">
-            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-[#F8FAFC] hover:bg-slate-100 border border-[#E2E8F0] rounded-lg cursor-pointer transition-all">
+            <div className="w-2 h-2 rounded-full bg-[#16A34A] animate-pulse" />
             <div className="text-left">
-              <p className="text-[10px] text-slate-500 uppercase font-bold leading-none">Góc nhìn vai trò</p>
-              <p className="text-xs font-semibold text-slate-800 leading-tight">
-                {currentRole === 'ADMIN' && '5. Ban Tổng Giám Đốc'}
-                {currentRole === 'HR_MANAGER' && '4. Phòng HCTH (Admin)'}
-                {currentRole === 'PLANTATION_DIRECTOR' && '2. BGĐ Nông Trường'}
-                {currentRole === 'TEAM_LEADER' && '1. Tổ Trưởng Nông Trường'}
-                {currentRole === 'DEPARTMENT_LEAD' && '3. Khối Văn Phòng'}
-                {currentRole === 'EMPLOYEE' && 'Nhân Viên (Self-Service)'}
+              <p className="text-[10px] text-slate-400 uppercase font-semibold leading-none">Góc nhìn vai trò</p>
+              <p className="text-xs font-semibold text-[#0F172A] leading-tight mt-0.5">
+                {currentRole === 'ADMIN' && 'Ban Tổng Giám Đốc'}
+                {currentRole === 'HR_MANAGER' && 'Phòng HCTH (HR)'}
+                {currentRole === 'PLANTATION_DIRECTOR' && 'GĐ Nông Trường'}
+                {currentRole === 'TEAM_LEADER' && 'Tổ Trưởng Nông Trường'}
+                {currentRole === 'DEPARTMENT_LEAD' && 'Khối Văn Phòng'}
+                {currentRole === 'EMPLOYEE' && 'Nhân Viên'}
               </p>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-slate-500 ml-1" />
           </div>
 
           {/* Dropdown Menu */}
-          <div className="absolute right-0 top-full mt-1 w-80 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-1 duration-150">
-            <div className="px-3 py-1.5 border-b border-slate-100 text-[11px] font-semibold text-slate-500">
-              CHỌN VAI TRÒ CHẤM CÔNG THEO ẢNH
+          <div className="absolute right-0 top-full mt-1 w-80 bg-white rounded-lg shadow-xl border border-[#E2E8F0] py-1.5 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+            <div className="px-3 py-1.5 border-b border-[#F1F5F9] text-[11px] font-semibold text-slate-400 uppercase">
+              CHỌN VAI TRÒ ĐIỀU HÀNH
             </div>
             {roles.map((r) => {
               const isCurrent = currentRole === r.role;
@@ -242,17 +218,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
                   key={r.role}
                   onClick={() => setCurrentRole(r.role)}
                   className={`w-full text-left px-3 py-2 flex items-start gap-2.5 transition-colors cursor-pointer ${
-                    isCurrent ? 'bg-orange-50/70 border-l-2 border-orange-500' : 'hover:bg-slate-50'
+                    isCurrent ? 'bg-[#ECFDF5] border-l-2 border-[#047857]' : 'hover:bg-slate-50'
                   }`}
                 >
                   <div className={`p-1.5 rounded-lg ${r.color}`}>
                     <r.icon className="w-4 h-4" />
                   </div>
                   <div>
-                    <p className={`text-xs font-semibold ${isCurrent ? 'text-orange-600' : 'text-slate-800'}`}>
+                    <p className={`text-xs font-semibold ${isCurrent ? 'text-[#047857]' : 'text-slate-800'}`}>
                       {r.label}
                     </p>
-                    <p className="text-[11px] text-slate-500 leading-tight">{r.desc}</p>
+                    <p className="text-[11px] text-slate-500 leading-tight mt-0.5">{r.desc}</p>
                   </div>
                 </button>
               );
@@ -260,64 +236,54 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
           </div>
         </div>
 
-        {/* Notifications Dropdown */}
+        {/* Notifications Icon with Indicator */}
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg relative transition-all cursor-pointer"
-            title="Trung tâm thông báo"
+            className="p-2 rounded-lg hover:bg-slate-100 text-slate-600 transition-colors relative cursor-pointer"
           >
-            <Bell className="w-5 h-5" />
+            <Bell className="w-4 h-4" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
-                {unreadCount}
-              </span>
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-[#DC2626] ring-2 ring-white" />
             )}
           </button>
 
-          {/* Notification Menu */}
+          {/* Notifications Flyout */}
           {showNotifications && (
-            <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
-              <div className="px-4 pb-2.5 border-b border-slate-100 flex items-center justify-between">
+            <div className="absolute right-0 top-full mt-2 w-96 bg-white rounded-lg shadow-2xl border border-[#E2E8F0] py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="px-4 py-2 border-b border-[#F1F5F9] flex items-center justify-between">
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900">Thông Báo Hệ Thống</h3>
-                  <p className="text-[11px] text-slate-500 font-medium">
-                    Bạn có {unreadCount} thông báo chưa đọc
-                  </p>
+                  <h4 className="text-sm font-semibold text-slate-900">Thông báo hệ thống</h4>
+                  <p className="text-[11px] text-slate-500">{unreadCount} thông báo chưa đọc</p>
                 </div>
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
-                    className="text-xs font-semibold text-orange-600 hover:text-orange-700 hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] font-semibold text-[#047857] hover:underline"
                   >
-                    <Check className="w-3.5 h-3.5" /> Đọc tất cả
+                    Đọc tất cả
                   </button>
                 )}
               </div>
 
-              {/* Notification List */}
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+              <div className="max-h-80 overflow-y-auto divide-y divide-[#F1F5F9]">
                 {notifications.map((n) => (
                   <div
                     key={n.id}
                     onClick={() => markAsRead(n.id)}
-                    className={`p-3.5 flex items-start gap-3 hover:bg-slate-50 transition-colors cursor-pointer ${
-                      !n.isRead ? 'bg-orange-50/40' : ''
+                    className={`p-3 hover:bg-slate-50 transition-colors cursor-pointer flex gap-3 items-start ${
+                      !n.isRead ? 'bg-[#F0FDF4]/50' : ''
                     }`}
                   >
-                    <div className="p-2 bg-slate-100 rounded-xl shrink-0 mt-0.5">
-                      {getNotifIcon(n.type)}
+                    <div className="p-2 rounded-lg bg-slate-100 text-slate-700 shrink-0">
+                      <FileText className="w-4 h-4 text-[#047857]" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <p className={`text-xs font-bold truncate ${!n.isRead ? 'text-slate-900' : 'text-slate-700'}`}>
-                          {n.title}
-                        </p>
-                        <span className="text-[10px] text-slate-400 whitespace-nowrap">{n.time}</span>
+                      <div className="flex items-center justify-between">
+                        <p className="text-xs font-semibold text-slate-900 truncate">{n.title}</p>
+                        <span className="text-[10px] text-slate-400 font-mono shrink-0">{n.time}</span>
                       </div>
-                      <p className="text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-2">
-                        {n.desc}
-                      </p>
+                      <p className="text-[11px] text-slate-600 mt-0.5 line-clamp-2">{n.desc}</p>
                     </div>
                   </div>
                 ))}
@@ -326,17 +292,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
           )}
         </div>
 
-        {/* User Avatar */}
-        <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+        {/* User Profile Avatar with App Download Modal Link */}
+        <div className="flex items-center gap-2 pl-2 border-l border-[#E2E8F0]">
           <img
             src={currentUser.avatar}
-            alt={currentUser.fullName}
-            className="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-xs"
+            alt=""
+            className="w-8 h-8 rounded-full object-cover border border-[#E2E8F0]"
           />
           <div className="hidden sm:block text-left">
-            <p className="text-xs font-bold text-slate-900 leading-none">{currentUser.fullName}</p>
-            <p className="text-[11px] text-slate-500 leading-tight mt-0.5">{currentUser.positionTitle}</p>
+            <p className="text-xs font-semibold text-slate-900 leading-tight">{currentUser.fullName}</p>
+            <p className="text-[10px] text-slate-500 font-mono">{currentUser.code}</p>
           </div>
+
+          {onOpenDownloadModal && (
+            <button
+              onClick={onOpenDownloadModal}
+              title="Cài App Mobile 1HRM"
+              className="p-1.5 rounded-lg text-slate-500 hover:text-[#047857] hover:bg-slate-100 transition-colors cursor-pointer ml-1"
+            >
+              <Smartphone className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
     </header>

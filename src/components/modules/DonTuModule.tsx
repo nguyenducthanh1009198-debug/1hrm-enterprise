@@ -83,7 +83,7 @@ export const DonTuModule: React.FC = () => {
     { id: 'THAI_SAN', label: '5. Đơn nghỉ thai sản / Khám thai', icon: Baby, color: 'text-purple-600 bg-purple-50', desc: 'Nghỉ thai sản 6 tháng hoặc khám thai định kỳ', category: 'NGHI_PHEP' },
     { id: 'GIAI_TRINH_CONG', label: '6. Đơn giải trình chấm công (Bổ sung công)', icon: CheckCircle2, color: 'text-cyan-600 bg-cyan-50', desc: 'Dùng khi máy chấm công hỏng, mất điện, hoặc quên quẹt thẻ/vân tay', category: 'CONG_CA' },
     { id: 'CONG_TAC', label: '7. Đơn công tác / Làm việc bên ngoài', icon: Briefcase, color: 'text-emerald-600 bg-emerald-50', desc: 'Ghi rõ địa điểm, thời gian ra ngoài xử lý công việc', category: 'CONG_CA' },
-    { id: 'LAM_THEM_GIO', label: '8. Đơn đăng ký làm thêm giờ (OT)', icon: Flame, color: 'text-orange-600 bg-orange-50', desc: 'Ghi rõ khung giờ và lý do tăng ca (Hưởng 150% - 200% lương OT)', category: 'CONG_CA' },
+    { id: 'LAM_THEM_GIO', label: '8. Đơn đăng ký làm thêm giờ (OT)', icon: Flame, color: 'text-[#047857] bg-[#ECFDF5]', desc: 'Ghi rõ khung giờ và lý do tăng ca (Hưởng 150% - 200% lương OT)', category: 'CONG_CA' },
     { id: 'DI_MUON', label: '9. Đơn giải trình đi muộn', icon: Clock, color: 'text-amber-600 bg-amber-50', desc: 'Đi muộn do kẹt xe, thời tiết hoặc việc đột xuất', category: 'CONG_CA' },
     { id: 'VE_SOM', label: '10. Đơn xin về sớm', icon: Clock, color: 'text-amber-600 bg-amber-50', desc: 'Rời vị trí làm việc trước giờ kết thúc ca', category: 'CONG_CA' },
     { id: 'CHOANG_LO', label: '11. Đơn đăng ký choàng lô / Cạo thay', icon: TreePine, color: 'text-emerald-700 bg-emerald-50', desc: 'Cạo thay diện tích lô nhận phụ cấp sản lượng mủ', category: 'NONG_TRUONG' },
@@ -154,18 +154,18 @@ export const DonTuModule: React.FC = () => {
     <div className="space-y-6">
       {/* Toast Alert */}
       {toastMsg && (
-        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-md shadow-2xl border border-emerald-500 flex items-center gap-3 animate-bounce">
+        <div className="fixed top-5 right-5 z-50 bg-white text-[#0F172A] px-5 py-3 rounded-md shadow-2xl border border-emerald-500 flex items-center gap-3 animate-bounce">
           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
           <span className="text-sm font-semibold">{toastMsg}</span>
         </div>
       )}
 
       {/* Top Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-lg border border-slate-200 shadow-xs">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-lg border border-[#E2E8F0] shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900">Quản Lý Đơn Từ Điện Tử (Không Giấy) & Workflow BPA</h1>
-            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-orange-100 text-orange-700">
+            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-orange-100 text-[#047857]">
               100% Số Hóa Không Dùng Giấy
             </span>
           </div>
@@ -197,7 +197,7 @@ export const DonTuModule: React.FC = () => {
 
       {/* Tra cứu Quỹ Ngày Phép & Tiện ích Khối Văn Phòng */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-xs flex items-center gap-3.5">
+        <div className="p-4 bg-white rounded-lg border border-[#E2E8F0] shadow-xs flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
             <Calendar className="w-5 h-5" />
           </div>
@@ -208,7 +208,7 @@ export const DonTuModule: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-xs flex items-center gap-3.5">
+        <div className="p-4 bg-white rounded-lg border border-[#E2E8F0] shadow-xs flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-md bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5" />
           </div>
@@ -219,7 +219,7 @@ export const DonTuModule: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-xs flex items-center gap-3.5">
+        <div className="p-4 bg-white rounded-lg border border-[#E2E8F0] shadow-xs flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
@@ -230,7 +230,7 @@ export const DonTuModule: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-xs flex items-center gap-3.5">
+        <div className="p-4 bg-white rounded-lg border border-[#E2E8F0] shadow-xs flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-md bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
             <DollarSign className="w-5 h-5" />
           </div>
@@ -245,12 +245,12 @@ export const DonTuModule: React.FC = () => {
       </div>
 
       {/* Tab Selectors */}
-      <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-xs flex flex-wrap gap-2 text-xs">
+      <div className="bg-white p-2 rounded-lg border border-[#E2E8F0] shadow-xs flex flex-wrap gap-2 text-xs">
         <button
           onClick={() => setActiveTab('my_requests')}
           className={`px-4 py-2 rounded-md font-bold transition-all ${
             activeTab === 'my_requests'
-              ? 'bg-orange-600 text-white shadow-xs'
+              ? 'bg-[#047857] text-white shadow-xs'
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
@@ -262,7 +262,7 @@ export const DonTuModule: React.FC = () => {
             onClick={() => setActiveTab('all_requests')}
             className={`px-4 py-2 rounded-md font-bold transition-all ${
               activeTab === 'all_requests'
-                ? 'bg-orange-600 text-white shadow-xs'
+                ? 'bg-[#047857] text-white shadow-xs'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }`}
           >
@@ -274,7 +274,7 @@ export const DonTuModule: React.FC = () => {
           onClick={() => setActiveTab('workflow_tracking')}
           className={`px-4 py-2 rounded-md font-bold transition-all flex items-center gap-1.5 ${
             activeTab === 'workflow_tracking'
-              ? 'bg-orange-600 text-white shadow-xs'
+              ? 'bg-[#047857] text-white shadow-xs'
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
@@ -285,7 +285,7 @@ export const DonTuModule: React.FC = () => {
           onClick={() => setActiveTab('leave_balance')}
           className={`px-4 py-2 rounded-md font-bold transition-all flex items-center gap-1.5 ${
             activeTab === 'leave_balance'
-              ? 'bg-orange-600 text-white shadow-xs'
+              ? 'bg-[#047857] text-white shadow-xs'
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
           }`}
         >
@@ -297,11 +297,11 @@ export const DonTuModule: React.FC = () => {
       {/* SECTION: DANH SÁCH ĐƠN & TIẾN ĐỘ PHÊ DUYỆT */}
       {/* ========================================================================= */}
       {(activeTab === 'my_requests' || activeTab === 'all_requests') && (
-        <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+        <div className="bg-white rounded-lg border border-[#E2E8F0] shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-[#E2E8F0]">
                   <th className="py-3 px-4">Mã Đơn</th>
                   <th className="py-3 px-4">Nhân Sự Tạo Đơn</th>
                   <th className="py-3 px-3">Phòng Ban / Nông Trường</th>
@@ -315,12 +315,12 @@ export const DonTuModule: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {displayRequests.map((r) => (
-                  <tr key={r.id} className="hover:bg-slate-50/80 transition-colors">
+                  <tr key={r.id} className="hover:bg-[#F8FAFC]/80 transition-colors">
                     <td className="py-3 px-4 font-mono font-bold text-slate-800">{r.code}</td>
                     <td className="py-3 px-4 font-bold text-slate-900">{r.employeeName}</td>
                     <td className="py-3 px-3 text-slate-700">{r.departmentName}</td>
                     <td className="py-3 px-3">
-                      <span className="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-100 text-slate-800 border border-slate-200">
+                      <span className="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-100 text-slate-800 border border-[#E2E8F0]">
                         {r.typeName}
                       </span>
                     </td>
@@ -401,8 +401,8 @@ export const DonTuModule: React.FC = () => {
       {/* SECTION: THEO DÕI TIẾN ĐỘ DUYỆT 3 BƯỚC TRỰC QUAN (WORKFLOW APPROVAL TRACKER) */}
       {/* ========================================================================= */}
       {activeTab === 'workflow_tracking' && (
-        <div className="bg-white rounded-lg border border-slate-200 shadow-xs p-6 space-y-6">
-          <div className="flex justify-between items-center border-b border-slate-100 pb-4">
+        <div className="bg-white rounded-lg border border-[#E2E8F0] shadow-xs p-6 space-y-6">
+          <div className="flex justify-between items-center border-b border-[#F1F5F9] pb-4">
             <div>
               <h3 className="font-black text-slate-900 text-base">Sơ Đồ Luồng Duyệt Đơn Tự Động (BPA 3 Bước)</h3>
               <p className="text-xs text-slate-500 mt-0.5">
@@ -415,9 +415,9 @@ export const DonTuModule: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200 space-y-2">
+            <div className="p-4 bg-[#ECFDF5] rounded-lg border border-[#D1FAE5] space-y-2">
               <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded-md bg-orange-600 text-white font-black flex items-center justify-center text-xs">
+                <span className="w-7 h-7 rounded-md bg-[#047857] text-white font-black flex items-center justify-center text-xs">
                   1
                 </span>
                 <h4 className="font-bold text-orange-950 text-xs">Bước 1: Trưởng Phòng / GĐ Phê Duyệt</h4>
@@ -425,7 +425,7 @@ export const DonTuModule: React.FC = () => {
               <p className="text-xs text-orange-900 leading-relaxed">
                 Trưởng bộ phận trực tiếp kiểm tra lý do, quỹ phép và bố trí người thay thế công việc (thời gian xử lý dưới 2 giờ).
               </p>
-              <div className="pt-2 border-t border-orange-200/60 text-[11px] text-orange-800 font-semibold">
+              <div className="pt-2 border-t border-[#D1FAE5]/60 text-[11px] text-orange-800 font-semibold">
                 ✓ SLA phản hồi: Tối đa 4 giờ
               </div>
             </div>
@@ -467,12 +467,12 @@ export const DonTuModule: React.FC = () => {
       {/* SECTION: TRA CỨU QUỸ PHÉP CHI TIẾT */}
       {/* ========================================================================= */}
       {activeTab === 'leave_balance' && (
-        <div className="bg-white rounded-lg border border-slate-200 shadow-xs p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-[#E2E8F0] shadow-xs p-6 space-y-4">
           <h3 className="font-black text-slate-900 text-sm">Bảng Kê Chi Tiết Quỹ Phép Năm 2026 - {currentUser.fullName}</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-[#E2E8F0]">
                   <th className="py-3 px-4">Hạng Mục Phép</th>
                   <th className="py-3 px-3 text-right">Tổng Định Mức</th>
                   <th className="py-3 px-3 text-right">Đã Sử Dụng</th>
@@ -481,28 +481,28 @@ export const DonTuModule: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200">
-                <tr className="hover:bg-slate-50">
+                <tr className="hover:bg-[#F8FAFC]">
                   <td className="py-3 px-4 font-bold text-slate-900">Phép năm tiêu chuẩn 2026</td>
                   <td className="py-3 px-3 text-right font-black">12.0 Ngày</td>
                   <td className="py-3 px-3 text-right font-bold text-amber-600">2.0 Ngày</td>
                   <td className="py-3 px-3 text-right font-black text-emerald-600">10.0 Ngày</td>
                   <td className="py-3 px-4 text-slate-600">Điều 113 Bộ Luật Lao Động 2019</td>
                 </tr>
-                <tr className="hover:bg-slate-50">
+                <tr className="hover:bg-[#F8FAFC]">
                   <td className="py-3 px-4 font-bold text-slate-900">Phép thâm niên công tác (&gt;5 năm)</td>
                   <td className="py-3 px-3 text-right font-black">+1.0 Ngày</td>
                   <td className="py-3 px-3 text-right font-bold text-slate-400">0.0 Ngày</td>
                   <td className="py-3 px-3 text-right font-black text-emerald-600">+1.0 Ngày</td>
                   <td className="py-3 px-4 text-slate-600">Mỗi 5 năm cộng thêm 1 ngày phép</td>
                 </tr>
-                <tr className="hover:bg-slate-50">
+                <tr className="hover:bg-[#F8FAFC]">
                   <td className="py-3 px-4 font-bold text-slate-900">Nghỉ việc riêng hưởng nguyên lương</td>
                   <td className="py-3 px-3 text-right font-black">3.0 Ngày</td>
                   <td className="py-3 px-3 text-right font-bold text-slate-400">0.0 Ngày</td>
                   <td className="py-3 px-3 text-right font-black text-emerald-600">3.0 Ngày</td>
                   <td className="py-3 px-4 text-slate-600">Kết hôn, con kết hôn, cha mẹ mất</td>
                 </tr>
-                <tr className="hover:bg-slate-50">
+                <tr className="hover:bg-[#F8FAFC]">
                   <td className="py-3 px-4 font-bold text-slate-900">Chế độ con ốm đau (Luật BHXH)</td>
                   <td className="py-3 px-3 text-right font-black">20.0 Ngày</td>
                   <td className="py-3 px-3 text-right font-bold text-purple-600">1.0 Ngày</td>
@@ -520,7 +520,7 @@ export const DonTuModule: React.FC = () => {
       {/* ========================================================================= */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="bg-white w-full max-w-2xl rounded-lg shadow-2xl border border-slate-200 overflow-hidden space-y-4 max-h-[90vh] flex flex-col">
+          <div className="bg-white w-full max-w-2xl rounded-lg shadow-2xl border border-[#E2E8F0] overflow-hidden space-y-4 max-h-[90vh] flex flex-col">
             <div className="p-5 bg-gradient-to-r from-slate-950 to-orange-950 text-white flex items-center justify-between shrink-0">
               <div>
                 <h3 className="font-black text-base">Tạo Đơn Điện Tử Mới (100% Không Dùng Giấy)</h3>
@@ -537,7 +537,7 @@ export const DonTuModule: React.FC = () => {
                 <select
                   value={reqType}
                   onChange={(e) => setReqType(e.target.value as RequestType)}
-                  className="w-full px-3 py-2.5 border border-slate-300 rounded-md font-bold text-slate-900 bg-slate-50 focus:bg-white"
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-md font-bold text-slate-900 bg-[#F8FAFC] focus:bg-white"
                 >
                   <optgroup label="1. Khối Đơn Nghỉ Phép & Chế Độ">
                     <option value="PHEP_NAM">Đơn xin nghỉ phép năm (Trừ quỹ phép)</option>
@@ -641,7 +641,7 @@ export const DonTuModule: React.FC = () => {
 
               {/* Dynamic Sub-form: Đơn làm thêm giờ (OT) */}
               {reqType === 'LAM_THEM_GIO' && (
-                <div className="p-3.5 bg-orange-50 rounded-md border border-orange-200 space-y-3">
+                <div className="p-3.5 bg-[#ECFDF5] rounded-md border border-[#D1FAE5] space-y-3">
                   <h4 className="font-bold text-orange-950 text-xs">Khung Giờ Đăng Ký Làm Thêm Giờ (OT)</h4>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
@@ -716,7 +716,7 @@ export const DonTuModule: React.FC = () => {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md font-mono bg-slate-50"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md font-mono bg-[#F8FAFC]"
                     required
                   />
                 </div>
@@ -726,7 +726,7 @@ export const DonTuModule: React.FC = () => {
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-md font-mono bg-slate-50"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md font-mono bg-[#F8FAFC]"
                   />
                 </div>
               </div>
@@ -743,7 +743,7 @@ export const DonTuModule: React.FC = () => {
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+              <div className="flex justify-end gap-2 pt-3 border-t border-[#F1F5F9]">
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}

@@ -13,7 +13,8 @@ import {
   BarChart3,
   Building2,
   Download,
-  TreePine
+  TreePine,
+  Sparkles
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
 
@@ -39,7 +40,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
     // BGĐ và HR: Quản trị bao quát toàn hệ thống (Có Dashboard BI)
     menuItems = [
       { id: 'dashboard', name: 'Dashboard BI & Báo Cáo', icon: BarChart3, group: 'TỔNG QUAN' },
-      { id: 'download-app', name: 'Tải & Cài Đặt App', icon: Download, group: 'TỔNG QUAN' },
       { id: 'hsns', name: 'Hồ Sơ Nhân Sự 360°', icon: Users, group: 'QUẢN TRỊ NHÂN LỰC' },
       { id: 'cham-cong', name: 'Chấm Công Toàn Hệ Thống', icon: CalendarCheck, group: 'QUẢN TRỊ NHÂN LỰC' },
       { id: 'don-tu', name: 'Đơn Từ & Workflow BPA', icon: FileText, notifCount: pendingRequestsCount, group: 'QUẢN TRỊ NHÂN LỰC' },
@@ -56,7 +56,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       { id: 'don-tu', name: 'Phê Duyệt Đơn Từ Tổ', icon: FileText, notifCount: pendingRequestsCount, group: 'ĐIỀU HÀNH NÔNG TRƯỜNG' },
       { id: 'hsns', name: 'Hồ Sơ CBNV Nông Trường', icon: Users, group: 'ĐIỀU HÀNH NÔNG TRƯỜNG' },
       { id: 'tien-luong', name: 'Quỹ Lương & Phiếu Lương', icon: DollarSign, group: 'C&B' },
-      { id: 'download-app', name: 'Tải & Cài Đặt App', icon: Download, group: 'TIỆN ÍCH' },
     ];
   } else if (isTeamLeader) {
     // Tổ Trưởng: Quản lý công nhân trong tổ, điểm danh, choàng lô, nhập mủ, xuất file 3 sheet
@@ -64,7 +63,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       { id: 'cham-cong', name: 'Chấm Công & Sản Lượng Tổ', icon: CalendarCheck, group: 'TỔ KHAI THÁC MỦ' },
       { id: 'don-tu', name: 'Đơn Từ & Xin Nghỉ Phép', icon: FileText, group: 'TỔ KHAI THÁC MỦ' },
       { id: 'tien-luong', name: 'Phiếu Lương Cá Nhân', icon: DollarSign, group: 'THU NHẬP' },
-      { id: 'download-app', name: 'Tải App Mobile', icon: Download, group: 'TIỆN ÍCH' },
     ];
   } else {
     // Khối Văn Phòng: Chấm công cá nhân, Đơn từ không dùng giấy, Theo dõi duyệt 3 bước, Tra cứu quỹ phép, Phiếu lương
@@ -73,7 +71,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       { id: 'don-tu', name: 'Đơn Từ Điện Tử (Không Giấy)', icon: FileText, group: 'KHỐI VĂN PHÒNG' },
       { id: 'tien-luong', name: 'Phiếu Lương & Thu Nhập', icon: DollarSign, group: 'CÁ NHÂN' },
       { id: 'kpi-okr', name: 'Mục Tiêu Cá Nhân (OKR)', icon: Target, group: 'CÁ NHÂN' },
-      { id: 'download-app', name: 'Tải App Mobile', icon: Download, group: 'TIỆN ÍCH' },
     ];
   }
 
@@ -81,27 +78,27 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
   const groups = Array.from(new Set(menuItems.map((item) => item.group)));
 
   return (
-    <aside className="w-64 bg-slate-900 text-slate-100 flex flex-col h-screen border-r border-slate-800 shrink-0 select-none">
+    <aside className="w-64 bg-white text-slate-800 flex flex-col h-screen border-r border-[#E2E8F0] shrink-0 select-none shadow-xs">
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-5 gap-3 border-b border-slate-800 bg-slate-950/70">
-        <div className="w-9 h-9 rounded-md bg-[#E05600] flex items-center justify-center shadow-sm text-white font-bold text-lg">
+      <div className="h-14 flex items-center px-5 gap-3 border-b border-[#E2E8F0] bg-white">
+        <div className="w-8 h-8 rounded-lg bg-[#047857] flex items-center justify-center shadow-xs text-white font-bold text-base">
           1
         </div>
         <div>
-          <div className="flex items-center gap-1.5 font-semibold text-[16px] leading-6 tracking-tight text-white">
+          <div className="flex items-center gap-1.5 font-semibold text-[15px] leading-tight text-[#0F172A]">
             <span>1HRM</span>
-            <span className="text-[11px] px-1.5 py-0.5 rounded bg-[#FFF4ED] text-[#E05600] font-medium">
+            <span className="text-[10px] px-1.5 py-0.5 rounded bg-[#ECFDF5] text-[#047857] font-semibold">
               Enterprise
             </span>
           </div>
-          <p className="text-[12px] font-medium text-slate-400">
+          <p className="text-[11px] font-medium text-slate-500 truncate max-w-[150px]">
             {isExecutiveOrHR
               ? 'Quản trị Bao quát BGĐ & HR'
               : isPlantationDirector
               ? 'GĐ Nông Trường Quản lý'
               : isTeamLeader
               ? 'Tổ Trưởng Quản lý Công nhân'
-              : 'Giao diện Khối Văn Phòng'}
+              : 'Khối Văn Phòng'}
           </p>
         </div>
       </div>
@@ -122,18 +119,18 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-[6px] text-[13px] transition-all duration-150 cursor-pointer ${
+                    className={`w-full flex items-center justify-between px-3 py-2 text-[13px] transition-all duration-150 cursor-pointer rounded-r-lg ${
                       isActive
-                        ? 'bg-[#E05600] text-white font-semibold shadow-xs'
-                        : 'text-slate-300 hover:bg-slate-800/80 hover:text-white font-normal'
+                        ? 'bg-[#ECFDF5] text-[#047857] font-semibold border-l-[3px] border-[#047857] shadow-2xs'
+                        : 'text-slate-600 hover:bg-slate-50 hover:text-[#0F172A] font-medium border-l-[3px] border-transparent'
                     }`}
                   >
                     <div className="flex items-center gap-2.5">
-                      <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                      <Icon className={`w-4 h-4 ${isActive ? 'text-[#047857]' : 'text-slate-400'}`} />
                       <span>{item.name}</span>
                     </div>
 
-                    {/* Notification Dot or Clean Numeric Count */}
+                    {/* Notification Dot / Numeric Badge when action needed */}
                     {item.notifCount && item.notifCount > 0 ? (
                       <span className="w-5 h-5 rounded-full bg-[#DC2626] text-white text-[11px] font-bold flex items-center justify-center shrink-0">
                         {item.notifCount}
@@ -147,12 +144,12 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
       </div>
 
       {/* Role Badge Indicator at Footer */}
-      <div className="p-3.5 border-t border-slate-800/80 bg-slate-950/40 text-[12px] text-slate-400 space-y-1">
+      <div className="p-3.5 border-t border-[#E2E8F0] bg-slate-50/70 text-[12px] text-slate-500 space-y-1">
         <div className="flex items-center justify-between">
-          <span className="text-slate-400 text-[11px]">Góc nhìn:</span>
-          <span className="text-[#E05600] font-bold text-[11px] font-mono">{currentRole}</span>
+          <span className="text-slate-500 text-[11px] font-medium">Góc nhìn:</span>
+          <span className="text-[#047857] font-bold text-[11px] font-mono">{currentRole}</span>
         </div>
-        <p className="text-[11px] text-slate-500 truncate">
+        <p className="text-[11px] text-slate-400 truncate">
           {isExecutiveOrHR
             ? '✓ Quyền hạn cao nhất toàn hệ thống'
             : isPlantationDirector

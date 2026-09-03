@@ -162,7 +162,7 @@ export const ChamCongModule: React.FC = () => {
       <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 rounded bg-[#FFF4ED] text-[#E05600] font-semibold text-[12px] uppercase tracking-wider">
+            <span className="px-2.5 py-0.5 rounded bg-[#ECFDF5] text-[#047857] font-semibold text-[12px] uppercase tracking-wider">
               1HRM Enterprise
             </span>
             <span className="text-gray-500 text-[12px] font-medium">
@@ -197,7 +197,7 @@ export const ChamCongModule: React.FC = () => {
 
         {/* Live Clock Card */}
         <div className="flex items-center gap-3 bg-gray-50 p-3 rounded-lg border border-gray-200 min-w-[210px]">
-          <div className="w-10 h-10 rounded-md bg-[#FFF4ED] flex items-center justify-center text-[#E05600]">
+          <div className="w-10 h-10 rounded-md bg-[#ECFDF5] flex items-center justify-center text-[#047857]">
             <Clock className="w-5 h-5" />
           </div>
           <div>
@@ -219,7 +219,7 @@ export const ChamCongModule: React.FC = () => {
           {/* Action Bar */}
           <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md bg-[#FFF4ED] flex items-center justify-center text-[#E05600] font-bold">
+              <div className="w-10 h-10 rounded-md bg-[#ECFDF5] flex items-center justify-center text-[#047857] font-bold">
                 <TreePine className="w-5 h-5" />
               </div>
               <div>
@@ -313,7 +313,7 @@ export const ChamCongModule: React.FC = () => {
                           <button
                             onClick={() => updateWorkerAttendanceStatus(activeBatch.id, worker.workerId, 'CHOANG_LO', 'Hoàng Văn Phúc')}
                             className={`px-2.5 py-1 rounded-[4px] font-semibold text-[12px] transition-all ${
-                              worker.status === 'CHOANG_LO' ? 'bg-[#E05600] text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              worker.status === 'CHOANG_LO' ? 'bg-[#047857] text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                           >
                             ⚡ Choàng
@@ -374,7 +374,7 @@ export const ChamCongModule: React.FC = () => {
               <button
                 onClick={() => setNtActiveTab('tong_hop')}
                 className={`px-3.5 py-2 rounded-[6px] text-[13px] font-semibold transition-all ${
-                  ntActiveTab === 'tong_hop' ? 'bg-[#E05600] text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ntActiveTab === 'tong_hop' ? 'bg-[#047857] text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 1. Quân Số & Tổng Hợp Chấm Công Các Tổ
@@ -382,7 +382,7 @@ export const ChamCongModule: React.FC = () => {
               <button
                 onClick={() => setNtActiveTab('duyet_don')}
                 className={`px-3.5 py-2 rounded-[6px] text-[13px] font-semibold transition-all flex items-center gap-1.5 ${
-                  ntActiveTab === 'duyet_don' ? 'bg-[#E05600] text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ntActiveTab === 'duyet_don' ? 'bg-[#047857] text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 2. Phê Duyệt Đơn Từ Các Tổ ({ntRequests.length})
@@ -390,7 +390,7 @@ export const ChamCongModule: React.FC = () => {
               <button
                 onClick={() => setNtActiveTab('nhan_su_to')}
                 className={`px-3.5 py-2 rounded-[6px] text-[13px] font-semibold transition-all flex items-center gap-1.5 ${
-                  ntActiveTab === 'nhan_su_to' ? 'bg-[#E05600] text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ntActiveTab === 'nhan_su_to' ? 'bg-[#047857] text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 3. Báo Cáo Nhân Sự Nông Trường ({ntEmployees.length})
@@ -398,7 +398,7 @@ export const ChamCongModule: React.FC = () => {
               <button
                 onClick={() => setNtActiveTab('hien_truong')}
                 className={`px-3.5 py-2 rounded-[6px] text-[13px] font-semibold transition-all flex items-center gap-1.5 ${
-                  ntActiveTab === 'hien_truong' ? 'bg-[#E05600] text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ntActiveTab === 'hien_truong' ? 'bg-[#047857] text-white shadow-xs' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
               >
                 4. Kiểm Tra Hiện Trường (GPS & Camera)
@@ -877,7 +877,7 @@ export const ChamCongModule: React.FC = () => {
               </div>
 
               <div className="p-3 bg-gray-50 rounded-md border border-gray-200 text-gray-700 text-[12px] flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-[#E05600] shrink-0" />
+                <MapPin className="w-4 h-4 text-[#047857] shrink-0" />
                 <span>Tọa độ GPS tự động: 11.4590° N, 106.8935° E (Bán kính hợp lệ 12m)</span>
               </div>
 
