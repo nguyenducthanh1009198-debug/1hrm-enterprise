@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
 import { Employee, LaborContract, AdminDecision } from '@/types';
-import { exportSureHCS_NhanSuTongHop } from '@/lib/exportEngine';
+import { exportBaoCaoNhanSuTongHop } from '@/lib/exportEngine';
 
 export const HSNSModule: React.FC = () => {
   const { employees, departments, positions, addEmployee, updateEmployee, toggleDocumentUpload, currentRole } = useHRM();
@@ -109,9 +109,9 @@ export const HSNSModule: React.FC = () => {
     showToast('✓ Đã tiếp nhận nhân sự mới! Hệ thống tự động kích hoạt cảnh báo thiếu hồ sơ.');
   };
 
-  const handleExportSureHCS = () => {
-    exportSureHCS_NhanSuTongHop(employees);
-    showToast('✓ Đã xuất file Báo cáo Nhân sự Tổng hợp Excel chuẩn SureHCS thành công!');
+  const handleExportExcel = () => {
+    exportBaoCaoNhanSuTongHop(employees);
+    showToast('✓ Đã xuất file Báo cáo Nhân sự Tổng hợp Excel chuẩn 1HRM Enterprise thành công!');
   };
 
   const incompleteCount = employees.filter((e) => e.isProfileComplete === false).length;
@@ -141,18 +141,18 @@ export const HSNSModule: React.FC = () => {
             )}
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Quản lý hồ sơ số hóa toàn diện: Tự động fill thông tin Onboard từ tuyển dụng, theo dõi checklist tài liệu còn thiếu và xuất báo cáo chuẩn SureHCS.
+            Quản lý hồ sơ số hóa toàn diện: Tự động fill thông tin Onboard từ tuyển dụng, theo dõi checklist tài liệu còn thiếu và xuất báo cáo chuẩn 1HRM Enterprise.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Export Excel SureHCS Button */}
+          {/* Export Excel 1HRM Enterprise Button */}
           <button
-            onClick={handleExportSureHCS}
+            onClick={handleExportExcel}
             className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4" />
-            <span>Xuất Excel Nhân Sự (SureHCS)</span>
+            <span>Xuất Excel Nhân Sự (1HRM Enterprise)</span>
           </button>
 
           <button

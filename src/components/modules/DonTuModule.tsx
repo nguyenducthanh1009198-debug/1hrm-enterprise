@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
 import { RequestType } from '@/types';
-import { exportSureHCS_DonTuVaNoiQuy } from '@/lib/exportEngine';
+import { exportBaoCaoDonTuVaNoiQuy } from '@/lib/exportEngine';
 
 export const DonTuModule: React.FC = () => {
   const { requests, createRequest, approveRequest, rejectRequest, currentRole, currentUser } = useHRM();
@@ -115,9 +115,9 @@ export const DonTuModule: React.FC = () => {
     showToast('✓ Đã tạo đơn phát sinh thành công và chuyển quản lý phê duyệt!');
   };
 
-  const handleExportSureHCS = () => {
-    exportSureHCS_DonTuVaNoiQuy(requests);
-    showToast('✓ Đã xuất Báo cáo Đơn từ phát sinh Excel chuẩn SureHCS thành công!');
+  const handleExportExcel = () => {
+    exportBaoCaoDonTuVaNoiQuy(requests);
+    showToast('✓ Đã xuất Báo cáo Đơn từ phát sinh Excel chuẩn 1HRM Enterprise thành công!');
   };
 
   const filteredRequests = requests.filter((r) => {
@@ -141,7 +141,7 @@ export const DonTuModule: React.FC = () => {
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900">Quản Lý Đơn Từ & Các Sự Việc Phát Sinh</h1>
             <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-orange-100 text-orange-700">
-              Chuẩn SureHCS 11 Loại Đơn
+              Chuẩn 1HRM Enterprise 11 Loại Đơn
             </span>
           </div>
           <p className="text-xs text-slate-500 mt-1">
@@ -150,13 +150,13 @@ export const DonTuModule: React.FC = () => {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Export Excel SureHCS Button */}
+          {/* Export Excel 1HRM Enterprise Button */}
           <button
-            onClick={handleExportSureHCS}
+            onClick={handleExportExcel}
             className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4" />
-            <span>Xuất Excel Đơn Từ (SureHCS)</span>
+            <span>Xuất Excel Đơn Từ (1HRM Enterprise)</span>
           </button>
 
           <button
@@ -333,7 +333,7 @@ export const DonTuModule: React.FC = () => {
           <div className="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden space-y-4">
             <div className="p-5 bg-gradient-to-r from-orange-600 to-amber-600 text-white flex items-center justify-between">
               <div>
-                <h3 className="font-bold text-base">Tạo Đơn Phát Sinh & Chế Độ (Chuẩn SureHCS)</h3>
+                <h3 className="font-bold text-base">Tạo Đơn Phát Sinh & Chế Độ (Chuẩn 1HRM Enterprise)</h3>
                 <p className="text-xs text-orange-100">Đi muộn, Về sớm, Con ốm, Ốm đau, Nghỉ phép, Công tác, OT...</p>
               </div>
               <button onClick={() => setShowCreateModal(false)} className="text-white/80 hover:text-white">

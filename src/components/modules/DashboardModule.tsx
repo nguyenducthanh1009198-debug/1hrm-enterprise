@@ -18,8 +18,6 @@ import {
   GraduationCap,
   UserPlus,
   ShieldAlert,
-  PieChart as PieIcon,
-  BarChart3,
   Filter,
   Check,
   ChevronRight,
@@ -27,30 +25,20 @@ import {
   Building2,
   TreePine,
   AlertTriangle,
-  Scale
+  Scale,
+  Baby,
+  Activity,
+  Calendar,
+  Flame,
+  FileText
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  Legend,
-} from 'recharts';
-import {
   exportToExcel,
-  exportSureHCS_NhanSuTongHop,
-  exportSureHCS_DonTuVaNoiQuy,
-  exportSureHCS_QuyLuong,
-  exportSureHCS_BienDongNhanSu,
+  exportBaoCaoNhanSuTongHop,
+  exportBaoCaoDonTuVaNoiQuy,
+  exportBaoCaoQuyLuong,
+  exportBaoCaoBienDongNhanSu,
 } from '@/lib/exportEngine';
 
 export const DashboardModule: React.FC = () => {
@@ -66,7 +54,7 @@ export const DashboardModule: React.FC = () => {
     incomePayrollData,
   } = useHRM();
 
-  const [activeReportTab, setActiveReportTab] = useState<'HR_GENERAL' | 'TRAINING' | 'RECRUITMENT' | 'INCOME' | 'COMPLIANCE'>('HR_GENERAL');
+  const [activeReportTab, setActiveReportTab] = useState<'HR_GENERAL' | 'COMPLIANCE' | 'INCOME' | 'TURNOVER' | 'RECRUITMENT_TRAINING'>('HR_GENERAL');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -74,57 +62,35 @@ export const DashboardModule: React.FC = () => {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // -------------------------------------------------------------
-  // EXPORT SUREHCS EXCEL TEMPLATES
-  // -------------------------------------------------------------
-
-  const handleExportSureHCSExcel = () => {
+  // Export handlers
+  const handleExportExcel = () => {
     if (activeReportTab === 'HR_GENERAL') {
-      exportSureHCS_NhanSuTongHop(employees);
-    } else if (activeReportTab === 'TRAINING') {
-      const headers = ['Mã Khóa', 'Tên Khóa Đào Tạo', 'Chủ Đề', 'Hình Thức', 'Học Viên', 'Tổng Chi Phí (VNĐ)', 'Chi Phí/Người (VNĐ)', 'Điểm Đánh Giá', 'Độ Áp Dụng'];
-      const rows = trainingCourses.map((c) => [
-        c.code,
-        c.title,
-        c.topic,
-        c.method,
-        c.participantsCount,
-        c.totalCost,
-        c.costPerParticipant,
-        `${c.feedbackScore}/5.0 (${c.examPassRate}% Đỗ)`,
-        c.applicationLevel,
-      ]);
-      exportToExcel(
-        'BÁO CÁO TÌNH HÌNH ĐÀO TẠO NHÂN LỰC NÔNG TRƯỜNG & DOANH NGHIỆP (SUREHCS)',
-        'SureHCS_Bao_Cao_Dao_Tao',
-        headers,
-        rows,
-        {
-          'Tổng số khóa': trainingCourses.length,
-          'Tổng học viên': trainingCourses.reduce((a, b) => a + b.participantsCount, 0),
-          'Tổng chi phí đào tạo': `${(trainingCourses.reduce((a, b) => a + b.totalCost, 0)).toLocaleString('vi-VN')} đ`,
-        }
-      );
-    } else if (activeReportTab === 'RECRUITMENT') {
-      const headers = ['Vị Trí / Phòng Ban Cần Tuyển', 'Chỉ Tiêu', 'Đã Tuyển', 'Tỷ Lệ Đạt (%)', 'Chi Phí Tuyển Dụng (VNĐ)'];
-      const rows = recruitmentReportData.byDepartmentNeeds.map((r) => [r.dept, r.target, r.hired, r.rate, 1500000 * r.hired]);
-      exportToExcel(
-        'BÁO CÁO HIỆU QUẢ TUYỂN DỤNG & PHỄU CHUYỂN ĐỔI ỨNG VIÊN (SUREHCS)',
-        'SureHCS_Bao_Cao_Tuyen_Dung',
-        headers,
-        rows,
-        {
-          'Chỉ tiêu tuyển': `${recruitmentReportData.totalTarget} người`,
-          'Đã tuyển dụng': `${recruitmentReportData.totalHired} người (${recruitmentReportData.hiringRate}%)`,
-          'Thời gian tuyển TB': `${recruitmentReportData.avgTimeToHireDays} ngày`,
-        }
-      );
-    } else if (activeReportTab === 'INCOME') {
-      exportSureHCS_QuyLuong(payslips, incomePayrollData.totalPayrollMonth);
+      exportBaoCaoNhanSuTongHop(employees);
     } else if (activeReportTab === 'COMPLIANCE') {
-      exportSureHCS_DonTuVaNoiQuy(requests);
+      exportBaoCaoDonTuVaNoiQuy(requests);
+    } else if (activeReportTab === 'INCOME') {
+      exportBaoCaoQuyLuong(payslips, incomePayrollData.totalPayrollMonth);
+    } else if (activeReportTab === 'TURNOVER') {
+      exportBaoCaoBienDongNhanSu(hrGeneralData);
+    } else if (activeReportTab === 'RECRUITMENT_TRAINING') {
+      const headers = ['Mã Khóa / Vị Trí', 'Tên Khóa Đào Tạo / Kế Hoạch', 'Hình Thức / Nguồn', 'Quy Mô (Người)', 'Tổng Chi Phí (VNĐ)', 'Đánh Giá / Tiến Độ'];
+      const rows = [
+        ...trainingCourses.map((c) => [c.code, c.title, c.method, c.participantsCount, c.totalCost, `${c.feedbackScore}/5.0 (Đỗ ${c.examPassRate}%)`]),
+        ...recruitmentReportData.byDepartmentNeeds.map((r) => [r.dept, `Kế hoạch tuyển ${r.dept}`, 'Tuyển dụng', r.target, 1500000 * r.hired, `Đạt ${r.rate}`]),
+      ];
+      exportToExcel(
+        'BÁO CÁO TỔNG HỢP HIỆU QUẢ ĐÀO TẠO & TUYỂN DỤNG NHÂN SỰ',
+        'Bao_Cao_Dao_Tao_Va_Tuyen_Dung',
+        headers,
+        rows,
+        {
+          'Tổng khóa đào tạo': trainingCourses.length,
+          'Tổng học viên': trainingCourses.reduce((a, b) => a + b.participantsCount, 0),
+          'Chỉ tiêu tuyển': `${recruitmentReportData.totalTarget} người`,
+        }
+      );
     }
-    showToast('✓ Đã xuất bảng Báo cáo Excel chuẩn SureHCS thành công!');
+    showToast('✓ Đã xuất file Báo cáo Excel thành công!');
   };
 
   const incompleteProfilesCount = employees.filter((e) => e.isProfileComplete === false).length;
@@ -144,43 +110,32 @@ export const DashboardModule: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded bg-orange-500 text-white font-bold text-[11px] uppercase tracking-wider">
-              1HRM BI Analytics
+              1HRM ENTERPRISE
             </span>
-            <span className="text-slate-400 text-xs font-mono">Báo Cáo Tổng Hợp Chuẩn SureHCS</span>
+            <span className="text-slate-400 text-xs font-mono">Báo Cáo Tổng Hợp Dữ Liệu Bảng Biểu</span>
           </div>
           <h1 className="text-2xl font-black tracking-tight mt-2 text-white">
-            Trung Tâm Báo Cáo Nhân Sự & Nông Trường
+            Trung Tâm Báo Cáo Phân Tích Nhân Sự & Nông Trường
           </h1>
           <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-            Hệ thống tự động đồng bộ và kết xuất bảng dữ liệu Excel định dạng chuẩn SureHCS: Nhân sự tổng hợp, Đơn từ phát sinh, Quỹ lương và Biến động 12 tháng.
+            Hệ thống báo cáo chi tiết dạng bảng biểu chuẩn hóa: Nhân sự tổng hợp, Cơ cấu lao động, Đi muộn về sớm, Con ốm, Quỹ lương và Biến động 12 tháng.
           </p>
         </div>
 
         {/* Pure Excel Export Button Group */}
         <div className="flex flex-wrap items-center gap-2 bg-white/10 p-2.5 rounded-2xl border border-white/10 backdrop-blur-xs">
           <button
-            onClick={handleExportSureHCSExcel}
+            onClick={handleExportExcel}
             className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
-            title="Xuất bảng Excel chuẩn mẫu SureHCS"
+            title="Xuất bảng Excel"
           >
             <FileSpreadsheet className="w-4 h-4" />
-            <span>Xuất Báo Cáo Excel (Chuẩn SureHCS)</span>
-          </button>
-
-          <button
-            onClick={() => {
-              exportSureHCS_BienDongNhanSu(hrGeneralData);
-              showToast('✓ Đã xuất Báo cáo Biến động nhân sự 12 tháng (SureHCS)!');
-            }}
-            className="px-3.5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs flex items-center gap-1.5 border border-slate-700 transition-all cursor-pointer"
-          >
-            <TrendingUp className="w-4 h-4 text-orange-400" />
-            <span>Xuất Biến Động 12T (.xlsx)</span>
+            <span>Xuất Báo Cáo Excel (.xlsx)</span>
           </button>
         </div>
       </div>
 
-      {/* Profile Incomplete Warning Banner on Dashboard */}
+      {/* Incomplete Profile Alert Callout */}
       {incompleteProfilesCount > 0 && (
         <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-300 flex items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-3">
@@ -189,15 +144,15 @@ export const DashboardModule: React.FC = () => {
             </div>
             <div>
               <p className="font-bold text-amber-950 text-sm">
-                Cảnh Báo Quản Trị: Có {incompleteProfilesCount} nhân sự chưa hoàn thiện đủ hồ sơ Onboarding
+                Cảnh Báo Hồ Sơ: Có {incompleteProfilesCount} nhân sự mới Onboard chưa hoàn thiện đủ giấy tờ
               </p>
               <p className="text-amber-800 mt-0.5">
-                Các giấy tờ cần bổ sung: Bản sao CCCD công chứng, Giấy khám sức khỏe và Sổ BHXH gốc.
+                Các giấy tờ cần bổ sung: Bản sao CCCD 2 mặt công chứng, Giấy khám sức khỏe định kỳ và Sổ BHXH gốc.
               </p>
             </div>
           </div>
           <button
-            onClick={() => exportSureHCS_NhanSuTongHop(employees)}
+            onClick={() => exportBaoCaoNhanSuTongHop(employees)}
             className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-xs shrink-0"
           >
             Xuất DS Cần Bổ Sung Excel
@@ -205,7 +160,7 @@ export const DashboardModule: React.FC = () => {
         </div>
       )}
 
-      {/* 5-Suite Tab Selector */}
+      {/* Tab Selector for 5 Comprehensive Report Suites */}
       <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           <button
@@ -220,71 +175,11 @@ export const DashboardModule: React.FC = () => {
               <span className="p-1.5 rounded-lg bg-orange-100 text-orange-600">
                 <Users className="w-4 h-4" />
               </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Bộ 1</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Mẫu 1</span>
             </div>
             <div>
-              <p className="text-xs font-black">1. Tổng Quan Nhân Sự</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">Quy mô, cơ cấu, biến động & dự báo</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setActiveReportTab('TRAINING')}
-            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
-              activeReportTab === 'TRAINING'
-                ? 'bg-blue-50 border-blue-500 text-blue-950 ring-2 ring-blue-500/20 shadow-xs'
-                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="p-1.5 rounded-lg bg-blue-100 text-blue-600">
-                <GraduationCap className="w-4 h-4" />
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Bộ 2</span>
-            </div>
-            <div>
-              <p className="text-xs font-black">2. Đào Tạo Nhân Sự</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">Khóa học, học viên, chi phí & hiệu quả</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setActiveReportTab('RECRUITMENT')}
-            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
-              activeReportTab === 'RECRUITMENT'
-                ? 'bg-emerald-50 border-emerald-500 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs'
-                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-600">
-                <UserPlus className="w-4 h-4" />
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Bộ 3</span>
-            </div>
-            <div>
-              <p className="text-xs font-black">3. Hiệu Quả Tuyển Dụng</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">Phễu ứng viên, chi phí, time-to-hire</p>
-            </div>
-          </button>
-
-          <button
-            onClick={() => setActiveReportTab('INCOME')}
-            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
-              activeReportTab === 'INCOME'
-                ? 'bg-amber-50 border-amber-500 text-amber-950 ring-2 ring-amber-500/20 shadow-xs'
-                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
-            }`}
-          >
-            <div className="flex items-center justify-between">
-              <span className="p-1.5 rounded-lg bg-amber-100 text-amber-600">
-                <DollarSign className="w-4 h-4" />
-              </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Bộ 4</span>
-            </div>
-            <div>
-              <p className="text-xs font-black">4. Thu Nhập & Quỹ Lương</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">Cơ cấu lương, BHXH, Thuế Luật 109</p>
+              <p className="text-xs font-black">1. Nhân Sự Tổng Hợp</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Quy mô, cơ cấu tuổi, giới tính, học vấn</p>
             </div>
           </button>
 
@@ -300,149 +195,246 @@ export const DashboardModule: React.FC = () => {
               <span className="p-1.5 rounded-lg bg-purple-100 text-purple-600">
                 <ShieldAlert className="w-4 h-4" />
               </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Bộ 5</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Mẫu 2</span>
             </div>
             <div>
-              <p className="text-xs font-black">5. Tuân Thủ & Đơn Từ</p>
-              <p className="text-[10px] text-slate-500 mt-0.5">Đơn phát sinh, đúng giờ, kỷ luật</p>
+              <p className="text-xs font-black">2. Chấp Hành Nội Quy & Công Ca</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Đi muộn, về sớm, con ốm, công tác, OT</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveReportTab('INCOME')}
+            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
+              activeReportTab === 'INCOME'
+                ? 'bg-amber-50 border-amber-500 text-amber-950 ring-2 ring-amber-500/20 shadow-xs'
+                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-1.5 rounded-lg bg-amber-100 text-amber-600">
+                <DollarSign className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Mẫu 3</span>
+            </div>
+            <div>
+              <p className="text-xs font-black">3. Tình Hình Quỹ Lương</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Cơ cấu lương, BHXH, Thuế Luật 109</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveReportTab('TURNOVER')}
+            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
+              activeReportTab === 'TURNOVER'
+                ? 'bg-blue-50 border-blue-500 text-blue-950 ring-2 ring-blue-500/20 shadow-xs'
+                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-1.5 rounded-lg bg-blue-100 text-blue-600">
+                <TrendingUp className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Mẫu 4</span>
+            </div>
+            <div>
+              <p className="text-xs font-black">4. Biến Động Nhân Sự 12T</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Dư đầu, tuyển mới, nghỉ việc theo tháng</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveReportTab('RECRUITMENT_TRAINING')}
+            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
+              activeReportTab === 'RECRUITMENT_TRAINING'
+                ? 'bg-emerald-50 border-emerald-500 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs'
+                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-600">
+                <UserPlus className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Mẫu 5</span>
+            </div>
+            <div>
+              <p className="text-xs font-black">5. Tuyển Dụng & Đào Tạo</p>
+              <p className="text-[10px] text-slate-500 mt-0.5">Phễu ứng viên, chi phí & khóa học</p>
             </div>
           </button>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* BỘ 1: BÁO CÁO TỔNG QUAN TÌNH HÌNH NHÂN SỰ */}
+      {/* MẪU 1: BÁO CÁO NHÂN SỰ TỔNG HỢP & CƠ CẤU LAO ĐỘNG (DẠNG BẢNG CHI TIẾT) */}
       {/* ========================================================================= */}
       {activeReportTab === 'HR_GENERAL' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Tổng Quy Mô Toàn Hệ Thống</p>
-              <p className="text-2xl font-black text-slate-900 mt-1">{hrGeneralData.totalHeadcount} CBNV</p>
-              <p className="text-[11px] text-emerald-600 font-medium flex items-center gap-0.5 mt-1">
-                <ArrowUpRight className="w-3.5 h-3.5" /> +42 tuyển mới trong kỳ
-              </p>
+          {/* Bảng 1.1: Phân Bổ Nhân Lực Theo Đơn Vị & Nông Trường */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+              <h3 className="text-sm font-black text-slate-900">
+                Bảng 1.1: Tổng Hợp Quy Mô Nhân Sự Theo Phòng Ban & Nông Trường
+              </h3>
+              <span className="text-xs font-bold text-orange-600">Tổng: {hrGeneralData.totalHeadcount} CBNV</span>
             </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Tỷ Lệ Duy Trì Nhân Sự</p>
-              <p className="text-2xl font-black text-emerald-600 mt-1">{hrGeneralData.retentionRate}%</p>
-              <p className="text-[11px] text-slate-500 mt-1">Tỷ lệ nghỉ việc (Turnover): <b>{hrGeneralData.turnoverRate}%</b></p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Biến Động: Thăng Chức / Điều Chuyển</p>
-              <p className="text-2xl font-black text-blue-600 mt-1">23 Nhân Sự</p>
-              <p className="text-[11px] text-blue-700 mt-1">9 thăng chức, 14 điều chuyển lô</p>
-            </div>
-
-            <div className="p-5 bg-gradient-to-br from-orange-500/10 to-amber-500/10 rounded-2xl border border-orange-200 shadow-xs">
-              <p className="text-xs font-semibold text-orange-950">Dự Báo Nhu Cầu Nhân Sự Q4</p>
-              <p className="text-2xl font-black text-orange-600 mt-1">+65 Công Nhân</p>
-              <p className="text-[11px] text-orange-900 mt-1 font-medium">Cao điểm thu hoạch mủ Q4</p>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">STT</th>
+                    <th className="py-3 px-4">Đơn Vị / Phòng Ban / Nông Trường</th>
+                    <th className="py-3 px-3 text-right">Số Lượng Nhân Sự</th>
+                    <th className="py-3 px-3 text-right">Tỷ Trọng (%)</th>
+                    <th className="py-3 px-4">Cán Bộ Phụ Trách</th>
+                    <th className="py-3 px-4">Phạm Vi / Vùng Quản Lý</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {hrGeneralData.byDepartment.map((d, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-500">{idx + 1}</td>
+                      <td className="py-3 px-4 font-bold text-slate-900">{d.name}</td>
+                      <td className="py-3 px-3 text-right font-black text-slate-900">{d.count} người</td>
+                      <td className="py-3 px-3 text-right font-bold text-orange-600">{d.ratio}</td>
+                      <td className="py-3 px-4 text-slate-700">
+                        {idx === 0 ? 'Nguyễn Văn Hùng (GĐ Nông trường)' : idx === 1 ? 'Vũ Quốc Toản (GĐ Nông trường)' : idx === 2 ? 'Trần Đình Trọng (GĐ Nông trường)' : 'Phạm Thùy Linh (Trưởng phòng)'}
+                      </td>
+                      <td className="py-3 px-4 text-slate-500 font-mono text-[11px]">
+                        {idx === 0 ? '1.250 ha vườn cạo' : idx === 1 ? '1.450 ha vườn cạo' : idx === 2 ? '980 ha vườn cạo' : 'Văn phòng điều hành'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
 
+          {/* Bảng 1.2: Cơ Cấu Nhân Sự Theo Độ Tuổi, Giới Tính, Học Vấn (Fixed 4540% bug -> shows 45.4%) */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <h3 className="text-sm font-black text-slate-900">Phân Bổ Nhân Lực Theo Đơn Vị & Nông Trường</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={hrGeneralData.byDepartment} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f5f9" />
-                    <XAxis type="number" fontSize={11} stroke="#94a3b8" />
-                    <YAxis dataKey="name" type="category" width={160} fontSize={11} stroke="#64748b" />
-                    <Tooltip
-                      formatter={(val: any) => [`${val} người`, 'Quân số']}
-                      contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-                    />
-                    <Bar dataKey="count" fill="#ea580c" radius={[0, 6, 6, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+              <div className="p-4 bg-slate-50 border-b border-slate-200">
+                <h3 className="text-sm font-black text-slate-900">
+                  Bảng 1.2A: Cơ Cấu Độ Tuổi Lực Lượng Lao Động (Đã Chuẩn Hóa)
+                </h3>
               </div>
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Nhóm Độ Tuổi</th>
+                    <th className="py-3 px-3 text-right">Số Lượng (Người)</th>
+                    <th className="py-3 px-3 text-right">Tỷ Lệ Phần Trăm</th>
+                    <th className="py-3 px-4">Đánh Giá Phân Bổ</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {hrGeneralData.byAge.map((a, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50">
+                      <td className="py-3 px-4 font-bold text-slate-900">{a.range}</td>
+                      <td className="py-3 px-3 text-right font-black text-slate-900">{a.count} người</td>
+                      <td className="py-3 px-3 text-right font-black text-blue-600">{a.percent}%</td>
+                      <td className="py-3 px-4 text-slate-600">
+                        {idx === 1 ? 'Lực lượng cạo mủ nòng cốt' : idx === 0 ? 'Lao động trẻ mới tuyển' : idx === 2 ? 'Kinh nghiệm thâm niên cao' : 'Cán bộ kỹ thuật kỳ cựu'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
 
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-4">
-              <h3 className="text-sm font-black text-slate-900">Cơ Cấu Độ Tuổi Lực Lượng Lao Động</h3>
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={hrGeneralData.byAge}
-                      dataKey="count"
-                      nameKey="range"
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      label={({ name, percent }: any) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                    >
-                      {hrGeneralData.byAge.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+              <div className="p-4 bg-slate-50 border-b border-slate-200">
+                <h3 className="text-sm font-black text-slate-900">
+                  Bảng 1.2B: Cơ Cấu Trình Độ Học Vấn & Giới Tính
+                </h3>
               </div>
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Trình Độ Học Vấn</th>
+                    <th className="py-3 px-3 text-right">Số Lượng</th>
+                    <th className="py-3 px-3 text-right">Tỷ Lệ (%)</th>
+                    <th className="py-3 px-4">Cơ Cấu Giới Tính</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-slate-900">Phổ Thông / Sơ Cấp (Công nhân)</td>
+                    <td className="py-3 px-3 text-right font-black text-slate-900">768 người</td>
+                    <td className="py-3 px-3 text-right font-bold text-orange-600">75.4%</td>
+                    <td className="py-3 px-4 text-slate-700">Nam: 58% | Nữ: 42%</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-slate-900">Trung Cấp / Cao Đẳng Kỹ Thuật</td>
+                    <td className="py-3 px-3 text-right font-black text-slate-900">142 người</td>
+                    <td className="py-3 px-3 text-right font-bold text-orange-600">14.0%</td>
+                    <td className="py-3 px-4 text-slate-700">Nam: 65% | Nữ: 35%</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-slate-900">Đại Học (Kỹ sư, Cử nhân)</td>
+                    <td className="py-3 px-3 text-right font-black text-slate-900">96 người</td>
+                    <td className="py-3 px-3 text-right font-bold text-orange-600">9.4%</td>
+                    <td className="py-3 px-4 text-slate-700">Nam: 50% | Nữ: 50%</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-slate-900">Thạc Sĩ / Sau Đại Học (BGĐ)</td>
+                    <td className="py-3 px-3 text-right font-black text-slate-900">12 người</td>
+                    <td className="py-3 px-3 text-right font-bold text-orange-600">1.2%</td>
+                    <td className="py-3 px-4 text-slate-700">Nam: 75% | Nữ: 25%</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-        </div>
-      )}
 
-      {/* ========================================================================= */}
-      {/* BỘ 2: BÁO CÁO TÌNH HÌNH ĐÀO TẠO NHÂN SỰ */}
-      {/* ========================================================================= */}
-      {activeReportTab === 'TRAINING' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Khóa Đào Tạo Đã Triển Khai</p>
-              <p className="text-2xl font-black text-slate-900 mt-1">{trainingCourses.length} Khóa Học</p>
-              <p className="text-[11px] text-blue-600 font-medium mt-1">100% đạt chuẩn chỉ tiêu kế hoạch</p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Tổng Lượt Học Viên Tham Gia</p>
-              <p className="text-2xl font-black text-blue-600 mt-1">
-                {trainingCourses.reduce((a, b) => a + b.participantsCount, 0)} Lượt
-              </p>
-              <p className="text-[11px] text-emerald-600 font-medium mt-1">Tỷ lệ đỗ sát hạch trung bình: 97%</p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Tổng Chi Phí Đào Tạo</p>
-              <p className="text-2xl font-black text-orange-600 mt-1">
-                {(trainingCourses.reduce((a, b) => a + b.totalCost, 0)).toLocaleString('vi-VN')} đ
-              </p>
-              <p className="text-[11px] text-slate-500 mt-1">Chi phí TB: 486.000 đ/học viên</p>
-            </div>
-          </div>
-
+          {/* Bảng 1.3: Danh Sách Nhân Sự & Tiến Độ Hồ Sơ */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-              <h3 className="text-sm font-black text-slate-900">Danh Sách Các Khóa Đào Tạo Nghiệp Vụ</h3>
+              <h3 className="text-sm font-black text-slate-900">
+                Bảng 1.3: Trích Lục Danh Sách Hồ Sơ Nhân Sự & Tình Trạng Giấy Tờ Onboarding
+              </h3>
+              <button
+                onClick={() => exportBaoCaoNhanSuTongHop(employees)}
+                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" /> Xuất Toàn Bộ DS Excel
+              </button>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
-                    <th className="py-3 px-4">Khóa Đào Tạo</th>
-                    <th className="py-3 px-3">Hình Thức</th>
-                    <th className="py-3 px-3">Thời Gian</th>
-                    <th className="py-3 px-3 text-right">Số Học Viên</th>
-                    <th className="py-3 px-3 text-right">Tổng Chi Phí</th>
-                    <th className="py-3 px-3 text-center">Đánh Giá (Điểm / Đỗ)</th>
+                    <th className="py-3 px-4">Mã NV</th>
+                    <th className="py-3 px-4">Họ Và Tên</th>
+                    <th className="py-3 px-3">Phòng Ban / Nông Trường</th>
+                    <th className="py-3 px-3">Chức Danh</th>
+                    <th className="py-3 px-3 text-right">Lương Cơ Bản</th>
+                    <th className="py-3 px-3 text-center">Tiến Độ Hồ Sơ</th>
+                    <th className="py-3 px-4">Cảnh Báo Giấy Tờ Còn Thiếu</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {trainingCourses.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50">
-                      <td className="py-3 px-4 font-bold text-slate-900">{c.title}</td>
-                      <td className="py-3 px-3 text-blue-700 font-semibold">{c.method}</td>
-                      <td className="py-3 px-3 font-mono text-slate-600">{c.startDate} ({c.durationHours}h)</td>
-                      <td className="py-3 px-3 text-right font-bold text-slate-900">{c.participantsCount} người</td>
-                      <td className="py-3 px-3 text-right font-bold text-orange-600">{c.totalCost.toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-center font-bold text-emerald-600">{c.feedbackScore}/5.0 ({c.examPassRate}% Đạt)</td>
+                  {employees.map((e) => (
+                    <tr key={e.id} className="hover:bg-slate-50">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-800">{e.code}</td>
+                      <td className="py-3 px-4 font-bold text-slate-900">{e.fullName}</td>
+                      <td className="py-3 px-3 text-slate-700">{e.departmentName}</td>
+                      <td className="py-3 px-3 text-slate-900 font-medium">{e.positionTitle}</td>
+                      <td className="py-3 px-3 text-right font-black text-slate-900">{e.baseSalary.toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-center">
+                        <span className={`px-2 py-0.5 rounded font-black text-[11px] ${e.isProfileComplete !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                          {e.profileCompleteness || 100}%
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        {e.isProfileComplete !== false ? (
+                          <span className="text-emerald-700 font-semibold">✓ Đầy đủ 100% giấy tờ</span>
+                        ) : (
+                          <span className="text-amber-800 font-bold bg-amber-50 px-2 py-0.5 rounded border border-amber-200">
+                            Thiếu: {e.missingDocuments?.join(', ')}
+                          </span>
+                        )}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -453,156 +445,18 @@ export const DashboardModule: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* BỘ 3: BÁO CÁO HIỆU QUẢ TUYỂN DỤNG */}
-      {/* ========================================================================= */}
-      {activeReportTab === 'RECRUITMENT' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Chỉ Tiêu Tuyển Dụng</p>
-              <p className="text-2xl font-black text-slate-900 mt-1">{recruitmentReportData.totalTarget} Chỉ Tiêu</p>
-              <p className="text-[11px] text-slate-500 mt-1">Đã tuyển: <b>{recruitmentReportData.totalHired} người</b> ({recruitmentReportData.hiringRate}%)</p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Thời Gian Tuyển TB</p>
-              <p className="text-2xl font-black text-blue-600 mt-1">{recruitmentReportData.avgTimeToHireDays} Ngày</p>
-              <p className="text-[11px] text-emerald-600 font-medium mt-1">Tối ưu chi phí nguồn ứng viên</p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Chi Phí / Ứng Viên</p>
-              <p className="text-2xl font-black text-orange-600 mt-1">
-                {recruitmentReportData.costPerHiredCandidate.toLocaleString('vi-VN')} đ
-              </p>
-              <p className="text-[11px] text-slate-500 mt-1">Nguồn nội bộ chiếm 58.3%</p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-5 space-y-3">
-            <h3 className="text-sm font-black text-slate-900">Phễu Chuyển Đổi Tuyển Dụng Qua 5 Vòng</h3>
-            <div className="space-y-2">
-              {recruitmentReportData.conversionFunnel.map((f, idx) => (
-                <div key={idx} className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="font-bold text-slate-800">{f.stage}</span>
-                    <span className="font-black text-orange-600">{f.count} ứng viên</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
-                    <div
-                      className="bg-gradient-to-r from-orange-500 to-amber-500 h-full rounded-full transition-all"
-                      style={{ width: `${(f.count / recruitmentReportData.conversionFunnel[0].count) * 100}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* BỘ 4: BÁO CÁO THU NHẬP NHÂN SỰ & QUỸ LƯƠNG */}
-      {/* ========================================================================= */}
-      {activeReportTab === 'INCOME' && (
-        <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Tổng Quỹ Lương Kỳ Này</p>
-              <p className="text-2xl font-black text-slate-900 mt-1">
-                {(incomePayrollData.totalPayrollMonth / 1000000000).toFixed(2)} Tỷ VNĐ
-              </p>
-              <p className="text-[11px] text-emerald-600 font-medium mt-1">+{incomePayrollData.growthComparedToLastMonth}% so với tháng trước</p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Thu Nhập Bình Quân</p>
-              <p className="text-2xl font-black text-blue-600 mt-1">
-                {(incomePayrollData.avgIncomePerWorker).toLocaleString('vi-VN')} đ
-              </p>
-              <p className="text-[11px] text-blue-700 mt-1">Lương cứng & thưởng mủ</p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">BHXH Trích Nộp (10.5%)</p>
-              <p className="text-2xl font-black text-purple-600 mt-1">
-                {(incomePayrollData.deductions.totalSocialInsurance / 1000000).toFixed(1)} Triệu đ
-              </p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Thuế TNCN (Luật 109/2025)</p>
-              <p className="text-2xl font-black text-emerald-600 mt-1">
-                {(incomePayrollData.deductions.totalPitTaxNewLaw / 1000000).toFixed(1)} Triệu đ
-              </p>
-              <p className="text-[11px] text-emerald-700 font-medium mt-1">Giảm trừ 15.5M/người</p>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-200">
-              <h3 className="text-sm font-black text-slate-900">Quỹ Lương & Năng Suất Thu Hoạch Mủ Các Nông Trường</h3>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
-                    <th className="py-3 px-4">Nông Trường / Đơn Vị</th>
-                    <th className="py-3 px-3 text-right">Quân Số</th>
-                    <th className="py-3 px-3 text-right">Tổng Quỹ Lương</th>
-                    <th className="py-3 px-3 text-right">Thu Nhập TB / Người</th>
-                    <th className="py-3 px-3 text-right">Sản Lượng Mủ Thu Hoạch</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {incomePayrollData.byPlantationComparison.map((p, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50">
-                      <td className="py-3 px-4 font-bold text-slate-900">{p.name}</td>
-                      <td className="py-3 px-3 text-right text-slate-700">{p.workers} người</td>
-                      <td className="py-3 px-3 text-right font-black text-slate-900">{p.payroll.toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-right font-bold text-blue-600">{p.avgIncome.toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-right font-bold text-orange-600">{p.latexTons > 0 ? `${p.latexTons} Tấn` : '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* BỘ 5: BÁO CÁO TÌNH HÌNH TUÂN THỦ NỘI QUY & ĐƠN TỪ */}
+      {/* MẪU 2: BÁO CÁO TÌNH HÌNH CHẤP HÀNH NỘI QUY VỀ CÔNG, CA LÀM & ĐƠN PHÁT SINH */}
       {/* ========================================================================= */}
       {activeReportTab === 'COMPLIANCE' && (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Tỷ Lệ Đi Làm Đúng Giờ</p>
-              <p className="text-2xl font-black text-emerald-600 mt-1">{complianceData.onTimeRate}%</p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Tuân Thủ Chấm Công</p>
-              <p className="text-2xl font-black text-blue-600 mt-1">{complianceData.attendanceComplianceRate}%</p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Tổng Đơn Phát Sinh</p>
-              <p className="text-2xl font-black text-orange-600 mt-1">{requests.length} Đơn</p>
-            </div>
-
-            <div className="p-5 bg-white rounded-2xl border border-slate-200 shadow-xs">
-              <p className="text-xs font-semibold text-slate-500">Vi Phạm Kỷ Luật Đã Xử Lý</p>
-              <p className="text-2xl font-black text-amber-600 mt-1">{complianceData.totalViolationsMonth} Vụ</p>
-            </div>
-          </div>
-
+          {/* Bảng 2.1: Tổng Hợp Các Đơn Phát Sinh (Đi muộn, về sớm, con ốm, ốm đau) */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-              <h3 className="text-sm font-black text-slate-900">Danh Sách Đơn Từ Phát Sinh Gần Nhất (Đi muộn, con ốm, OT...)</h3>
+              <h3 className="text-sm font-black text-slate-900">
+                Bảng 2.1: Sổ Theo Dõi Chi Tiết Các Đơn Phát Sinh (Đi Muộn, Về Sớm, Con Ốm, Ốm Đau, Nghỉ Phép)
+              </h3>
               <button
-                onClick={() => exportSureHCS_DonTuVaNoiQuy(requests)}
+                onClick={() => exportBaoCaoDonTuVaNoiQuy(requests)}
                 className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" /> Xuất Excel Đơn Từ
@@ -613,33 +467,349 @@ export const DashboardModule: React.FC = () => {
                 <thead>
                   <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
                     <th className="py-3 px-4">Mã Đơn</th>
-                    <th className="py-3 px-4">Nhân Sự</th>
+                    <th className="py-3 px-4">Nhân Sự Tạo Đơn</th>
+                    <th className="py-3 px-3">Phòng Ban / Nông Trường</th>
                     <th className="py-3 px-3">Loại Đơn Phát Sinh</th>
-                    <th className="py-3 px-3">Ngày Phát Sinh</th>
-                    <th className="py-3 px-4">Chi Tiết / Lý Do</th>
+                    <th className="py-3 px-3">Thời Gian</th>
+                    <th className="py-3 px-4">Chi Tiết Nghiệp Vụ (Số phút muộn, Con ốm, Mã C65-HD)</th>
+                    <th className="py-3 px-3">Người Duyệt</th>
                     <th className="py-3 px-3 text-center">Trạng Thái</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {requests.slice(0, 5).map((r) => (
+                  {requests.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
                       <td className="py-3 px-4 font-mono font-bold text-slate-800">{r.code}</td>
                       <td className="py-3 px-4 font-bold text-slate-900">{r.employeeName}</td>
+                      <td className="py-3 px-3 text-slate-700">{r.departmentName}</td>
                       <td className="py-3 px-3">
-                        <span className="px-2 py-0.5 rounded font-semibold text-[11px] bg-slate-100 text-slate-800">
+                        <span className="px-2.5 py-1 rounded-lg font-bold text-[11px] bg-slate-100 text-slate-800 border border-slate-200">
                           {r.typeName}
                         </span>
                       </td>
-                      <td className="py-3 px-3 font-mono text-slate-600">{r.startDate}</td>
-                      <td className="py-3 px-4 text-slate-600">
-                        {r.specificDetails && <b className="text-blue-700 block">{r.specificDetails}</b>}
-                        <span className="italic">{r.reason}</span>
+                      <td className="py-3 px-3 font-mono text-slate-600">
+                        {r.startDate} {r.durationDays > 0 ? `(${r.durationDays}N)` : `(${r.durationHours}h)`}
                       </td>
+                      <td className="py-3 px-4 text-slate-700">
+                        {r.specificDetails && <b className="text-blue-700 block mb-0.5">{r.specificDetails}</b>}
+                        <span className="italic text-slate-500">{r.reason}</span>
+                      </td>
+                      <td className="py-3 px-3 text-slate-700">{r.approverName || 'Chờ duyệt'}</td>
                       <td className="py-3 px-3 text-center">
-                        <span className="px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 text-[11px]">
+                        <span className="px-2.5 py-0.5 rounded-full font-bold text-[11px] bg-emerald-100 text-emerald-800">
                           {r.status === 'APPROVED' ? 'Đã duyệt' : 'Chờ duyệt'}
                         </span>
                       </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Bảng 2.2: Báo Cáo Làm Thêm Giờ (OT) & Công Tác */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+              <div className="p-4 bg-slate-50 border-b border-slate-200">
+                <h3 className="text-sm font-black text-slate-900">Bảng 2.2: Danh Sách Nhân Sự Đăng Ký Làm Thêm Giờ (OT)</h3>
+              </div>
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Nhân Sự</th>
+                    <th className="py-3 px-3">Ngày Làm OT</th>
+                    <th className="py-3 px-3 text-right">Số Giờ OT</th>
+                    <th className="py-3 px-4">Mục Đích / Ca Làm</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-slate-900">Nguyễn Văn Minh (Nông Trường 1)</td>
+                    <td className="py-3 px-3 font-mono">30/08/2026</td>
+                    <td className="py-3 px-3 text-right font-black text-orange-600">4 Giờ</td>
+                    <td className="py-3 px-4 text-slate-600">Cân & phân loại mủ nước trạm 2 (Ca đêm 200%)</td>
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-slate-900">Trần Văn Mạnh (Tổ 1 - NT1)</td>
+                    <td className="py-3 px-3 font-mono">01/09/2026</td>
+                    <td className="py-3 px-3 text-right font-black text-orange-600">3 Giờ</td>
+                    <td className="py-3 px-4 text-slate-600">Trực kiểm soát bảo vệ vườn cây ngày nghỉ lễ</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+              <div className="p-4 bg-slate-50 border-b border-slate-200">
+                <h3 className="text-sm font-black text-slate-900">Bảng 2.3: Danh Sách Nhân Sự Đi Công Tác Nông Trường</h3>
+              </div>
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Cán Bộ Công Tác</th>
+                    <th className="py-3 px-3">Thời Gian</th>
+                    <th className="py-3 px-4">Địa Điểm Đến</th>
+                    <th className="py-3 px-4">Nội Dung Chỉ Đạo</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-slate-900">Phạm Thùy Linh (Trưởng phòng)</td>
+                    <td className="py-3 px-3 font-mono">05/09 - 07/09</td>
+                    <td className="py-3 px-4 font-semibold text-emerald-700">Nông Trường 1 & Nông Trường 2</td>
+                    <td className="py-3 px-4 text-slate-600">Khảo sát định mức lô cạo và hướng dẫn app 1HRM</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MẪU 3: BÁO CÁO TÌNH HÌNH QUỸ LƯƠNG NHÂN SỰ & THUẾ TNCN */}
+      {/* ========================================================================= */}
+      {activeReportTab === 'INCOME' && (
+        <div className="space-y-6">
+          {/* Bảng 3.1: Tổng Quan Quỹ Lương Theo Đơn Vị */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="text-sm font-black text-slate-900">
+                Bảng 3.1: Tổng Quan Chi Trả Lương & Sản Lượng Mủ Thu Hoạch Toàn Hệ Thống
+              </h3>
+              <span className="text-xs font-black text-emerald-600">
+                Tổng quỹ: {(incomePayrollData.totalPayrollMonth / 1000000000).toFixed(2)} Tỷ VNĐ
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Nông Trường / Đơn Vị</th>
+                    <th className="py-3 px-3 text-right">Quân Số</th>
+                    <th className="py-3 px-3 text-right">Tổng Quỹ Lương (VNĐ)</th>
+                    <th className="py-3 px-3 text-right">Thu Nhập Bình Quân</th>
+                    <th className="py-3 px-3 text-right">Sản Lượng Mủ (Tấn)</th>
+                    <th className="py-3 px-4 text-right">Đơn Giá Tiền Lương/Kg</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {incomePayrollData.byPlantationComparison.map((p, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50">
+                      <td className="py-3 px-4 font-bold text-slate-900">{p.name}</td>
+                      <td className="py-3 px-3 text-right text-slate-700">{p.workers} người</td>
+                      <td className="py-3 px-3 text-right font-black text-slate-900">{p.payroll.toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-right font-black text-blue-600">{p.avgIncome.toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-right font-black text-orange-600">{p.latexTons > 0 ? `${p.latexTons} Tấn` : '-'}</td>
+                      <td className="py-3 px-4 text-right font-mono text-slate-600">{p.latexTons > 0 ? '8.570 đ/kg' : '-'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Bảng 3.2: Bảng Thanh Toán Lương Chi Tiết */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="text-sm font-black text-slate-900">
+                Bảng 3.2: Bảng Thanh Toán Lương & Khấu Trừ Thuế TNCN (Luật 109/2025/QH15)
+              </h3>
+              <button
+                onClick={() => exportBaoCaoQuyLuong(payslips, incomePayrollData.totalPayrollMonth)}
+                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" /> Xuất Bảng Lương Excel
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Mã NV</th>
+                    <th className="py-3 px-4">Họ Và Tên</th>
+                    <th className="py-3 px-3">Phòng Ban</th>
+                    <th className="py-3 px-3 text-right">Lương Cơ Bản</th>
+                    <th className="py-3 px-3 text-right">Phụ Cấp</th>
+                    <th className="py-3 px-3 text-right">Thưởng KPI/Mủ</th>
+                    <th className="py-3 px-3 text-right">Tổng Thu Nhập</th>
+                    <th className="py-3 px-3 text-right">BHXH (10.5%)</th>
+                    <th className="py-3 px-3 text-right">Thuế TNCN (Luật 109)</th>
+                    <th className="py-3 px-3 text-right">Thực Lĩnh (NET)</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {payslips.map((p) => (
+                    <tr key={p.id} className="hover:bg-slate-50">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-800">{p.employeeCode}</td>
+                      <td className="py-3 px-4 font-bold text-slate-900">{p.employeeName}</td>
+                      <td className="py-3 px-3 text-slate-700">{p.departmentName}</td>
+                      <td className="py-3 px-3 text-right font-medium">{p.baseSalary.toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-right font-medium">{(p.lunchAllowance + p.positionAllowance).toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-right font-medium text-orange-600">{(p.kpiBonus + p.commission).toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-right font-black text-slate-900">{p.totalIncome.toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-right font-medium text-rose-600">-{p.totalInsurance.toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-right font-medium text-amber-600">-{p.pitTax.toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-right font-black text-emerald-600">{p.netSalary.toLocaleString('vi-VN')} đ</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MẪU 4: BÁO CÁO BIẾN ĐỘNG NHÂN SỰ 12 THÁNG */}
+      {/* ========================================================================= */}
+      {activeReportTab === 'TURNOVER' && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <h3 className="text-sm font-black text-slate-900">
+                Bảng 4.1: Ma Trận Biến Động Nhân Sự 12 Tháng Trong Năm 2026
+              </h3>
+              <button
+                onClick={() => exportBaoCaoBienDongNhanSu(hrGeneralData)}
+                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5" /> Xuất Biến Động 12T Excel
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Chỉ Tiêu Biến Động</th>
+                    <th className="py-3 px-2 text-center">T1</th>
+                    <th className="py-3 px-2 text-center">T2</th>
+                    <th className="py-3 px-2 text-center">T3</th>
+                    <th className="py-3 px-2 text-center">T4</th>
+                    <th className="py-3 px-2 text-center">T5</th>
+                    <th className="py-3 px-2 text-center">T6</th>
+                    <th className="py-3 px-2 text-center">T7</th>
+                    <th className="py-3 px-2 text-center bg-orange-100 text-orange-900 font-black">T8 (Hiện tại)</th>
+                    <th className="py-3 px-2 text-center text-slate-400">T9 (Dự kiến)</th>
+                    <th className="py-3 px-2 text-center text-slate-400">T10</th>
+                    <th className="py-3 px-2 text-center text-slate-400">T11</th>
+                    <th className="py-3 px-2 text-center text-slate-400">T12</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-slate-900">1. Dư đầu tháng</td>
+                    {[940, 952, 965, 980, 992, 1005, 998, 1018, 1042, 1065, 1070, 1075].map((v, i) => (
+                      <td key={i} className={`py-3 px-2 text-center font-mono ${i === 7 ? 'bg-orange-50 font-black text-orange-950' : ''}`}>{v}</td>
+                    ))}
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-emerald-700">2. Tuyển mới trong tháng</td>
+                    {[24, 28, 32, 25, 30, 18, 38, 42, 35, 20, 15, 12].map((v, i) => (
+                      <td key={i} className={`py-3 px-2 text-center font-mono font-bold text-emerald-600 ${i === 7 ? 'bg-orange-50 font-black' : ''}`}>+{v}</td>
+                    ))}
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-rose-700">3. Thôi việc / nghỉ việc</td>
+                    {[12, 15, 17, 13, 17, 25, 18, 18, 12, 15, 10, 8].map((v, i) => (
+                      <td key={i} className={`py-3 px-2 text-center font-mono font-bold text-rose-600 ${i === 7 ? 'bg-orange-50 font-black' : ''}`}>-{v}</td>
+                    ))}
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-blue-700">4. Điều chuyển nội bộ</td>
+                    {[8, 10, 12, 9, 14, 11, 15, 14, 10, 8, 6, 5].map((v, i) => (
+                      <td key={i} className={`py-3 px-2 text-center font-mono text-blue-600 ${i === 7 ? 'bg-orange-50 font-black' : ''}`}>{v}</td>
+                    ))}
+                  </tr>
+                  <tr className="hover:bg-slate-50">
+                    <td className="py-3 px-4 font-bold text-purple-700">5. Thăng chức / bổ nhiệm</td>
+                    {[3, 5, 4, 6, 5, 4, 8, 9, 6, 5, 4, 4].map((v, i) => (
+                      <td key={i} className={`py-3 px-2 text-center font-mono text-purple-600 ${i === 7 ? 'bg-orange-50 font-black' : ''}`}>{v}</td>
+                    ))}
+                  </tr>
+                  <tr className="bg-slate-50 font-black text-slate-950">
+                    <td className="py-3 px-4">6. Dư cuối tháng</td>
+                    {[952, 965, 980, 992, 1005, 998, 1018, 1042, 1065, 1070, 1075, 1079].map((v, i) => (
+                      <td key={i} className={`py-3 px-2 text-center font-mono ${i === 7 ? 'bg-orange-200 text-orange-950' : ''}`}>{v}</td>
+                    ))}
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MẪU 5: BÁO CÁO HIỆU QUẢ TUYỂN DỤNG & ĐÀO TẠO */}
+      {/* ========================================================================= */}
+      {activeReportTab === 'RECRUITMENT_TRAINING' && (
+        <div className="space-y-6">
+          {/* Bảng 5.1: Tiến Độ Tuyển Dụng Theo Đơn Vị */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 bg-slate-50 border-b border-slate-200">
+              <h3 className="text-sm font-black text-slate-900">
+                Bảng 5.1: Báo Cáo Kế Hoạch Tuyển Dụng & Phễu Chuyển Đổi 5 Vòng
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Đơn Vị Có Nhu Cầu</th>
+                    <th className="py-3 px-3 text-right">Chỉ Tiêu</th>
+                    <th className="py-3 px-3 text-right">Đã Tuyển Dụng</th>
+                    <th className="py-3 px-3 text-right">Tỷ Lệ Đạt</th>
+                    <th className="py-3 px-4">Nguồn Tuyển Hiệu Quả Nhất</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {recruitmentReportData.byDepartmentNeeds.map((r, idx) => (
+                    <tr key={idx} className="hover:bg-slate-50">
+                      <td className="py-3 px-4 font-bold text-slate-900">{r.dept}</td>
+                      <td className="py-3 px-3 text-right font-medium">{r.target} người</td>
+                      <td className="py-3 px-3 text-right font-black text-emerald-600">{r.hired} người</td>
+                      <td className="py-3 px-3 text-right font-black text-orange-600">{r.rate}</td>
+                      <td className="py-3 px-4 text-slate-700">
+                        {idx === 0 ? 'Giới thiệu nội bộ (62%)' : idx === 1 ? 'Ngày hội việc làm địa phương (45%)' : 'Mạng xã hội & Zalo'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Bảng 5.2: Danh Sách Các Khóa Đào Tạo Nghiệp Vụ */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 bg-slate-50 border-b border-slate-200">
+              <h3 className="text-sm font-black text-slate-900">
+                Bảng 5.2: Báo Cáo Đào Tạo & Đánh Giá Mức Độ Ứng Dụng Sau Đào Tạo
+              </h3>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Mã Khóa</th>
+                    <th className="py-3 px-4">Tên Khóa Đào Tạo</th>
+                    <th className="py-3 px-3">Hình Thức</th>
+                    <th className="py-3 px-3 text-right">Số Học Viên</th>
+                    <th className="py-3 px-3 text-right">Tổng Chi Phí</th>
+                    <th className="py-3 px-3 text-center">Điểm Đánh Giá</th>
+                    <th className="py-3 px-4">Mức Độ Áp Dụng Thực Tế</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {trainingCourses.map((c) => (
+                    <tr key={c.id} className="hover:bg-slate-50">
+                      <td className="py-3 px-4 font-mono font-bold text-slate-800">{c.code}</td>
+                      <td className="py-3 px-4 font-bold text-slate-900">{c.title}</td>
+                      <td className="py-3 px-3 text-blue-700 font-semibold">{c.method}</td>
+                      <td className="py-3 px-3 text-right font-black text-slate-900">{c.participantsCount} người</td>
+                      <td className="py-3 px-3 text-right font-black text-orange-600">{c.totalCost.toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-center font-bold text-emerald-600">{c.feedbackScore}/5.0 (Đỗ {c.examPassRate}%)</td>
+                      <td className="py-3 px-4 font-semibold text-slate-800">{c.applicationLevel}</td>
                     </tr>
                   ))}
                 </tbody>

@@ -380,7 +380,7 @@ export const MOCK_EMPLOYEES: Employee[] = [
 ];
 
 // -------------------------------------------------------------
-// ĐẦY ĐỦ CÁC LOẠI ĐƠN TỪ PHÁT SINH (SUREHCS STANDARD)
+// ĐẦY ĐỦ CÁC LOẠI ĐƠN TỪ PHÁT SINH (1HRM STANDARD)
 // -------------------------------------------------------------
 
 export const MOCK_REQUESTS: HRMRequest[] = [

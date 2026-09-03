@@ -1,4 +1,4 @@
-// 1HRM Data Types & Interfaces - SureHCS Analytics
+// 1HRM Data Types & Interfaces - 1HRM Enterprise Analytics
 
 export type UserRole =
   | 'ADMIN'
@@ -148,7 +148,7 @@ export interface WorkShift {
 }
 
 // -------------------------------------------------------------
-// CÁC LOẠI ĐƠN TỪ PHÁT SINH (SUREHCS STANDARD)
+// CÁC LOẠI ĐƠN TỪ PHÁT SINH (1HRM STANDARD)
 // -------------------------------------------------------------
 
 export type RequestType =

@@ -1,7 +1,7 @@
-// 1HRM Enterprise Export Engine - Mẫu Báo Cáo Nhân Sự Chuẩn SureHCS
+// 1HRM Enterprise Export Engine - Xuất File Báo Cáo Excel Đầy Đủ
 
 /**
- * Xuất Báo Cáo Tổng Quát Ra Định Dạng Excel (.xls / XML Spreadsheet) Chuẩn SureHCS
+ * Xuất Báo Cáo Ra Định Dạng Excel (.xls / XML Spreadsheet)
  */
 export const exportToExcel = (
   reportTitle: string,
@@ -23,7 +23,7 @@ export const exportToExcel = (
     statsHtml = `
       <tr style="background-color: #f1f5f9; font-weight: bold;">
         <td colspan="${headers.length}" style="padding: 10px; border: 1px solid #cbd5e1; color: #0f172a;">
-          <strong>CHỈ SỐ TỔNG HỢP (SUREHCS ANALYTICS):</strong> ${Object.entries(summaryStats)
+          <strong>CHỈ SỐ TỔNG HỢP:</strong> ${Object.entries(summaryStats)
             .map(([k, v]) => `<b style="color: #ea580c;">${k}:</b> ${v}`)
             .join(' &nbsp;|&nbsp; ')}
         </td>
@@ -85,7 +85,7 @@ export const exportToExcel = (
           <td colspan="${headers.length}" class="company-header">TỔNG CÔNG TY CAO SU & NÔNG TRƯỜNG 1HRM ENTERPRISE</td>
         </tr>
         <tr>
-          <td colspan="${headers.length}" class="sub-header">Hệ thống Quản trị Nhân sự Số hóa Chuẩn SureHCS | Mẫu Báo cáo Phân tích Tổng hợp</td>
+          <td colspan="${headers.length}" class="sub-header">Hệ thống Quản trị Nhân sự & Điều hành Sản xuất 1HRM</td>
         </tr>
         <tr>
           <td colspan="${headers.length}" class="report-title">${reportTitle.toUpperCase()}</td>
@@ -121,9 +121,9 @@ export const exportToExcel = (
 };
 
 /**
- * 1. Xuất Mẫu "BÁO CÁO NHÂN SỰ TỔNG HỢP.xlsx" Chuẩn SureHCS
+ * 1. Xuất Báo Cáo Nhân Sự Tổng Hợp & Hồ Sơ Cá Nhân
  */
-export const exportSureHCS_NhanSuTongHop = (employees: any[]) => {
+export const exportBaoCaoNhanSuTongHop = (employees: any[]) => {
   const headers = [
     'STT',
     'Mã nhân viên (Mã chấm công)',
@@ -173,8 +173,8 @@ export const exportSureHCS_NhanSuTongHop = (employees: any[]) => {
   };
 
   exportToExcel(
-    'BÁO CÁO NHÂN SỰ TỔNG HỢP & DANH SÁCH HỒ SƠ ONBOARDING (SUREHCS)',
-    'SureHCS_Bao_Cao_Nhan_Su_Tong_Hop',
+    'BÁO CÁO NHÂN SỰ TỔNG HỢP & DANH SÁCH HỒ SƠ ONBOARDING',
+    'Bao_Cao_Nhan_Su_Tong_Hop',
     headers,
     rows,
     summary
@@ -182,10 +182,9 @@ export const exportSureHCS_NhanSuTongHop = (employees: any[]) => {
 };
 
 /**
- * 2. Xuất Mẫu "BÁO CÁO TÌNH HÌNH CHẤP HÀNH NỘI QUY VỀ CÔNG, CA LÀM.xlsx" Chuẩn SureHCS
- * (Gồm đầy đủ các loại đơn phát sinh: Đi muộn, Về sớm, Con ốm, Ốm đau, Nghỉ phép, Công tác, OT, Choàng lô)
+ * 2. Xuất Báo Cáo Tình Hình Chấp Hành Nội Quy, Công Ca & Đơn Từ Phát Sinh
  */
-export const exportSureHCS_DonTuVaNoiQuy = (requests: any[]) => {
+export const exportBaoCaoDonTuVaNoiQuy = (requests: any[]) => {
   const headers = [
     'STT',
     'Mã Đơn',
@@ -225,8 +224,8 @@ export const exportSureHCS_DonTuVaNoiQuy = (requests: any[]) => {
   };
 
   exportToExcel(
-    'BÁO CÁO TÌNH HÌNH PHÁT SINH ĐƠN TỪ, NGHỈ PHÉP, ĐI MUỘN, CON ỐM & CÔNG TÁC (SUREHCS)',
-    'SureHCS_Bao_Cao_Don_Tu_Phat_Sinh',
+    'BÁO CÁO TÌNH HÌNH CHẤP HÀNH NỘI QUY VỀ CÔNG, CA LÀM & ĐƠN TỪ PHÁT SINH',
+    'Bao_Cao_Tinh_Hinh_Chap_Hanh_Noi_Quy_Cong_Ca',
     headers,
     rows,
     summary
@@ -234,9 +233,9 @@ export const exportSureHCS_DonTuVaNoiQuy = (requests: any[]) => {
 };
 
 /**
- * 3. Xuất Mẫu "MẪU BÁO CÁO TÌNH HÌNH QUỸ LƯƠNG NHÂN SỰ.xlsx" Chuẩn SureHCS
+ * 3. Xuất Báo Cáo Tình Hình Quỹ Lương & Thu Nhập Nhân Sự
  */
-export const exportSureHCS_QuyLuong = (payslips: any[], totalIncomeMonth: number) => {
+export const exportBaoCaoQuyLuong = (payslips: any[], totalIncomeMonth: number) => {
   const headers = [
     'STT',
     'Mã Nhân Viên',
@@ -268,7 +267,7 @@ export const exportSureHCS_QuyLuong = (payslips: any[], totalIncomeMonth: number
     p.actualDays,
     p.actualBaseSalary,
     p.lunchAllowance + p.positionAllowance,
-    p.commission, // Thưởng mủ cao su
+    p.commission,
     p.kpiBonus,
     p.totalIncome,
     p.totalInsurance,
@@ -284,8 +283,8 @@ export const exportSureHCS_QuyLuong = (payslips: any[], totalIncomeMonth: number
   };
 
   exportToExcel(
-    'BÁO CÁO TỔNG QUAN CHI TRẢ LƯƠNG, PHỤ CẤP & THUẾ TNCN (SUREHCS)',
-    'SureHCS_Bao_Cao_Quy_Luong_Nhan_Su',
+    'BÁO CÁO TÌNH HÌNH QUỸ LƯƠNG NHÂN SỰ & THUẾ TNCN',
+    'Bao_Cao_Tinh_Hinh_Quy_Luong_Nhan_Su',
     headers,
     rows,
     summary
@@ -293,9 +292,9 @@ export const exportSureHCS_QuyLuong = (payslips: any[], totalIncomeMonth: number
 };
 
 /**
- * 4. Xuất Mẫu "[SUREHCS] MẪU BÁO CÁO BIẾN ĐỘNG NHÂN SỰ.xlsx"
+ * 4. Xuất Báo Cáo Biến Động Nhân Sự 12 Tháng
  */
-export const exportSureHCS_BienDongNhanSu = (hrData: any) => {
+export const exportBaoCaoBienDongNhanSu = (hrData: any) => {
   const headers = [
     'Chỉ Tiêu Biến Động Nhân Sự',
     'Tháng 1',
@@ -329,8 +328,8 @@ export const exportSureHCS_BienDongNhanSu = (hrData: any) => {
   };
 
   exportToExcel(
-    'BÁO CÁO BIẾN ĐỘNG NHÂN SỰ 12 THÁNG TRONG NĂM 2026 (SUREHCS)',
-    'SureHCS_Bao_Cao_Bien_Dong_Nhan_Su',
+    'BÁO CÁO BIẾN ĐỘNG NHÂN SỰ 12 THÁNG TRONG NĂM 2026',
+    'Bao_Cao_Bien_Dong_Nhan_Su',
     headers,
     rows,
     summary
