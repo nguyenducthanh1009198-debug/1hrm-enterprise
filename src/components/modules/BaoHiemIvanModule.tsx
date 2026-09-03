@@ -22,11 +22,11 @@ export const BaoHiemIvanModule: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900">Phân Hệ 1-IVAN: Bảo Hiểm Xã Hội Điện Tử</h1>
-            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-blue-100 text-blue-700">
+            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-[#ECFDF5] text-[#047857]">
               Kết Nối BHXH Việt Nam
             </span>
           </div>
@@ -37,7 +37,7 @@ export const BaoHiemIvanModule: React.FC = () => {
 
         <button
           onClick={() => setShowDeclareModal(true)}
-          className="flex items-center gap-1.5 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold shadow-md shadow-blue-600/20 transition-all cursor-pointer"
+          className="flex items-center gap-1.5 px-4 py-2 btn-primary text-white rounded-lg text-xs font-semibold shadow-md shadow-blue-600/20 transition-all cursor-pointer"
         >
           <Plus className="w-4 h-4" />
           <span>Tạo Hồ Sơ Kê Khai Mới</span>
@@ -46,13 +46,13 @@ export const BaoHiemIvanModule: React.FC = () => {
 
       {/* Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
+        <div className="p-4 bg-white rounded-xl border border-[#E2E8F0] shadow-xs">
           <p className="text-slate-500 font-medium">Tổng số lao động tham gia BHXH</p>
           <p className="text-2xl font-black text-slate-900 mt-1">{employees.length} / {employees.length}</p>
           <p className="text-[11px] text-emerald-600 font-semibold mt-1">100% đã cấp mã định danh BHXH</p>
         </div>
 
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
+        <div className="p-4 bg-white rounded-xl border border-[#E2E8F0] shadow-xs">
           <p className="text-slate-500 font-medium">Hồ sơ đã nộp thành công</p>
           <p className="text-2xl font-black text-emerald-600 mt-1">
             {ivanRecords.filter((r) => r.status === 'Hồ sơ hợp lệ').length} Hồ sơ
@@ -60,10 +60,10 @@ export const BaoHiemIvanModule: React.FC = () => {
           <p className="text-[11px] text-slate-400 mt-1">Cơ quan BHXH đã phê duyệt</p>
         </div>
 
-        <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
+        <div className="p-4 bg-white rounded-xl border border-[#E2E8F0] shadow-xs">
           <p className="text-slate-500 font-medium">Chứng thư số Ký số IVAN</p>
-          <p className="text-sm font-bold text-blue-600 mt-1 flex items-center gap-1">
-            <ShieldCheck className="w-4 h-4 text-blue-600" />
+          <p className="text-sm font-bold text-[#047857] mt-1 flex items-center gap-1">
+            <ShieldCheck className="w-4 h-4 text-[#047857]" />
             Viettel-CA Cloud Sign (Hiệu lực 2028)
           </p>
           <p className="text-[11px] text-slate-400 mt-1">Sẵn sàng ký số nộp online</p>
@@ -71,8 +71,8 @@ export const BaoHiemIvanModule: React.FC = () => {
       </div>
 
       {/* IVAN Submissions Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+      <div className="bg-white rounded-xl border border-[#E2E8F0] shadow-xs overflow-hidden">
+        <div className="p-4 border-b border-[#F1F5F9] flex items-center justify-between">
           <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
             Lịch Sử Kê Khai & Trạng Thái Xử Lý Hồ Sơ Điện Tử
           </h3>
@@ -81,7 +81,7 @@ export const BaoHiemIvanModule: React.FC = () => {
 
         <div className="overflow-x-auto">
           <table className="w-full text-xs text-left">
-            <thead className="bg-slate-50 text-slate-600 border-b border-slate-200 font-semibold uppercase text-[11px]">
+            <thead className="bg-[#F8FAFC] text-slate-600 border-b border-[#E2E8F0] font-semibold uppercase text-[11px]">
               <tr>
                 <th className="py-3 px-4">Mã hồ sơ</th>
                 <th className="py-3 px-4">Kỳ kê khai</th>
@@ -94,7 +94,7 @@ export const BaoHiemIvanModule: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {ivanRecords.map((rec) => (
-                <tr key={rec.id} className="hover:bg-blue-50/30">
+                <tr key={rec.id} className="hover:bg-emerald-50/30">
                   <td className="py-3 px-4 font-mono font-bold text-slate-900">{rec.code}</td>
                   <td className="py-3 px-4 text-slate-700">Tháng {rec.month}</td>
                   <td className="py-3 px-4">

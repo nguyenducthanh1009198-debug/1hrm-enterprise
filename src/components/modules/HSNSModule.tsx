@@ -139,7 +139,7 @@ export const HSNSModule: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900">Hồ Sơ Nhân Sự (HSNS 360°) & Onboarding</h1>
-            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-orange-100 text-[#047857]">
+            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-[#ECFDF5] text-[#047857]">
               {employees.length} Nhân Sự
             </span>
             {incompleteCount > 0 && (
@@ -443,7 +443,7 @@ export const HSNSModule: React.FC = () => {
                 <div className="space-y-4">
                   <div className="p-3.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 rounded-lg border border-[#D1FAE5] flex items-center justify-between">
                     <div>
-                      <p className="font-bold text-orange-950 text-sm">Tiến Độ Hoàn Tất Hồ Sơ Nhân Viên</p>
+                      <p className="font-bold text-[#0F172A] text-sm">Tiến Độ Hoàn Tất Hồ Sơ Nhân Viên</p>
                       <p className="text-xs text-orange-800">
                         {selectedEmployee.isProfileComplete !== false
                           ? '✓ Nhân sự đã nộp đầy đủ 100% hồ sơ giấy tờ gốc'

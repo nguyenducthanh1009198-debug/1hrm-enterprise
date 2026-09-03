@@ -23,7 +23,7 @@ export const KpiOkrModule: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900">Quản Trị Mục Tiêu OKR & Hiệu Suất KPI</h1>
@@ -43,7 +43,7 @@ export const KpiOkrModule: React.FC = () => {
               onClick={() => setActiveTab(tab as any)}
               className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 activeTab === tab
-                  ? 'bg-orange-600 text-white shadow-sm shadow-orange-600/20'
+                  ? 'bg-[#047857] text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -81,9 +81,9 @@ export const KpiOkrModule: React.FC = () => {
           {okrs.map((obj) => (
             <div
               key={obj.id}
-              className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4"
+              className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs space-y-4"
             >
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#F1F5F9] pb-3">
                 <div className="flex items-center gap-3">
                   <span
                     className={`px-2.5 py-1 rounded-lg text-xs font-bold ${
@@ -104,7 +104,7 @@ export const KpiOkrModule: React.FC = () => {
                       style={{ width: `${obj.progress}%` }}
                     />
                   </div>
-                  <span className="font-black text-orange-600 text-sm">{obj.progress}%</span>
+                  <span className="font-black text-[#047857] text-sm">{obj.progress}%</span>
                 </div>
               </div>
 
@@ -116,7 +116,7 @@ export const KpiOkrModule: React.FC = () => {
                 {obj.keyResults.map((kr) => (
                   <div
                     key={kr.id}
-                    className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
+                    className="p-3.5 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
                   >
                     <div className="flex-1">
                       <p className="font-semibold text-slate-900">{kr.title}</p>
@@ -136,8 +136,8 @@ export const KpiOkrModule: React.FC = () => {
                           title={!isSeniorLeader ? 'Chỉ cấp quản lý mới có quyền sửa tiến độ' : 'Nhập tiến độ mới'}
                           className={`w-24 px-2 py-1 rounded font-bold text-right transition-all ${
                             isSeniorLeader
-                              ? 'bg-white border border-slate-300 text-slate-900 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 cursor-text'
-                              : 'bg-slate-100 border border-slate-200 text-slate-500 cursor-not-allowed select-none'
+                              ? 'bg-white border border-slate-300 text-slate-900 focus:ring-2 focus:ring-[#047857] focus:border-[#047857] cursor-text'
+                              : 'bg-slate-100 border border-[#E2E8F0] text-slate-500 cursor-not-allowed select-none'
                           }`}
                         />
                         <span className="font-semibold text-slate-600">{kr.unit}</span>
@@ -157,8 +157,8 @@ export const KpiOkrModule: React.FC = () => {
 
       {/* Subtab KPI */}
       {activeTab === 'kpi' && (
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4 text-xs">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs space-y-4 text-xs">
+          <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
             <h3 className="font-bold text-slate-900 text-sm">Thư Viện Tiêu Chí Đánh Giá KPI Tự Động</h3>
             <span className="text-xs text-slate-500 font-semibold">Tự động chấm điểm 80% chỉ số</span>
           </div>
@@ -170,9 +170,9 @@ export const KpiOkrModule: React.FC = () => {
               { code: 'KPI_SO_BUG_PROD', name: 'Số lỗi phát sinh trên môi trường Live', source: 'Lấy từ Jira/Gitlab API', target: '0 lỗi', weight: '20%' },
               { code: 'KPI_DUNG_HAN_CV', name: 'Tỷ lệ hoàn thành công việc đúng hạn', source: 'Lấy từ Phân hệ Công việc', target: '95%', weight: '20%' },
             ].map((kpi, i) => (
-              <div key={i} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-1.5">
+              <div key={i} className="p-4 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono font-bold text-orange-600">{kpi.code}</span>
+                  <span className="font-mono font-bold text-[#047857]">{kpi.code}</span>
                   <span className="px-2 py-0.5 rounded bg-purple-100 text-purple-800 text-[10px] font-bold">
                     Trọng số: {kpi.weight}
                   </span>

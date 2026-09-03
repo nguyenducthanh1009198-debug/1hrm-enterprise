@@ -35,7 +35,7 @@ export const DanhGiaAskModule: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-[#E2E8F0] shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900">Đánh Giá Năng Lực ASK & Đào Tạo LMS</h1>
@@ -55,7 +55,7 @@ export const DanhGiaAskModule: React.FC = () => {
               onClick={() => setActiveTab(tab as any)}
               className={`px-3.5 py-1.5 text-xs font-semibold rounded-lg transition-all ${
                 activeTab === tab
-                  ? 'bg-orange-600 text-white shadow-sm shadow-orange-600/20'
+                  ? 'bg-[#047857] text-white shadow-xs'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
               }`}
             >
@@ -69,15 +69,15 @@ export const DanhGiaAskModule: React.FC = () => {
       {activeTab === 'ask' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Radar Chart Card */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs flex flex-col items-center">
-            <div className="w-full flex items-center justify-between border-b border-slate-100 pb-3 mb-2">
+          <div className="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-xs flex flex-col items-center">
+            <div className="w-full flex items-center justify-between border-b border-[#F1F5F9] pb-3 mb-2">
               <div>
                 <h3 className="font-bold text-slate-900 text-sm">Biểu Đồ Mạng Nhện Năng Lực (Radar Chart)</h3>
                 <p className="text-xs text-slate-500">
                   Nhân sự: <strong>{askEvaluation.employeeName}</strong> ({askEvaluation.positionTitle})
                 </p>
               </div>
-              <span className="px-2.5 py-1 rounded bg-orange-100 text-orange-700 font-bold text-xs">
+              <span className="px-2.5 py-1 rounded bg-[#ECFDF5] text-[#047857] font-bold text-xs">
                 {askEvaluation.grade}
               </span>
             </div>
@@ -109,21 +109,21 @@ export const DanhGiaAskModule: React.FC = () => {
           </div>
 
           {/* Criteria Breakdown Table */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-            <h3 className="font-bold text-slate-900 text-sm border-b border-slate-100 pb-3">
+          <div className="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-xs space-y-4">
+            <h3 className="font-bold text-slate-900 text-sm border-b border-[#F1F5F9] pb-3">
               Chi Tiết Điểm Đánh Giá ASK (Kỳ {askEvaluation.period})
             </h3>
 
             <div className="space-y-2 max-h-72 overflow-y-auto pr-1 text-xs">
               {askEvaluation.items.map((item, i) => (
-                <div key={i} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                <div key={i} className="p-3 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] flex items-center justify-between">
                   <div>
                     <span className="text-[10px] font-bold text-slate-400 uppercase">{item.category}</span>
                     <p className="font-semibold text-slate-900">{item.criteria}</p>
                   </div>
                   <div className="flex items-center gap-3">
                     <span className="text-blue-600 font-semibold">Chuẩn: {item.requiredScore}</span>
-                    <span className="px-2 py-0.5 rounded bg-orange-100 text-orange-700 font-bold">
+                    <span className="px-2 py-0.5 rounded bg-[#ECFDF5] text-[#047857] font-bold">
                       Đạt: {item.evaluatedScore}
                     </span>
                   </div>
@@ -140,13 +140,13 @@ export const DanhGiaAskModule: React.FC = () => {
       )}
 
       {activeTab === 'training' && (
-        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4 text-xs">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="bg-white p-6 rounded-xl border border-[#E2E8F0] shadow-xs space-y-4 text-xs">
+          <div className="flex items-center justify-between border-b border-[#F1F5F9] pb-3">
             <div className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-orange-500" />
               <h3 className="font-bold text-slate-900 text-base">Khóa Học & Lớp Đào Tạo Phát Triển Năng Lực</h3>
             </div>
-            <button className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold">
+            <button className="px-3 py-1.5 bg-[#047857] hover:bg-orange-700 text-white rounded-lg font-semibold">
               + Tạo Khóa Học Mới
             </button>
           </div>
@@ -157,7 +157,7 @@ export const DanhGiaAskModule: React.FC = () => {
               { title: 'Tối Ưu Hiệu Năng & Kiến Trúc Microservices', trainer: 'Lê Việt Thắng (CTO)', hours: '16 giờ', status: 'Khuyến khích', enrolled: 25 },
               { title: 'Luật Lao Động 2026 & Tự Động Hóa Thuế TNCN', trainer: 'Phạm Thùy Linh (HRM)', hours: '6 giờ', status: 'Bắt buộc', enrolled: 8 },
             ].map((course, i) => (
-              <div key={i} className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+              <div key={i} className="p-4 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-800 font-bold text-[10px]">
                     {course.status}
@@ -166,7 +166,7 @@ export const DanhGiaAskModule: React.FC = () => {
                 </div>
                 <p className="font-bold text-slate-900 text-xs">{course.title}</p>
                 <p className="text-slate-500">Giảng viên: {course.trainer}</p>
-                <div className="pt-2 border-t border-slate-200 flex justify-between text-[11px]">
+                <div className="pt-2 border-t border-[#E2E8F0] flex justify-between text-[11px]">
                   <span className="text-slate-500">Học viên tham gia:</span>
                   <span className="font-bold text-emerald-600">{course.enrolled} nhân sự</span>
                 </div>

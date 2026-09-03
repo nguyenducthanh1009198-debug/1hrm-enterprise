@@ -55,7 +55,7 @@ export const TienLuongModule: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900">Quản Lý Tiền Lương & Formula Platform</h1>
-            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-orange-100 text-[#047857]">
+            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-[#ECFDF5] text-[#047857]">
               Luật Thuế TNCN 109/2025/QH15 (5 Bậc)
             </span>
           </div>
@@ -226,7 +226,7 @@ export const TienLuongModule: React.FC = () => {
                           {canView ? (
                             <button
                               onClick={() => setSelectedPayslip(p)}
-                              className="px-3 py-1 bg-[#ECFDF5] hover:bg-orange-100 text-[#047857] rounded-lg font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
+                              className="px-3 py-1 bg-[#ECFDF5] hover:bg-[#ECFDF5] text-[#047857] rounded-lg font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
                             >
                               <Eye className="w-3.5 h-3.5" />
                               <span>Xem Phiếu</span>

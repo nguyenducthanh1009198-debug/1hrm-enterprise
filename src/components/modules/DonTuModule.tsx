@@ -165,7 +165,7 @@ export const DonTuModule: React.FC = () => {
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900">Quản Lý Đơn Từ Điện Tử (Không Giấy) & Workflow BPA</h1>
-            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-orange-100 text-[#047857]">
+            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-[#ECFDF5] text-[#047857]">
               100% Số Hóa Không Dùng Giấy
             </span>
           </div>
@@ -420,7 +420,7 @@ export const DonTuModule: React.FC = () => {
                 <span className="w-7 h-7 rounded-md bg-[#047857] text-white font-black flex items-center justify-center text-xs">
                   1
                 </span>
-                <h4 className="font-bold text-orange-950 text-xs">Bước 1: Trưởng Phòng / GĐ Phê Duyệt</h4>
+                <h4 className="font-bold text-[#0F172A] text-xs">Bước 1: Trưởng Phòng / GĐ Phê Duyệt</h4>
               </div>
               <p className="text-xs text-orange-900 leading-relaxed">
                 Trưởng bộ phận trực tiếp kiểm tra lý do, quỹ phép và bố trí người thay thế công việc (thời gian xử lý dưới 2 giờ).
@@ -642,7 +642,7 @@ export const DonTuModule: React.FC = () => {
               {/* Dynamic Sub-form: Đơn làm thêm giờ (OT) */}
               {reqType === 'LAM_THEM_GIO' && (
                 <div className="p-3.5 bg-[#ECFDF5] rounded-md border border-[#D1FAE5] space-y-3">
-                  <h4 className="font-bold text-orange-950 text-xs">Khung Giờ Đăng Ký Làm Thêm Giờ (OT)</h4>
+                  <h4 className="font-bold text-[#0F172A] text-xs">Khung Giờ Đăng Ký Làm Thêm Giờ (OT)</h4>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
                       <label className="font-bold text-orange-900 block mb-0.5">Từ Khung Giờ</label>
