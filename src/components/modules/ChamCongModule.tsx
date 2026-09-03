@@ -17,205 +17,536 @@ import {
   Plus,
   Shield,
   Compass,
+  TreePine,
+  Tractor,
+  Building2,
+  ClipboardCheck,
+  Award,
+  Camera,
+  Check,
+  X,
+  FileText,
+  UserCheck,
+  TrendingUp,
+  Radio,
+  WifiOff,
+  Flame,
+  Layers,
+  Sparkles,
+  ArrowRight,
+  Droplets,
+  Scale
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
+import { WorkerAttendanceStatus } from '@/types';
 
 export const ChamCongModule: React.FC = () => {
-  const { employees, shifts, todayAttendance, handleCheckIn, handleCheckOut, currentUser } = useHRM();
-  const [activeSubTab, setActiveSubTab] = useState<'matrix' | 'geofence' | 'mobile' | 'shifts' | 'devices'>('matrix');
-  const [selectedMonth, setSelectedMonth] = useState('08/2026');
+  const {
+    currentRole,
+    currentUser,
+    plantations,
+    productionTeams,
+    teamBatches,
+    fieldInspections,
+    monthlySubmissions,
+    todayAttendance,
+    handleCheckIn,
+    handleCheckOut,
+    updateWorkerAttendanceStatus,
+    updateRubberYield,
+    approveTeamBatch,
+    addFieldInspection,
+    approveMonthlySubmission,
+    toggleOfflineSync,
+  } = useHRM();
+
+  // 5 Tabs strictly matching the 5 roles in the picture
+  const [activeTierTab, setActiveTierTab] = useState<
+    'TO_TRUONG' | 'BGD_NONG_TRUONG' | 'KHOI_VAN_PHONG' | 'PHONG_HCTH' | 'BAN_TGD'
+  >('TO_TRUONG');
 
   // Client-safe Live Clock State
   const [isMounted, setIsMounted] = useState(false);
   const [liveTime, setLiveTime] = useState('08:30:00');
-  const [liveDate, setLiveDate] = useState('Thứ Tư, 2 tháng 9, 2026');
+  const [liveDate, setLiveDate] = useState('Thứ Năm, 3 tháng 9, 2026');
+
+  // Inspection Modal & Form state
+  const [showInspectionModal, setShowInspectionModal] = useState(false);
+  const [inspectionLot, setInspectionLot] = useState('Lô A1 - A5 (Tổ 1)');
+  const [inspectionNotes, setInspectionNotes] = useState('Kiểm tra dăm cạo mủ đạt chuẩn độ sâu, trang bị BHLĐ đầy đủ.');
+  const [inspectionPlantation, setInspectionPlantation] = useState('plant-1');
+
+  // Active Team Batch selection for Team Leader
+  const [selectedBatchId, setSelectedBatchId] = useState<string>('batch-001');
+  const activeBatch = teamBatches.find((b) => b.id === selectedBatchId) || teamBatches[0];
+
+  // Success Toast state
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     setIsMounted(true);
     const update = () => {
       const now = new Date();
       setLiveTime(now.toLocaleTimeString('vi-VN'));
-      setLiveDate(now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }));
+      setLiveDate(
+        now.toLocaleDateString('vi-VN', {
+          weekday: 'long',
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        })
+      );
     };
     update();
     const timer = setInterval(update, 1000);
     return () => clearInterval(timer);
   }, []);
 
-  // Days in month simulation (1 to 31)
-  const daysInMonth = Array.from({ length: 31 }, (_, i) => i + 1);
+  // Auto-switch tier tab based on user's active role if applicable
+  useEffect(() => {
+    if (currentRole === 'TEAM_LEADER') setActiveTierTab('TO_TRUONG');
+    else if (currentRole === 'PLANTATION_DIRECTOR') setActiveTierTab('BGD_NONG_TRUONG');
+    else if (currentRole === 'DEPARTMENT_LEAD' || currentRole === 'OFFICE_STAFF') setActiveTierTab('KHOI_VAN_PHONG');
+    else if (currentRole === 'HR_MANAGER' || currentRole === 'HR_ADMIN') setActiveTierTab('PHONG_HCTH');
+    else if (currentRole === 'ADMIN' || currentRole === 'EXECUTIVE_DIRECTOR') setActiveTierTab('BAN_TGD');
+  }, [currentRole]);
 
-  // Geofencing office locations state
-  const [offices, setOffices] = useState([
-    {
-      id: 'off-1',
-      name: 'Trụ sở chính Hà Nội - Tòa nhà Five Star',
-      address: 'Số 2 Kim Giang, Q. Thanh Xuân, TP. Hà Nội',
-      lat: 20.9982,
-      lng: 105.8174,
-      radiusMeters: 80, // Bán kính cho phép 80 mét
-      wifiBSSID: '1Office_HN_5G / E4:C7:22:1A:89:FE',
-      status: 'Đang hoạt động',
-      allowRemote: false,
-    },
-    {
-      id: 'off-2',
-      name: 'Chi nhánh TP. Hồ Chí Minh - Tòa nhà Pax Sky',
-      address: 'Số 222 Hoàng Hoa Thám, P.12, Q. Tân Bình, TP. HCM',
-      lat: 10.7995,
-      lng: 106.6533,
-      radiusMeters: 100, // Bán kính 100 mét
-      wifiBSSID: '1Office_HCM_Guest / 8C:3B:AD:45:90:12',
-      status: 'Đang hoạt động',
-      allowRemote: false,
-    },
-    {
-      id: 'off-3',
-      name: 'Văn phòng Đà Nẵng (Co-working Space)',
-      address: 'Đường Nguyễn Văn Linh, Q. Hải Châu, TP. Đà Nẵng',
-      lat: 16.0601,
-      lng: 108.2198,
-      radiusMeters: 150,
-      wifiBSSID: 'Enouvo_Space_5G',
-      status: 'Đang hoạt động',
-      allowRemote: true,
-    }
-  ]);
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleInspectionSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const selectedPlant = plantations.find((p) => p.id === inspectionPlantation);
+    addFieldInspection({
+      date: new Date().toLocaleDateString('vi-VN'),
+      supervisorId: currentUser.id,
+      supervisorName: `${currentUser.fullName} (${currentUser.positionTitle})`,
+      plantationId: inspectionPlantation,
+      plantationName: selectedPlant?.name || 'Nông Trường 1 (Bình Phước)',
+      lotChecked: inspectionLot,
+      gpsCoordinates: '11.4590° N, 106.8935° E (GPS Chính xác: 3m)',
+      distanceMeters: 12,
+      photoUrl: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=400&auto=format&fit=crop&q=80',
+      notes: inspectionNotes,
+      approvedTeamsCount: 1,
+    });
+    setShowInspectionModal(false);
+    showToast('✓ Check-in kiểm tra thực địa lô cạo thành công!');
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+      {/* Toast Alert */}
+      {toastMessage && (
+        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-emerald-500 flex items-center gap-3 animate-bounce">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <span className="text-sm font-semibold">{toastMessage}</span>
+        </div>
+      )}
+
+      {/* Header Banner */}
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-orange-950 p-6 rounded-2xl text-white shadow-xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-slate-900">Quản Lý Chấm Công, Phân Ca & GPS Geofencing</h1>
-            <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700">
-              Realtime Sync
+            <span className="px-2.5 py-0.5 rounded bg-orange-500 text-white font-bold text-[11px] uppercase tracking-wider">
+              1HRM Plantation & Corporate
+            </span>
+            <span className="text-slate-400 text-xs font-mono">
+              Hệ thống Chấm công & Điều hành 5 Cấp
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-1">
-            Khoanh vùng định vị GPS (Geofencing), đối soát BSSID Wifi nội bộ, chống Fake GPS và tích hợp máy chấm công ZKTeco/Hikvision
+          <h1 className="text-2xl font-black tracking-tight mt-2 text-white">
+            Quy Trình Chấm Công & Quản Trị Hiện Trường Nông Trường
+          </h1>
+          <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
+            Kết nối xuyên suốt từ Tổ trưởng cạo mủ tại hiện trường $\rightarrow$ Cán bộ kiểm tra lô $\rightarrow$ Khối Văn phòng FaceID $\rightarrow$ Phòng HCTH chốt công $\rightarrow$ Ban TGĐ phê duyệt 1-click.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          {['matrix', 'geofence', 'mobile', 'shifts', 'devices'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveSubTab(tab as any)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all ${
-                activeSubTab === tab
-                  ? 'bg-orange-600 text-white shadow-sm shadow-orange-600/20'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {tab === 'matrix' && 'Bảng Chấm Công Tổng Hợp'}
-              {tab === 'geofence' && 'Khoanh Vùng GPS (Geofencing)'}
-              {tab === 'mobile' && 'Chấm Công GPS Mobile'}
-              {tab === 'shifts' && 'Quản Lý Phân Ca'}
-              {tab === 'devices' && 'Kết Nối Máy Chấm Công'}
-            </button>
-          ))}
+        {/* Live Clock Card */}
+        <div className="flex items-center gap-3 bg-white/10 p-3.5 rounded-xl border border-white/10 backdrop-blur-xs min-w-[220px]">
+          <div className="w-10 h-10 rounded-lg bg-orange-500/30 flex items-center justify-center text-orange-400">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <p className="text-[11px] text-slate-300 font-semibold" suppressHydrationWarning>
+              {isMounted ? liveDate : 'Đang đồng bộ...'}
+            </p>
+            <p className="text-lg font-black text-orange-400 font-mono" suppressHydrationWarning>
+              {isMounted ? liveTime : '08:30:00'}
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Subtab 1: Monthly Matrix Timesheet */}
-      {activeSubTab === 'matrix' && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between bg-white p-4 rounded-xl border border-slate-200">
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-bold text-slate-700">Kỳ chấm công:</span>
-              <div className="flex items-center gap-1 bg-slate-100 px-3 py-1 rounded-lg text-xs font-semibold text-slate-800">
-                <ChevronLeft className="w-4 h-4 cursor-pointer text-slate-500 hover:text-slate-800" />
-                <span>Tháng {selectedMonth}</span>
-                <ChevronRight className="w-4 h-4 cursor-pointer text-slate-500 hover:text-slate-800" />
+      {/* 5-Tier Role Matrix Navigation Bar (Matching User Image) */}
+      <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
+          <button
+            onClick={() => setActiveTierTab('TO_TRUONG')}
+            className={`p-3.5 rounded-xl text-left transition-all flex flex-col justify-between gap-2 border ${
+              activeTierTab === 'TO_TRUONG'
+                ? 'bg-orange-50 border-orange-500 text-orange-950 ring-2 ring-orange-500/20 shadow-xs'
+                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-2 rounded-lg bg-orange-100 text-orange-600">
+                <TreePine className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                Cấp 1
+              </span>
+            </div>
+            <div>
+              <p className="text-xs font-black">1. Tổ Trưởng</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Chấm công tổ 1-chạm & Giao nộp mủ</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTierTab('BGD_NONG_TRUONG')}
+            className={`p-3.5 rounded-xl text-left transition-all flex flex-col justify-between gap-2 border ${
+              activeTierTab === 'BGD_NONG_TRUONG'
+                ? 'bg-blue-50 border-blue-500 text-blue-950 ring-2 ring-blue-500/20 shadow-xs'
+                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-2 rounded-lg bg-blue-100 text-blue-600">
+                <Tractor className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                Cấp 2
+              </span>
+            </div>
+            <div>
+              <p className="text-xs font-black">2. BGĐ Nông Trường</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Check-in lô cạo & Duyệt công tổ</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTierTab('KHOI_VAN_PHONG')}
+            className={`p-3.5 rounded-xl text-left transition-all flex flex-col justify-between gap-2 border ${
+              activeTierTab === 'KHOI_VAN_PHONG'
+                ? 'bg-emerald-50 border-emerald-500 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs'
+                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-2 rounded-lg bg-emerald-100 text-emerald-600">
+                <Building2 className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                Cấp 3
+              </span>
+            </div>
+            <div>
+              <p className="text-xs font-black">3. Khối Văn Phòng</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">FaceID/Vân tay & Duyệt đơn trực tuyến</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTierTab('PHONG_HCTH')}
+            className={`p-3.5 rounded-xl text-left transition-all flex flex-col justify-between gap-2 border ${
+              activeTierTab === 'PHONG_HCTH'
+                ? 'bg-amber-50 border-amber-500 text-amber-950 ring-2 ring-amber-500/20 shadow-xs'
+                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-2 rounded-lg bg-amber-100 text-amber-600">
+                <ClipboardCheck className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                Cấp 4
+              </span>
+            </div>
+            <div>
+              <p className="text-xs font-black">4. Phòng HCTH</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Tổng hợp VP+NT & Chốt bảng công</p>
+            </div>
+          </button>
+
+          <button
+            onClick={() => setActiveTierTab('BAN_TGD')}
+            className={`p-3.5 rounded-xl text-left transition-all flex flex-col justify-between gap-2 border ${
+              activeTierTab === 'BAN_TGD'
+                ? 'bg-purple-50 border-purple-500 text-purple-950 ring-2 ring-purple-500/20 shadow-xs'
+                : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
+            }`}
+          >
+            <div className="flex items-center justify-between">
+              <span className="p-2 rounded-lg bg-purple-100 text-purple-600">
+                <Award className="w-4 h-4" />
+              </span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-200 text-slate-700">
+                Cấp 5
+              </span>
+            </div>
+            <div>
+              <p className="text-xs font-black">5. Ban Tổng Giám Đốc</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">Dashboard điều hành & Duyệt 1-click</p>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* TIER 1: TỔ TRƯỞNG NÔNG TRƯỜNG */}
+      {/* ========================================================================= */}
+      {activeTierTab === 'TO_TRUONG' && (
+        <div className="space-y-6">
+          {/* Top Control Bar for Team Leader */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-100 text-orange-700 flex items-center gap-1">
+                  <TreePine className="w-3.5 h-3.5" /> Giao diện Tổ Trưởng (Mobile & Web)
+                </span>
+                <span className="text-xs font-semibold text-slate-600">
+                  {activeBatch.teamName} - {activeBatch.plantationName}
+                </span>
               </div>
+              <h2 className="text-lg font-black text-slate-900 mt-1">
+                Bảng Chấm Công Tổ Sản Xuất (Tối đa 50 người) & Ghi Nhận Sản Lượng Mủ
+              </h2>
             </div>
 
-            <div className="flex items-center gap-4 text-xs">
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
-                <span className="text-slate-600 font-medium">1.0 (Đủ công)</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-                <span className="text-slate-600 font-medium">0.5 (Nửa công)</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-500" />
-                <span className="text-slate-600 font-medium">P (Nghỉ phép)</span>
-              </span>
-              <span className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full bg-slate-300" />
-                <span className="text-slate-600 font-medium">CN (Nghỉ tuần)</span>
-              </span>
+            {/* Offline Sync Mode Switcher */}
+            <div className="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+              <div className="flex items-center gap-2">
+                {activeBatch.isOfflineSync ? (
+                  <span className="flex items-center gap-1 text-xs font-bold text-amber-700 bg-amber-100 px-2.5 py-1 rounded-lg">
+                    <WifiOff className="w-3.5 h-3.5 animate-pulse" /> Đang Lưu Offline (Vườn mất sóng)
+                  </span>
+                ) : (
+                  <span className="flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-100 px-2.5 py-1 rounded-lg">
+                    <Radio className="w-3.5 h-3.5 animate-pulse" /> Đã Đồng Bộ 4G/Wifi
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => {
+                  toggleOfflineSync(activeBatch.id);
+                  showToast(
+                    activeBatch.isOfflineSync
+                      ? '✓ Đã kích hoạt chế độ trực tuyến & Đồng bộ dữ liệu lên máy chủ!'
+                      : '✓ Đã chuyển sang chế độ Lưu Trữ Offline trong vườn cây!'
+                  );
+                }}
+                className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition-all shadow-xs"
+              >
+                {activeBatch.isOfflineSync ? 'Bấm để Đồng bộ Online' : 'Bật chế độ Offline'}
+              </button>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+          {/* Quick Metrics of Active Batch */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
+            <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
+              <p className="text-[11px] font-semibold text-slate-500">Quân số tổ</p>
+              <p className="text-xl font-black text-slate-900 mt-1">{activeBatch.totalMembers} Người</p>
+              <p className="text-[10px] text-emerald-600 font-bold mt-0.5">Mặc định: Đi làm đủ</p>
+            </div>
+            <div className="p-4 bg-emerald-50 rounded-xl border border-emerald-200 shadow-xs">
+              <p className="text-[11px] font-semibold text-emerald-800">Có mặt thực tế</p>
+              <p className="text-xl font-black text-emerald-900 mt-1">{activeBatch.presentCount} Người</p>
+              <p className="text-[10px] text-emerald-700 font-bold mt-0.5">1-Chạm xác nhận</p>
+            </div>
+            <div className="p-4 bg-blue-50 rounded-xl border border-blue-200 shadow-xs">
+              <p className="text-[11px] font-semibold text-blue-800">Choàng lô (Cạo thay)</p>
+              <p className="text-xl font-black text-blue-900 mt-1">{activeBatch.coveredCount} Người</p>
+              <p className="text-[10px] text-blue-700 font-bold mt-0.5">Hưởng phụ cấp choàng</p>
+            </div>
+            <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 shadow-xs">
+              <p className="text-[11px] font-semibold text-amber-800">Nghỉ phép / Ốm</p>
+              <p className="text-xl font-black text-amber-900 mt-1">{activeBatch.leaveCount} Người</p>
+              <p className="text-[10px] text-amber-700 font-bold mt-0.5">Có đơn xin phép</p>
+            </div>
+            <div className="p-4 bg-orange-50 rounded-xl border border-orange-200 shadow-xs">
+              <p className="text-[11px] font-semibold text-orange-800">Tổng sản lượng mủ</p>
+              <p className="text-xl font-black text-orange-900 mt-1">{activeBatch.totalLatexYieldKg} kg</p>
+              <p className="text-[10px] text-orange-700 font-bold mt-0.5">Mủ nước & mủ chén</p>
+            </div>
+            <div className="p-4 bg-purple-50 rounded-xl border border-purple-200 shadow-xs">
+              <p className="text-[11px] font-semibold text-purple-800">Độ khô trung bình</p>
+              <p className="text-xl font-black text-purple-900 mt-1">{activeBatch.avgTscDegree}° TSC</p>
+              <p className="text-[10px] text-purple-700 font-bold mt-0.5">Tiêu chuẩn $\ge 32^\circ$</p>
+            </div>
+          </div>
+
+          {/* 1-Tap Attendance & Rubber Yield Table */}
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+              <div>
+                <h3 className="text-sm font-black text-slate-900">
+                  Danh Sách Công Nhân Cạo Mủ Trong Tổ (1-Chạm Đổi Trạng Thái)
+                </h3>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Mặc định hệ thống tự điền <b>ĐỦ</b> cho toàn tổ. Tổ trưởng chỉ cần tick chọn người <b>Nghỉ</b> hoặc <b>Choàng lô</b> và nhập cân nặng mủ.
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  showToast('✓ Bảng công tổ đã được lưu và gửi tới Cán bộ / BGĐ Nông Trường xét duyệt!');
+                }}
+                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+              >
+                <CheckCircle2 className="w-4 h-4" /> Gửi Bảng Công & Mủ Lên Cấp Trên
+              </button>
+            </div>
+
             <div className="overflow-x-auto">
-              <table className="w-full text-xs text-center border-collapse">
+              <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-50 text-slate-600 border-b border-slate-200 font-bold">
-                    <th className="py-3 px-3 text-left sticky left-0 bg-slate-50 z-10 w-48 border-r border-slate-200">
-                      Nhân sự
-                    </th>
-                    <th className="py-3 px-2 border-r border-slate-200">Tổng công</th>
-                    <th className="py-3 px-2 border-r border-slate-200 text-amber-600">Đi muộn</th>
-                    <th className="py-3 px-2 border-r border-slate-200 text-blue-600">Nghỉ phép</th>
-                    {daysInMonth.map((d) => {
-                      const isWeekend = d % 7 === 0 || d % 7 === 6;
-                      return (
-                        <th
-                          key={d}
-                          className={`py-2 px-1 min-w-[28px] border-r border-slate-200 text-[10px] ${
-                            isWeekend ? 'bg-slate-100 text-slate-400' : 'bg-slate-50 text-slate-700'
-                          }`}
-                        >
-                          {d}
-                        </th>
-                      );
-                    })}
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Công Nhân</th>
+                    <th className="py-3 px-3">Lô Được Giao</th>
+                    <th className="py-3 px-3">Trạng Thái Chấm Công (1 Chạm)</th>
+                    <th className="py-3 px-3 text-right">Sản Lượng Mủ Nước (kg)</th>
+                    <th className="py-3 px-3 text-right">Mủ Chén/Đông (kg)</th>
+                    <th className="py-3 px-3 text-center">Độ TSC (%)</th>
+                    <th className="py-3 px-4">Ghi Chú Nghiệp Vụ</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {employees.map((emp) => (
-                    <tr key={emp.id} className="hover:bg-orange-50/30">
-                      <td className="py-2.5 px-3 text-left font-semibold text-slate-900 sticky left-0 bg-white z-10 border-r border-slate-200">
-                        <div className="flex items-center gap-2">
-                          <img src={emp.avatar} alt="" className="w-6 h-6 rounded-full object-cover" />
-                          <span className="truncate">{emp.fullName}</span>
+                <tbody className="divide-y divide-slate-200">
+                  {activeBatch.items.map((worker) => (
+                    <tr key={worker.workerId} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <img
+                            src={worker.avatar}
+                            alt={worker.workerName}
+                            className="w-9 h-9 rounded-full object-cover border border-slate-200"
+                          />
+                          <div>
+                            <p className="font-bold text-slate-900 text-sm">{worker.workerName}</p>
+                            <p className="text-[11px] text-slate-500 font-mono">{worker.workerCode}</p>
+                          </div>
                         </div>
                       </td>
-                      <td className="py-2 px-2 font-bold text-emerald-600 border-r border-slate-200">
-                        22.0
+
+                      <td className="py-3 px-3 font-semibold text-slate-700">
+                        <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-slate-800 text-[11px]">
+                          {worker.lotAssigned}
+                        </span>
                       </td>
-                      <td className="py-2 px-2 font-semibold text-amber-600 border-r border-slate-200">
-                        {emp.lateTimes}
+
+                      {/* 1-Tap Status Switch Buttons */}
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <button
+                            onClick={() =>
+                              updateWorkerAttendanceStatus(activeBatch.id, worker.workerId, 'DU')
+                            }
+                            className={`px-2.5 py-1 rounded-lg font-bold text-xs transition-all ${
+                              worker.status === 'DU'
+                                ? 'bg-emerald-600 text-white shadow-xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            ✓ Đủ
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              updateWorkerAttendanceStatus(activeBatch.id, worker.workerId, 'CHOANG_LO', 'Hoàng Văn Phúc')
+                            }
+                            className={`px-2.5 py-1 rounded-lg font-bold text-xs transition-all ${
+                              worker.status === 'CHOANG_LO'
+                                ? 'bg-blue-600 text-white shadow-xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            ⚡ Choàng Lô
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              updateWorkerAttendanceStatus(activeBatch.id, worker.workerId, 'NGHI_PHEP')
+                            }
+                            className={`px-2.5 py-1 rounded-lg font-bold text-xs transition-all ${
+                              worker.status === 'NGHI_PHEP'
+                                ? 'bg-amber-600 text-white shadow-xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            Phép
+                          </button>
+
+                          <button
+                            onClick={() =>
+                              updateWorkerAttendanceStatus(activeBatch.id, worker.workerId, 'NGHI_KHONG_PHEP')
+                            }
+                            className={`px-2.5 py-1 rounded-lg font-bold text-xs transition-all ${
+                              worker.status === 'NGHI_KHONG_PHEP'
+                                ? 'bg-rose-600 text-white shadow-xs'
+                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                            }`}
+                          >
+                            Vắng
+                          </button>
+                        </div>
                       </td>
-                      <td className="py-2 px-2 font-semibold text-blue-600 border-r border-slate-200">
-                        1.0
+
+                      {/* Yield Inputs */}
+                      <td className="py-3 px-3 text-right">
+                        <input
+                          type="number"
+                          step="0.1"
+                          disabled={worker.status === 'NGHI_PHEP' || worker.status === 'NGHI_KHONG_PHEP'}
+                          value={worker.latexYieldKg || ''}
+                          onChange={(e) =>
+                            updateRubberYield(
+                              activeBatch.id,
+                              worker.workerId,
+                              parseFloat(e.target.value) || 0,
+                              worker.cupLumpYieldKg || 0,
+                              worker.tscDegree || 34.0
+                            )
+                          }
+                          className="w-20 px-2 py-1 text-right text-xs font-bold border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-slate-100"
+                        />
                       </td>
-                      {daysInMonth.map((d) => {
-                        const isWeekend = d % 7 === 0 || d % 7 === 6;
-                        if (isWeekend) {
-                          return (
-                            <td key={d} className="py-1 px-1 bg-slate-50/60 text-slate-300 text-[10px] border-r border-slate-100">
-                              -
-                            </td>
-                          );
-                        }
-                        const isLeaveDay = d === 28;
-                        return (
-                          <td key={d} className="py-1 px-1 border-r border-slate-100 text-[11px] font-semibold">
-                            {isLeaveDay ? (
-                              <span className="text-blue-600 font-bold bg-blue-50 px-1 rounded">P</span>
-                            ) : (
-                              <span className="text-emerald-700 font-bold">1.0</span>
-                            )}
-                          </td>
-                        );
-                      })}
+
+                      <td className="py-3 px-3 text-right">
+                        <input
+                          type="number"
+                          step="0.1"
+                          disabled={worker.status === 'NGHI_PHEP' || worker.status === 'NGHI_KHONG_PHEP'}
+                          value={worker.cupLumpYieldKg || ''}
+                          onChange={(e) =>
+                            updateRubberYield(
+                              activeBatch.id,
+                              worker.workerId,
+                              worker.latexYieldKg || 0,
+                              parseFloat(e.target.value) || 0,
+                              worker.tscDegree || 34.0
+                            )
+                          }
+                          className="w-18 px-2 py-1 text-right text-xs font-bold border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 disabled:bg-slate-100"
+                        />
+                      </td>
+
+                      <td className="py-3 px-3 text-center">
+                        <span className="font-mono font-bold text-slate-800">
+                          {worker.tscDegree ? `${worker.tscDegree}°` : '-'}
+                        </span>
+                      </td>
+
+                      <td className="py-3 px-4 text-slate-600">
+                        {worker.coveredForWorkerName && (
+                          <span className="text-blue-700 font-semibold bg-blue-50 px-2 py-0.5 rounded text-[11px]">
+                            Choàng thêm phần của {worker.coveredForWorkerName}
+                          </span>
+                        )}
+                        {worker.note && <span className="italic">{worker.note}</span>}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -225,248 +556,473 @@ export const ChamCongModule: React.FC = () => {
         </div>
       )}
 
-      {/* Subtab 2: Geofencing Configuration (KHOANH VÙNG VỊ TRÍ) */}
-      {activeSubTab === 'geofence' && (
+      {/* ========================================================================= */}
+      {/* TIER 2: CÁN BỘ CẤP TRÊN / BGĐ NÔNG TRƯỜNG */}
+      {/* ========================================================================= */}
+      {activeTierTab === 'BGD_NONG_TRUONG' && (
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <div>
-                <h3 className="font-bold text-slate-900 text-base">Cấu Hình Vùng Địa Lý Chấm Công (Geofencing Settings)</h3>
-                <p className="text-xs text-slate-500">
-                  Quy định bán kính và tọa độ GPS hợp lệ. Nhân viên chỉ được chấp nhận chấm công khi điện thoại ở trong vùng này.
-                </p>
-              </div>
-              <button className="flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold shadow-xs">
-                <Plus className="w-4 h-4" />
-                <span>Thêm Địa Điểm / Chi Nhánh</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {offices.map((off) => (
-                <div key={off.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-3 text-xs">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-bold text-slate-900 text-sm">{off.name}</p>
-                      <p className="text-slate-500 text-[11px] mt-0.5 flex items-center gap-1">
-                        <MapPin className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-                        {off.address}
-                      </p>
-                    </div>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                      {off.status}
-                    </span>
-                  </div>
-
-                  <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-2 font-mono text-[11px]">
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Tọa độ GPS:</span>
-                      <span className="font-bold text-slate-800">{off.lat}, {off.lng}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">Bán kính cho phép:</span>
-                      <span className="font-bold text-orange-600">{off.radiusMeters} mét (Geofence)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-500">BSSID Wifi:</span>
-                      <span className="font-semibold text-blue-600 truncate max-w-[150px]">{off.wifiBSSID}</span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between pt-1 text-[11px]">
-                    <span className="text-slate-500">Chống Fake GPS:</span>
-                    <span className="font-bold text-emerald-600 flex items-center gap-1">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> Bật
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* How Geofencing Works Box */}
-            <div className="p-4 bg-orange-50/70 rounded-xl border border-orange-200 text-xs space-y-2 text-slate-700">
-              <h4 className="font-bold text-orange-950 flex items-center gap-1.5">
-                <Compass className="w-4 h-4 text-orange-600" />
-                Cơ Chế Tính Khoảng Cách Haversine Formula & Xác Thực Vùng:
-              </h4>
-              <p className="leading-relaxed">
-                Khi nhân viên bấm <strong>"Chấm Công Vào"</strong> trên điện thoại:
-              </p>
-              <ul className="list-disc list-inside space-y-1 text-slate-600 pl-2">
-                <li>Ứng dụng yêu cầu quyền truy cập định vị chính xác (High Accuracy GPS Coordinates: <code>Lat, Lng</code>).</li>
-                <li>Hệ thống tính toán khoảng cách đường chim bay từ tọa độ của máy tới tâm văn phòng.</li>
-                <li>Nếu khoảng cách <strong>&le; {offices[0].radiusMeters}m</strong> $\rightarrow$ Chấm công <strong>Hợp Lệ</strong>.</li>
-                <li>Nếu khoảng cách <strong>&gt; {offices[0].radiusMeters}m</strong> $\rightarrow$ Cảnh báo <strong>"Ngoài Phạm Vi"</strong> và chặn chấm công (hoặc yêu cầu kèm giải trình gửi sếp duyệt).</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Subtab 3: Mobile GPS Simulator */}
-      {activeSubTab === 'mobile' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 text-slate-900 font-bold text-base border-b border-slate-100 pb-3">
-              <Smartphone className="w-5 h-5 text-orange-500" />
-              <span>Chấm Công 1 Chạm (Mobile Self-Service)</span>
-            </div>
-
-            <div className="p-4 bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl text-white space-y-4">
-              <div className="flex items-center justify-between text-xs text-slate-300">
-                <span className="flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-orange-400" />
-                  Văn phòng Hà Nội (Tòa Five Star Kim Giang)
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 flex items-center gap-1">
+                  <Tractor className="w-3.5 h-3.5" /> Giao diện BGĐ Nông Trường & Cán Bộ Cấp Trên
                 </span>
-                <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-semibold border border-emerald-500/30">
-                  GPS Hợp lệ (&lt; 80m)
-                </span>
+                <span className="text-xs font-semibold text-slate-600">Nông Trường 1 (Bình Phước)</span>
               </div>
-
-              <div className="text-center py-4">
-                <p className="text-3xl font-mono font-bold tracking-wider text-orange-400" suppressHydrationWarning>
-                  {isMounted ? liveTime : '08:30:00'}
-                </p>
-                <p className="text-xs text-slate-400 mt-1" suppressHydrationWarning>
-                  {isMounted ? liveDate : 'Thứ Tư, 2 tháng 9, 2026'}
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3 pt-2">
-                <button
-                  onClick={() => handleCheckIn('Mobile GPS', 'Tọa độ: 20.9982, 105.8174 (Khoảng cách: 12m)')}
-                  className="py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white rounded-xl text-xs font-bold shadow-lg shadow-orange-500/20 transition-all cursor-pointer"
-                >
-                  Check-in Vào Ca
-                </button>
-                <button
-                  onClick={handleCheckOut}
-                  className="py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-xs font-bold transition-all cursor-pointer"
-                >
-                  Check-out Ra Ca
-                </button>
-              </div>
+              <h2 className="text-lg font-black text-slate-900 mt-1">
+                Kiểm Tra Thực Địa Lô Cạo & Phê Duyệt Bảng Công Các Tổ Trực Thuộc
+              </h2>
             </div>
 
-            <div className="text-xs text-slate-600 space-y-2">
-              <p className="font-semibold text-slate-800">Lịch sử check-in hôm nay:</p>
-              {todayAttendance.map((rec) => (
-                <div key={rec.id} className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                  <div>
-                    <p className="font-bold text-slate-900">{rec.shiftName}</p>
-                    <p className="text-[11px] text-slate-500">{rec.checkInLocation}</p>
-                  </div>
-                  <div className="text-right">
-                    <span className="font-mono font-bold text-emerald-600 text-sm">
-                      {rec.checkIn || '--:--'} - {rec.checkOut || '--:--'}
-                    </span>
-                    <p className="text-[10px] text-slate-400">{rec.checkInSource}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs space-y-4">
-            <h3 className="font-bold text-slate-900 text-sm border-b border-slate-100 pb-3">
-              Cơ Chế Bảo Mật & Chống Gian Lận Chấm Công
-            </h3>
-            <div className="space-y-3 text-xs text-slate-600">
-              <div className="flex items-start gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-200">
-                <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-emerald-900">Geofencing GPS Chính Xác</p>
-                  <p className="text-emerald-700 mt-0.5">Bán kính cho phép check-in trong phạm vi 80m quanh tâm văn phòng.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-xl border border-blue-200">
-                <Wifi className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-blue-900">Xác thực BSSID Wifi Nội Bộ</p>
-                  <p className="text-blue-700 mt-0.5">Chỉ chấp nhận chấm công khi kết nối vào mạng Wifi được phê duyệt.</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-3 bg-purple-50 rounded-xl border border-purple-200">
-                <Smartphone className="w-5 h-5 text-purple-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="font-bold text-purple-900">Phát Hiện & Chặn Fake GPS</p>
-                  <p className="text-purple-700 mt-0.5">Phát hiện ứng dụng Mock Location hoặc thay đổi vị trí ảo trên thiết bị.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Subtab 4: Shifts */}
-      {activeSubTab === 'shifts' && (
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="font-bold text-slate-900 text-sm">Danh Mục Ca Làm Việc Trong Doanh Nghiệp</h3>
-            <span className="text-xs font-semibold text-slate-500">{shifts.length} Ca đã định nghĩa</span>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {shifts.map((s) => (
-              <div key={s.id} className="p-4 rounded-xl border border-slate-200 bg-slate-50 space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-slate-900 text-sm">{s.name}</span>
-                  <span className="px-2 py-0.5 rounded bg-orange-100 text-orange-800 font-bold text-[10px]">
-                    {s.code}
-                  </span>
-                </div>
-                <p className="text-slate-600">
-                  Thời gian: <strong className="text-slate-900">{s.startTime} - {s.endTime}</strong>
-                </p>
-                <p className="text-slate-500">
-                  Nghỉ giữa ca: {s.breakStartTime} - {s.breakEndTime}
-                </p>
-                <div className="pt-2 border-t border-slate-200 flex justify-between items-center text-[11px]">
-                  <span className="text-slate-500">Công chuẩn:</span>
-                  <span className="font-bold text-emerald-600">{s.standardWorkUnits} công</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Subtab 5: Hardware Devices ZKTeco */}
-      {activeSubTab === 'devices' && (
-        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-xs space-y-4">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-            <div className="flex items-center gap-2">
-              <Server className="w-5 h-5 text-orange-500" />
-              <h3 className="font-bold text-slate-900 text-sm">Tool Tích Hợp SDK Máy Chấm Công (&gt; 90% dòng máy)</h3>
-            </div>
-            <button className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold transition-colors">
-              <RefreshCw className="w-3.5 h-3.5" />
-              <span>Đồng Bộ Log Ngay</span>
+            <button
+              onClick={() => setShowInspectionModal(true)}
+              className="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-2"
+            >
+              <Camera className="w-4 h-4" /> Check-in Kiểm Tra Hiện Trường (GPS + Ảnh)
             </button>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-            {[
-              { name: '1Office HN - Cửa sảnh T3', ip: '192.168.1.23', port: '4370', type: 'ZKTeco Bio G3', logs: 4960, status: 'Online' },
-              { name: '1Office CP WW - Cửa kính', ip: '28.6.4.58', port: '4370', type: 'Ronald Jack X628', logs: 1203, status: 'Online' },
-              { name: '1Office HCM - Tòa Pax Sky', ip: '28.6.4.59', port: '4370', type: 'Hikvision FaceID DS-K1T671', logs: 2181, status: 'Online' },
-            ].map((dev, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-2">
+          {/* Pending Batches to Approve */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+              <ClipboardCheck className="w-4 h-4 text-blue-600" /> Bảng Chấm Công Các Tổ Chờ Phê Duyệt Ngày Hôm Nay
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {teamBatches.map((batch) => (
+                <div
+                  key={batch.id}
+                  className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4 hover:border-blue-400 transition-all"
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-100 text-slate-700 uppercase font-mono">
+                        {batch.teamId}
+                      </span>
+                      <h4 className="font-black text-slate-900 text-sm mt-1">{batch.teamName}</h4>
+                      <p className="text-xs text-slate-500">{batch.leaderName}</p>
+                    </div>
+
+                    <span
+                      className={`text-xs px-2.5 py-1 rounded-full font-bold ${
+                        batch.status === 'APPROVED_SUPERVISOR'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {batch.status === 'APPROVED_SUPERVISOR' ? '✓ Đã Phê Duyệt' : 'Chờ Ban GĐ Duyệt'}
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 p-3 bg-slate-50 rounded-xl text-center text-xs">
+                    <div>
+                      <p className="text-slate-500 text-[10px]">Đi làm / Tổng</p>
+                      <p className="font-bold text-slate-900">{batch.presentCount}/{batch.totalMembers}</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-[10px]">Sản lượng mủ</p>
+                      <p className="font-bold text-orange-600">{batch.totalLatexYieldKg} kg</p>
+                    </div>
+                    <div>
+                      <p className="text-slate-500 text-[10px]">Độ khô TSC</p>
+                      <p className="font-bold text-purple-600">{batch.avgTscDegree}°</p>
+                    </div>
+                  </div>
+
+                  {batch.supervisorComment && (
+                    <p className="text-xs italic text-slate-600 bg-blue-50/70 p-2.5 rounded-lg border border-blue-100">
+                      💬 Nhận xét: {batch.supervisorComment}
+                    </p>
+                  )}
+
+                  <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+                    {batch.status !== 'APPROVED_SUPERVISOR' ? (
+                      <button
+                        onClick={() => {
+                          approveTeamBatch(batch.id, 'Đã kiểm tra đối soát sản lượng lô cạo. Đạt yêu cầu.');
+                          showToast(`✓ Đã phê duyệt bảng công cho ${batch.teamName}!`);
+                        }}
+                        className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                      >
+                        <Check className="w-4 h-4" /> Phê Duyệt Bảng Công
+                      </button>
+                    ) : (
+                      <span className="text-xs text-emerald-700 font-bold flex items-center gap-1">
+                        <CheckCircle2 className="w-4 h-4" /> Đã hoàn tất duyệt lúc {batch.approvedAt}
+                      </span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Recent Field Inspection Logs */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+              <Camera className="w-4 h-4 text-blue-600" /> Nhật Ký Kiểm Tra Thực Địa & Chụp Ảnh Hiện Trường Lô Cạo
+            </h3>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {fieldInspections.map((insp) => (
+                <div
+                  key={insp.id}
+                  className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row gap-4 items-start"
+                >
+                  <img
+                    src={insp.photoUrl}
+                    alt="Hiện trường"
+                    className="w-full sm:w-32 h-28 rounded-lg object-cover border border-slate-200 shadow-xs shrink-0"
+                  />
+                  <div className="space-y-1.5 text-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-bold text-slate-900">{insp.lotChecked}</span>
+                      <span className="text-slate-400 font-mono text-[10px]">{insp.timestamp}</span>
+                    </div>
+                    <p className="text-slate-600 font-semibold">{insp.supervisorName}</p>
+                    <p className="text-[11px] text-blue-700 font-mono flex items-center gap-1">
+                      <MapPin className="w-3.5 h-3.5 text-blue-600" /> {insp.gpsCoordinates}
+                    </p>
+                    <p className="text-slate-600 italic bg-white p-2 rounded border border-slate-200 mt-1">
+                      "{insp.notes}"
+                    </p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TIER 3: KHỐI VĂN PHÒNG (TRƯỞNG PHÒNG / NHÂN VIÊN) */}
+      {/* ========================================================================= */}
+      {activeTierTab === 'KHOI_VAN_PHONG' && (
+        <div className="space-y-6">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700 flex items-center gap-1">
+                  <Building2 className="w-3.5 h-3.5" /> Giao diện Khối Văn Phòng & Tòa Nhà Trụ Sở
+                </span>
+                <span className="text-xs font-semibold text-slate-600">Trụ sở Hà Nội & Chi nhánh TP.HCM</span>
+              </div>
+              <h2 className="text-lg font-black text-slate-900 mt-1">
+                Chấm Công FaceID / Vân Tay & Duyệt Đơn Nghỉ Phép Trực Tuyến
+              </h2>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  handleCheckIn('FaceID', 'Sảnh Tòa Nhà Five Star (FaceID Camera)');
+                  showToast('✓ Chấm công FaceID sảnh văn phòng thành công!');
+                }}
+                className="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+              >
+                <Sparkles className="w-4 h-4" /> Chấm FaceID / Vân Tay Sảnh
+              </button>
+            </div>
+          </div>
+
+          {/* Today Attendance Log of Office */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-4">
+            <h3 className="text-sm font-black text-slate-900">
+              Nhật Ký Chấm Công Khối Văn Phòng Hôm Nay (Kết nối Máy ZKTeco / Hikvision)
+            </h3>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead>
+                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                    <th className="py-3 px-4">Nhân Viên</th>
+                    <th className="py-3 px-3">Phòng Ban</th>
+                    <th className="py-3 px-3">Phương Thức</th>
+                    <th className="py-3 px-3">Giờ Vào</th>
+                    <th className="py-3 px-3">Giờ Ra</th>
+                    <th className="py-3 px-3">Địa Điểm</th>
+                    <th className="py-3 px-4 text-center">Trạng Thái</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {todayAttendance.map((rec) => (
+                    <tr key={rec.id} className="hover:bg-slate-50">
+                      <td className="py-3 px-4 font-bold text-slate-900">{rec.employeeName}</td>
+                      <td className="py-3 px-3 text-slate-600">{currentUser.departmentName}</td>
+                      <td className="py-3 px-3">
+                        <span className="px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 font-bold border border-emerald-200 text-[11px]">
+                          {rec.checkInMethod}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 font-mono font-bold text-emerald-700">{rec.checkIn || '--:--'}</td>
+                      <td className="py-3 px-3 font-mono font-bold text-slate-700">{rec.checkOut || '--:--'}</td>
+                      <td className="py-3 px-3 text-slate-600">{rec.checkInLocation}</td>
+                      <td className="py-3 px-4 text-center">
+                        <span className="px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 text-[11px]">
+                          {rec.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TIER 4: PHÒNG HÀNH CHÍNH TỔNG HỢP (HCTH) */}
+      {/* ========================================================================= */}
+      {activeTierTab === 'PHONG_HCTH' && (
+        <div className="space-y-6">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-100 text-amber-700 flex items-center gap-1">
+                  <ClipboardCheck className="w-3.5 h-3.5" /> Giao diện Quản Trị Phòng HCTH (Admin)
+                </span>
+                <span className="text-xs font-semibold text-slate-600">Phòng Hành Chính Tổng Hợp & HR</span>
+              </div>
+              <h2 className="text-lg font-black text-slate-900 mt-1">
+                Trung Tâm Tổng Hợp Dữ Liệu Chấm Công VP & Các Nông Trường
+              </h2>
+            </div>
+
+            <button
+              onClick={() => {
+                showToast('✓ Đã khởi tạo Tờ trình tổng hợp công tháng chuyển Ban TGĐ phê duyệt!');
+              }}
+              className="px-4 py-2.5 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+            >
+              <FileText className="w-4 h-4" /> Lập Tờ Trình Chốt Công Tháng
+            </button>
+          </div>
+
+          {/* Plantation Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {plantations.map((plant) => (
+              <div key={plant.id} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="font-bold text-slate-900">{dev.name}</p>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800">
-                    {dev.status}
+                  <span className="font-bold text-[11px] px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-mono">
+                    {plant.code}
+                  </span>
+                  <span className="text-xs px-2 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-700">
+                    Đã nộp đủ công
                   </span>
                 </div>
-                <p className="text-slate-500">IP: {dev.ip}:{dev.port} • Model: {dev.type}</p>
-                <div className="pt-2 border-t border-slate-200 flex justify-between text-[11px]">
-                  <span className="text-slate-500">Số log đã tải:</span>
-                  <span className="font-bold text-orange-600">{dev.logs.toLocaleString()} logs</span>
+                <div>
+                  <h4 className="font-black text-slate-900 text-sm">{plant.name}</h4>
+                  <p className="text-xs text-slate-500 mt-0.5">GĐ: {plant.directorName}</p>
+                </div>
+                <div className="pt-2 border-t border-slate-100 text-xs space-y-1 text-slate-600">
+                  <div className="flex justify-between">
+                    <span>Tổng quân số:</span>
+                    <strong className="text-slate-900">{plant.workerCount} người</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Diện tích lô cạo:</span>
+                    <strong className="text-slate-900">{plant.totalHectares} ha</strong>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Số tổ hoạt động:</span>
+                    <strong className="text-slate-900">{plant.activeTeamsCount} tổ</strong>
+                  </div>
                 </div>
               </div>
             ))}
+          </div>
+
+          {/* Chốt công chuyển kế toán */}
+          <div className="p-5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-2xl border border-amber-300 flex items-center justify-between gap-4">
+            <div>
+              <h4 className="font-black text-amber-950 text-sm">Chốt Dữ Liệu Bảng Công Sang Kế Toán Tính Lương</h4>
+              <p className="text-xs text-amber-800 mt-0.5">
+                Đồng bộ số ngày công thực tế, sản lượng mủ và tiền thưởng vượt định mức sang Module Tiền Lương (Luật 109/2025/QH15).
+              </p>
+            </div>
+            <button
+              onClick={() => showToast('✓ Đã đồng bộ 100% dữ liệu công sang Module Tiền Lương!')}
+              className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs rounded-xl shadow-xs shrink-0"
+            >
+              Chốt & Chuyển Tính Lương
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TIER 5: BAN TỔNG GIÁM ĐỐC */}
+      {/* ========================================================================= */}
+      {activeTierTab === 'BAN_TGD' && (
+        <div className="space-y-6">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-xs flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-100 text-purple-700 flex items-center gap-1">
+                  <Award className="w-3.5 h-3.5" /> Giao diện Điều Hành Ban Tổng Giám Đốc (Executive)
+                </span>
+                <span className="text-xs font-semibold text-slate-600">Lê Việt Thắng (Tổng Giám Đốc)</span>
+              </div>
+              <h2 className="text-lg font-black text-slate-900 mt-1">
+                Dashboard Điều Hành Trực Quan & Phê Duyệt Tờ Trình Công 1-Click
+              </h2>
+            </div>
+          </div>
+
+          {/* 1-Click Executive Approval Card */}
+          {monthlySubmissions.map((sub) => (
+            <div
+              key={sub.id}
+              className="bg-gradient-to-r from-purple-900 via-slate-900 to-slate-950 text-white p-6 rounded-2xl shadow-xl border border-purple-800/50 space-y-4"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded bg-purple-500 text-white uppercase">
+                    Tờ trình số 08/2026/TTr-1HRM
+                  </span>
+                  <h3 className="text-lg font-black text-white mt-2">{sub.title}</h3>
+                  <p className="text-xs text-slate-300 mt-1">
+                    Người trình: <b>{sub.submittedBy}</b> | Ngày trình: {sub.submittedDate} | Tổng quân số đối soát:{' '}
+                    <b>{sub.totalEmployees} CBNV & Công nhân</b>
+                  </p>
+                </div>
+
+                <div>
+                  {sub.isApprovedByExecutive ? (
+                    <div className="bg-emerald-500/20 border border-emerald-500 px-4 py-2.5 rounded-xl text-center">
+                      <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5 justify-center">
+                        <CheckCircle2 className="w-5 h-5" /> ĐÃ PHÊ DUYỆT 1-CLICK
+                      </span>
+                      <p className="text-[10px] text-slate-300 mt-0.5">Duyệt bởi {sub.executiveApproverName}</p>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        approveMonthlySubmission(sub.id);
+                        showToast('✓ Tổng Giám Đốc đã phê duyệt Tờ trình tổng hợp công tháng 08/2026 thành công!');
+                      }}
+                      className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-black text-sm rounded-xl shadow-lg transition-all flex items-center gap-2"
+                    >
+                      <Sparkles className="w-5 h-5" /> Phê Duyệt Tờ Trình 1-Click
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Summary Table */}
+              <div className="bg-white/10 p-4 rounded-xl border border-white/10 backdrop-blur-xs overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="text-slate-300 border-b border-white/10 text-[11px] uppercase">
+                      <th className="py-2 px-3">Đơn Vị / Nông Trường</th>
+                      <th className="py-2 px-3 text-right">Quân Số Đi Làm</th>
+                      <th className="py-2 px-3 text-right">Ngày Công Bình Quân</th>
+                      <th className="py-2 px-3 text-right">Sản Lượng Mủ (Tấn)</th>
+                      <th className="py-2 px-3 text-center">Trạng Thái</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-white/5">
+                    {sub.plantationSummary.map((item, idx) => (
+                      <tr key={idx}>
+                        <td className="py-2.5 px-3 font-bold text-white">{item.plantationName}</td>
+                        <td className="py-2.5 px-3 text-right text-slate-200">{item.totalWorkers} người</td>
+                        <td className="py-2.5 px-3 text-right text-slate-200">{item.actualDaysAvg} ngày</td>
+                        <td className="py-2.5 px-3 text-right text-orange-400 font-bold">{item.totalLatexYieldTons} Tấn</td>
+                        <td className="py-2.5 px-3 text-center">
+                          <span className="text-[11px] px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
+                            {item.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Field Inspection Modal */}
+      {showInspectionModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden space-y-4">
+            <div className="p-5 bg-gradient-to-r from-blue-900 to-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Camera className="w-5 h-5 text-blue-400" />
+                <h3 className="font-bold text-base">Check-in Hiện Trường Kiểm Tra Lô Cạo</h3>
+              </div>
+              <button
+                onClick={() => setShowInspectionModal(false)}
+                className="text-slate-400 hover:text-white"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleInspectionSubmit} className="p-5 space-y-4 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Chọn Nông Trường</label>
+                <select
+                  value={inspectionPlantation}
+                  onChange={(e) => setInspectionPlantation(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-semibold text-slate-800"
+                >
+                  {plantations.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Vị Trí Lô Cạo Kiểm Tra</label>
+                <input
+                  type="text"
+                  value={inspectionLot}
+                  onChange={(e) => setInspectionLot(e.target.value)}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl font-semibold text-slate-800"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Định Vị GPS Thực Địa</label>
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2 text-blue-800 font-mono">
+                  <MapPin className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>11.4590° N, 106.8935° E (Độ chính xác: 3 mét)</span>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Ghi Chú Nghiệm Thu Mặt Cạo & BHLĐ</label>
+                <textarea
+                  value={inspectionNotes}
+                  onChange={(e) => setInspectionNotes(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-slate-300 rounded-xl text-slate-800"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setShowInspectionModal(false)}
+                  className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-xs"
+                >
+                  Lưu & Hoàn Tất Check-in
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

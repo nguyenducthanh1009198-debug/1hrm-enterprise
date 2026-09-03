@@ -17,6 +17,11 @@ import {
   Check,
   ExternalLink,
   Sparkles,
+  TreePine,
+  Tractor,
+  Building2,
+  ClipboardCheck,
+  Award
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
 import { UserRole } from '@/types';
@@ -47,44 +52,46 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
   const [notifications, setNotifications] = useState<NotificationItem[]>([
     {
       id: 'notif-1',
+      title: 'Tổ 1 Nông Trường 1 vừa nộp bảng công',
+      desc: 'Tổ trưởng Nguyễn Văn Lực đã chấm công 42 người và nộp 1.740kg mủ cao su',
+      time: '5 phút trước',
+      type: 'attendance',
+      isRead: false,
+      actionText: 'Duyệt công',
+    },
+    {
+      id: 'notif-2',
       title: 'Đơn xin nghỉ phép cần duyệt',
       desc: 'Trần Thị Huệ đã gửi đơn xin nghỉ phép năm 01 ngày (28/08)',
-      time: '10 phút trước',
+      time: '15 phút trước',
       type: 'leave',
       isRead: false,
       actionText: 'Duyệt ngay',
     },
     {
-      id: 'notif-2',
-      title: 'Chấm công GPS thành công',
-      desc: 'Check-in đúng giờ lúc 08:24 AM tại Trụ sở chính Five Star',
-      time: '1 giờ trước',
-      type: 'attendance',
-      isRead: false,
-    },
-    {
       id: 'notif-3',
-      title: 'Phiếu lương Tháng 08/2026 đã sẵn sàng',
-      desc: 'Bảng lương đã tính theo Luật Thuế TNCN số 109/2025/QH15 mới nhất',
-      time: '3 giờ trước',
-      type: 'salary',
+      title: 'Tờ trình tổng hợp công tháng 08/2026',
+      desc: 'Phòng HCTH đã lập tờ trình chuyển Ban Tổng Giám Đốc phê duyệt',
+      time: '1 giờ trước',
+      type: 'system',
       isRead: false,
-      actionText: 'Xem phiếu',
+      actionText: 'Xem tờ trình',
     },
     {
       id: 'notif-4',
-      title: 'Cập nhật tiến độ Mục tiêu OKR',
-      desc: 'Khối Kỹ thuật đã cập nhật tiến độ Key Result "Triển khai hệ thống HRM" lên 90%',
-      time: 'Hôm qua',
-      type: 'okr',
+      title: 'Phiếu lương Tháng 08/2026 đã sẵn sàng',
+      desc: 'Bảng lương đã tính theo Luật Thuế TNCN số 109/2025/QH15 mới nhất (Giảm trừ 15.5M)',
+      time: '3 giờ trước',
+      type: 'salary',
       isRead: true,
+      actionText: 'Xem phiếu',
     },
     {
       id: 'notif-5',
-      title: 'Hồ sơ ứng viên AI Match cao',
-      desc: 'Ứng viên Nguyễn Thị Mai Lan đạt 92% điểm phù hợp vị trí Senior React Lead',
-      time: '2 ngày trước',
-      type: 'system',
+      title: 'Cập nhật tiến độ Mục tiêu OKR Nông Trường',
+      desc: 'Sản lượng mủ thu hoạch toàn 3 nông trường đạt 92% kế hoạch Q3',
+      time: 'Hôm qua',
+      type: 'okr',
       isRead: true,
     },
   ]);
@@ -101,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
     );
   };
 
-  // Close notifications on outside click
+  // Close notifications dropdown on outside click
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
@@ -113,10 +120,41 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
   }, []);
 
   const roles: { role: UserRole; label: string; desc: string; icon: any; color: string }[] = [
-    { role: 'ADMIN', label: 'Lê Việt Thắng (CTO / Admin)', desc: 'Toàn quyền cấu hình & Quản trị', icon: Shield, color: 'text-purple-600 bg-purple-50' },
-    { role: 'HR_MANAGER', label: 'Phạm Thùy Linh (HRM)', desc: 'Quản lý Nhân sự, Xem lương & BHXH', icon: Briefcase, color: 'text-orange-600 bg-orange-50' },
-    { role: 'DEPARTMENT_LEAD', label: 'Trần Thị Huệ (Lead)', desc: 'Duyệt đơn, Đánh giá OKR nhóm', icon: User, color: 'text-blue-600 bg-blue-50' },
-    { role: 'EMPLOYEE', label: 'Nguyễn Thu Trang (Nhân viên)', desc: 'Self-service: Chấm công, Xem lương mình', icon: User, color: 'text-emerald-600 bg-emerald-50' },
+    {
+      role: 'ADMIN',
+      label: 'Lê Việt Thắng (Tổng Giám Đốc)',
+      desc: '5. Ban TGĐ: Dashboard điều hành & Duyệt 1-click',
+      icon: Award,
+      color: 'text-purple-600 bg-purple-50',
+    },
+    {
+      role: 'HR_MANAGER',
+      label: 'Phạm Thùy Linh (Trưởng Phòng HCTH)',
+      desc: '4. Phòng HCTH: Tổng hợp VP+NT & Chốt công tính lương',
+      icon: ClipboardCheck,
+      color: 'text-amber-600 bg-amber-50',
+    },
+    {
+      role: 'PLANTATION_DIRECTOR',
+      label: 'Nguyễn Văn Hùng (GĐ Nông Trường)',
+      desc: '2. BGĐ Nông Trường: Check-in lô cạo & Duyệt công tổ',
+      icon: Tractor,
+      color: 'text-blue-600 bg-blue-50',
+    },
+    {
+      role: 'TEAM_LEADER',
+      label: 'Nguyễn Văn Lực (Tổ Trưởng)',
+      desc: '1. Tổ Trưởng: Chấm công tổ 1-chạm & Giao nộp mủ (Offline)',
+      icon: TreePine,
+      color: 'text-orange-600 bg-orange-50',
+    },
+    {
+      role: 'DEPARTMENT_LEAD',
+      label: 'Trần Thị Huệ (Khối Văn Phòng)',
+      desc: '3. Khối Văn Phòng: FaceID/Vân tay & Duyệt đơn',
+      icon: Building2,
+      color: 'text-emerald-600 bg-emerald-50',
+    },
   ];
 
   const getNotifIcon = (type: NotificationItem['type']) => {
@@ -142,7 +180,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Tìm kiếm nhân sự (mã NV, họ tên, phòng ban), đơn từ, tài liệu..."
+            placeholder="Tìm kiếm nhân sự, lô cạo, tổ sản xuất, đơn từ..."
             className="w-full pl-9 pr-4 py-1.5 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
           />
         </div>
@@ -163,7 +201,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
 
         {/* Quick GPS Punch In button */}
         <button
-          onClick={() => handleCheckIn('Mobile GPS', 'Trụ sở chính 1Office - Five Star')}
+          onClick={() => handleCheckIn('Mobile GPS', 'Trụ sở chính 1HRM - Five Star')}
           className={`flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-lg transition-all shadow-xs cursor-pointer ${
             isCheckedInToday
               ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100'
@@ -181,9 +219,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
             <div className="text-left">
               <p className="text-[10px] text-slate-500 uppercase font-bold leading-none">Góc nhìn vai trò</p>
               <p className="text-xs font-semibold text-slate-800 leading-tight">
-                {currentRole === 'ADMIN' && 'Tổng Quản Trị (Admin)'}
-                {currentRole === 'HR_MANAGER' && 'Trưởng Phòng Nhân Sự (HRM)'}
-                {currentRole === 'DEPARTMENT_LEAD' && 'Quản Lý Bộ Phận (Lead)'}
+                {currentRole === 'ADMIN' && '5. Ban Tổng Giám Đốc'}
+                {currentRole === 'HR_MANAGER' && '4. Phòng HCTH (Admin)'}
+                {currentRole === 'PLANTATION_DIRECTOR' && '2. BGĐ Nông Trường'}
+                {currentRole === 'TEAM_LEADER' && '1. Tổ Trưởng Nông Trường'}
+                {currentRole === 'DEPARTMENT_LEAD' && '3. Khối Văn Phòng'}
                 {currentRole === 'EMPLOYEE' && 'Nhân Viên (Self-Service)'}
               </p>
             </div>
@@ -191,9 +231,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
           </div>
 
           {/* Dropdown Menu */}
-          <div className="absolute right-0 top-full mt-1 w-72 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-1 duration-150">
+          <div className="absolute right-0 top-full mt-1 w-80 bg-white rounded-xl shadow-xl border border-slate-200 py-1.5 hidden group-hover:block z-50 animate-in fade-in slide-in-from-top-1 duration-150">
             <div className="px-3 py-1.5 border-b border-slate-100 text-[11px] font-semibold text-slate-500">
-              CHỌN VAI TRÒ ĐỂ TRẢI NGHIỆM HỆ THỐNG
+              CHỌN VAI TRÒ CHẤM CÔNG THEO ẢNH
             </div>
             {roles.map((r) => {
               const isCurrent = currentRole === r.role;
@@ -220,101 +260,82 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenDownloadModal }) => {
           </div>
         </div>
 
-        {/* Interactive Notification Bell */}
+        {/* Notifications Dropdown */}
         <div className="relative" ref={notifRef}>
           <button
             onClick={() => setShowNotifications(!showNotifications)}
-            className="relative p-2 text-slate-600 hover:text-orange-600 hover:bg-orange-50 rounded-lg cursor-pointer transition-colors"
-            title="Thông báo hệ thống"
+            className="p-2 text-slate-500 hover:text-slate-700 hover:bg-slate-100 rounded-lg relative transition-all cursor-pointer"
+            title="Trung tâm thông báo"
           >
-            <Bell className="w-4 h-4" />
+            <Bell className="w-5 h-5" />
             {unreadCount > 0 && (
-              <span className="absolute top-1 right-1 w-4 h-4 bg-orange-600 text-white rounded-full text-[9px] font-bold flex items-center justify-center ring-2 ring-white animate-pulse">
+              <span className="absolute top-1 right-1 w-4 h-4 bg-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center animate-pulse">
                 {unreadCount}
               </span>
             )}
           </button>
 
-          {/* Notifications Dropdown Panel */}
+          {/* Notification Menu */}
           {showNotifications && (
-            <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-150">
-              
-              {/* Notif Header */}
-              <div className="p-3.5 bg-slate-50/90 border-b border-slate-200 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <h4 className="font-bold text-slate-900 text-xs">Thông Báo Hệ Thống</h4>
-                  {unreadCount > 0 && (
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100 text-orange-800">
-                      {unreadCount} mới
-                    </span>
-                  )}
+            <div className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 py-3 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+              <div className="px-4 pb-2.5 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                  <h3 className="font-bold text-sm text-slate-900">Thông Báo Hệ Thống</h3>
+                  <p className="text-[11px] text-slate-500 font-medium">
+                    Bạn có {unreadCount} thông báo chưa đọc
+                  </p>
                 </div>
                 {unreadCount > 0 && (
                   <button
                     onClick={markAllAsRead}
-                    className="text-[11px] font-semibold text-orange-600 hover:text-orange-700 cursor-pointer"
+                    className="text-xs font-semibold text-orange-600 hover:text-orange-700 hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    Đánh dấu đã đọc tất cả
+                    <Check className="w-3.5 h-3.5" /> Đọc tất cả
                   </button>
                 )}
               </div>
 
-              {/* Notif List */}
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100 text-xs">
-                {notifications.length === 0 ? (
-                  <div className="p-6 text-center text-slate-400">Không có thông báo mới</div>
-                ) : (
-                  notifications.map((n) => (
-                    <div
-                      key={n.id}
-                      onClick={() => markAsRead(n.id)}
-                      className={`p-3.5 flex items-start gap-3 transition-colors cursor-pointer hover:bg-slate-50/80 ${
-                        !n.isRead ? 'bg-orange-50/30' : ''
-                      }`}
-                    >
-                      <div className="p-2 bg-slate-100 rounded-xl shrink-0 mt-0.5">
-                        {getNotifIcon(n.type)}
-                      </div>
-                      <div className="flex-1 space-y-1">
-                        <div className="flex items-center justify-between">
-                          <p className={`font-bold ${!n.isRead ? 'text-slate-900' : 'text-slate-700'}`}>
-                            {n.title}
-                          </p>
-                          <span className="text-[10px] text-slate-400 shrink-0">{n.time}</span>
-                        </div>
-                        <p className="text-[11px] text-slate-500 leading-relaxed">{n.desc}</p>
-                        {n.actionText && (
-                          <span className="inline-block mt-1 text-[11px] font-bold text-orange-600 hover:underline">
-                            {n.actionText} &rarr;
-                          </span>
-                        )}
-                      </div>
-                      {!n.isRead && (
-                        <span className="w-2 h-2 rounded-full bg-orange-600 shrink-0 mt-2" />
-                      )}
+              {/* Notification List */}
+              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                {notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    onClick={() => markAsRead(n.id)}
+                    className={`p-3.5 flex items-start gap-3 hover:bg-slate-50 transition-colors cursor-pointer ${
+                      !n.isRead ? 'bg-orange-50/40' : ''
+                    }`}
+                  >
+                    <div className="p-2 bg-slate-100 rounded-xl shrink-0 mt-0.5">
+                      {getNotifIcon(n.type)}
                     </div>
-                  ))
-                )}
-              </div>
-
-              {/* Notif Footer */}
-              <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center text-[11px]">
-                <span className="text-slate-500">Tự động đồng bộ thời gian thực (Realtime)</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1">
+                        <p className={`text-xs font-bold truncate ${!n.isRead ? 'text-slate-900' : 'text-slate-700'}`}>
+                          {n.title}
+                        </p>
+                        <span className="text-[10px] text-slate-400 whitespace-nowrap">{n.time}</span>
+                      </div>
+                      <p className="text-[11px] text-slate-500 mt-0.5 leading-snug line-clamp-2">
+                        {n.desc}
+                      </p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           )}
         </div>
 
-        {/* User Avatar & Info */}
+        {/* User Avatar */}
         <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
           <img
             src={currentUser.avatar}
             alt={currentUser.fullName}
-            className="w-8 h-8 rounded-full object-cover ring-2 ring-orange-500/20"
+            className="w-8 h-8 rounded-full object-cover border border-slate-200 shadow-xs"
           />
-          <div className="hidden lg:block text-left">
-            <p className="text-xs font-bold text-slate-800 leading-tight">{currentUser.fullName}</p>
-            <p className="text-[11px] text-slate-500 leading-tight">{currentUser.positionTitle}</p>
+          <div className="hidden sm:block text-left">
+            <p className="text-xs font-bold text-slate-900 leading-none">{currentUser.fullName}</p>
+            <p className="text-[11px] text-slate-500 leading-tight mt-0.5">{currentUser.positionTitle}</p>
           </div>
         </div>
       </div>
