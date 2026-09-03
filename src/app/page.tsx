@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/layout/Sidebar';
 import { Navbar } from '@/components/layout/Navbar';
 import { HSNSModule } from '@/components/modules/HSNSModule';
@@ -13,10 +13,21 @@ import { DanhGiaAskModule } from '@/components/modules/DanhGiaAskModule';
 import { BaoHiemIvanModule } from '@/components/modules/BaoHiemIvanModule';
 import { DashboardModule } from '@/components/modules/DashboardModule';
 import { DownloadAppModal } from '@/components/layout/DownloadAppModal';
+import { useHRM } from '@/context/HRMContext';
 
 export default function HomePage() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const { currentRole } = useHRM();
+  const isExecutiveOrHR = ['ADMIN', 'EXECUTIVE_DIRECTOR', 'HR_MANAGER', 'HR_ADMIN'].includes(currentRole);
+
+  const [activeTab, setActiveTab] = useState<string>(isExecutiveOrHR ? 'dashboard' : 'cham-cong');
   const [showDownloadModal, setShowDownloadModal] = useState(false);
+
+  // Sync tab when role switches
+  useEffect(() => {
+    if (!isExecutiveOrHR && activeTab === 'dashboard') {
+      setActiveTab('cham-cong');
+    }
+  }, [currentRole, isExecutiveOrHR, activeTab]);
 
   return (
     <div className="flex h-screen bg-slate-100/70 overflow-hidden font-sans text-slate-900">
@@ -38,7 +49,7 @@ export default function HomePage() {
 
         <main className="flex-1 overflow-y-auto p-6 custom-scrollbar">
           <div className="max-w-7xl mx-auto space-y-6">
-            {activeTab === 'dashboard' && <DashboardModule />}
+            {activeTab === 'dashboard' && isExecutiveOrHR && <DashboardModule />}
             {activeTab === 'hsns' && <HSNSModule />}
             {activeTab === 'cham-cong' && <ChamCongModule />}
             {activeTab === 'don-tu' && <DonTuModule />}

@@ -16,6 +16,9 @@ import {
   Sparkles,
   Smartphone,
   Download,
+  TreePine,
+  UserCheck,
+  Briefcase
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
 
@@ -25,23 +28,60 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
-  const { requests, candidates, payslips } = useHRM();
+  const { requests, candidates, currentRole } = useHRM();
 
   const pendingRequestsCount = requests.filter((r) => r.status === 'PENDING').length;
   const interviewingCandidates = candidates.filter((c) => c.stage === 'INTERVIEW' || c.stage === 'OFFER').length;
 
-  const menuItems = [
-    { id: 'dashboard', name: 'Dashboard BI & Báo cáo', icon: BarChart3, badge: null, group: 'TỔNG QUAN' },
-    { id: 'download-app', name: 'Tải & Cài Đặt App', icon: Download, badge: 'QR/Link', group: 'TỔNG QUAN' },
-    { id: 'hsns', name: 'Hồ sơ nhân sự 360°', icon: Users, badge: null, group: 'QUẢN TRỊ NHÂN LỰC' },
-    { id: 'cham-cong', name: 'Chấm công & Phân ca', icon: CalendarCheck, badge: 'Realtime', group: 'QUẢN TRỊ NHÂN LỰC' },
-    { id: 'don-tu', name: 'Đơn từ & Workflow BPA', icon: FileText, badge: pendingRequestsCount > 0 ? pendingRequestsCount : null, group: 'QUẢN TRỊ NHÂN LỰC' },
-    { id: 'tien-luong', name: 'Tiền lương & Formula', icon: DollarSign, badge: 'Formula', group: 'C&B & LƯƠNG' },
-    { id: 'bhxh-ivan', name: '1-IVAN BHXH Điện tử', icon: ShieldCheck, badge: null, group: 'C&B & LƯƠNG' },
-    { id: 'tuyen-dung', name: 'Tuyển dụng ATS & AI', icon: UserPlus, badge: interviewingCandidates > 0 ? interviewingCandidates : null, group: 'PHÁT TRIỂN & HIỆU SUẤT' },
-    { id: 'kpi-okr', name: 'Mục tiêu OKR & KPI', icon: Target, badge: null, group: 'PHÁT TRIỂN & HIỆU SUẤT' },
-    { id: 'danh-gia-ask', name: 'Đánh giá ASK & Đào tạo', icon: Award, badge: 'Radar', group: 'PHÁT TRIỂN & HIỆU SUẤT' },
-  ];
+  const isExecutiveOrHR = ['ADMIN', 'EXECUTIVE_DIRECTOR', 'HR_MANAGER', 'HR_ADMIN'].includes(currentRole);
+  const isPlantationDirector = currentRole === 'PLANTATION_DIRECTOR';
+  const isTeamLeader = currentRole === 'TEAM_LEADER';
+  const isOfficeStaff = currentRole === 'OFFICE_STAFF' || currentRole === 'EMPLOYEE' || currentRole === 'DEPARTMENT_LEAD';
+
+  // Build menu items dynamically based on role
+  let menuItems: { id: string; name: string; icon: any; badge: any; group: string }[] = [];
+
+  if (isExecutiveOrHR) {
+    // BGĐ và HR: Quản trị bao quát toàn hệ thống (Có Dashboard BI)
+    menuItems = [
+      { id: 'dashboard', name: 'Dashboard BI & Báo Cáo', icon: BarChart3, badge: null, group: 'TỔNG QUAN' },
+      { id: 'download-app', name: 'Tải & Cài Đặt App', icon: Download, badge: 'Mobile', group: 'TỔNG QUAN' },
+      { id: 'hsns', name: 'Hồ Sơ Nhân Sự 360°', icon: Users, badge: null, group: 'QUẢN TRỊ NHÂN LỰC' },
+      { id: 'cham-cong', name: 'Chấm Công Toàn Hệ Thống', icon: CalendarCheck, badge: 'Bao Quát', group: 'QUẢN TRỊ NHÂN LỰC' },
+      { id: 'don-tu', name: 'Đơn Từ & Workflow BPA', icon: FileText, badge: pendingRequestsCount > 0 ? pendingRequestsCount : null, group: 'QUẢN TRỊ NHÂN LỰC' },
+      { id: 'tien-luong', name: 'Tiền Lương & Quỹ Lương', icon: DollarSign, badge: 'Formula', group: 'C&B & TIỀN LƯƠNG' },
+      { id: 'bhxh-ivan', name: '1-IVAN BHXH Điện Tử', icon: ShieldCheck, badge: null, group: 'C&B & TIỀN LƯƠNG' },
+      { id: 'tuyen-dung', name: 'Tuyển Dụng ATS & AI', icon: UserPlus, badge: interviewingCandidates > 0 ? interviewingCandidates : null, group: 'PHÁT TRIỂN & HIỆU SUẤT' },
+      { id: 'kpi-okr', name: 'Mục Tiêu OKR & KPI', icon: Target, badge: null, group: 'PHÁT TRIỂN & HIỆU SUẤT' },
+      { id: 'danh-gia-ask', name: 'Đánh Giá ASK & Đào Tạo', icon: Award, badge: 'Radar', group: 'PHÁT TRIỂN & HIỆU SUẤT' },
+    ];
+  } else if (isPlantationDirector) {
+    // Giám Đốc Nông Trường: Quản lý quân số các tổ, sản lượng mủ (Không cần Dashboard cồng kềnh)
+    menuItems = [
+      { id: 'cham-cong', name: 'Quân Số & Các Tổ Nông Trường', icon: TreePine, badge: 'NT1', group: 'ĐIỀU HÀNH NÔNG TRƯỜNG' },
+      { id: 'don-tu', name: 'Phê Duyệt Đơn Từ Tổ', icon: FileText, badge: pendingRequestsCount > 0 ? pendingRequestsCount : null, group: 'ĐIỀU HÀNH NÔNG TRƯỜNG' },
+      { id: 'hsns', name: 'Hồ Sơ CBNV Nông Trường', icon: Users, badge: null, group: 'ĐIỀU HÀNH NÔNG TRƯỜNG' },
+      { id: 'tien-luong', name: 'Quỹ Lương & Phiếu Lương', icon: DollarSign, badge: null, group: 'C&B' },
+      { id: 'download-app', name: 'Tải & Cài Đặt App', icon: Download, badge: 'Mobile', group: 'TIỆN ÍCH' },
+    ];
+  } else if (isTeamLeader) {
+    // Tổ Trưởng: Quản lý công nhân trong tổ, điểm danh, choàng lô, nhập mủ, xuất file 3 sheet
+    menuItems = [
+      { id: 'cham-cong', name: 'Chấm Công & Sản Lượng Tổ', icon: CalendarCheck, badge: '1-Chạm', group: 'TỔ KHAI THÁC MỦ' },
+      { id: 'don-tu', name: 'Đơn Từ & Xin Nghỉ Phép', icon: FileText, badge: null, group: 'TỔ KHAI THÁC MỦ' },
+      { id: 'tien-luong', name: 'Phiếu Lương Cá Nhân', icon: DollarSign, badge: null, group: 'THU NHẬP' },
+      { id: 'download-app', name: 'Tải App Mobile', icon: Download, badge: 'Mobile', group: 'TIỆN ÍCH' },
+    ];
+  } else {
+    // Khối Văn Phòng: Chấm công cá nhân, Đơn từ không dùng giấy, Theo dõi duyệt 3 bước, Tra cứu quỹ phép, Phiếu lương
+    menuItems = [
+      { id: 'cham-cong', name: 'Bảng Chấm Công Cá Nhân', icon: CalendarCheck, badge: 'Cá Nhân', group: 'KHỐI VĂN PHÒNG' },
+      { id: 'don-tu', name: 'Đơn Từ Điện Tử (Không Giấy)', icon: FileText, badge: 'Online', group: 'KHỐI VĂN PHÒNG' },
+      { id: 'tien-luong', name: 'Phiếu Lương & Thu Nhập', icon: DollarSign, badge: 'Luật 109', group: 'CÁ NHÂN' },
+      { id: 'kpi-okr', name: 'Mục Tiêu Cá Nhân (OKR)', icon: Target, badge: null, group: 'CÁ NHÂN' },
+      { id: 'download-app', name: 'Tải App Mobile', icon: Download, badge: 'Mobile', group: 'TIỆN ÍCH' },
+    ];
+  }
 
   // Group items
   const groups = Array.from(new Set(menuItems.map((item) => item.group)));
@@ -60,7 +100,15 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
               Enterprise
             </span>
           </div>
-          <p className="text-[11px] text-slate-400">Bộ công cụ Quản trị Nhân sự</p>
+          <p className="text-[11px] text-slate-400">
+            {isExecutiveOrHR
+              ? 'Quản trị Bao quát BGĐ & HR'
+              : isPlantationDirector
+              ? 'GĐ Nông Trường Quản lý'
+              : isTeamLeader
+              ? 'Tổ Trưởng Quản lý Công nhân'
+              : 'Giao diện Khối Văn Phòng'}
+          </p>
         </div>
       </div>
 
@@ -95,7 +143,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
                         className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ${
                           isActive
                             ? 'bg-white/20 text-white'
-                            : item.badge === 'Realtime'
+                            : item.badge === 'Realtime' || item.badge === 'Online'
                             ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
                             : 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
                         }`}
@@ -110,13 +158,21 @@ export const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => 
         ))}
       </div>
 
-      {/* Footer info */}
-      <div className="p-3 border-t border-slate-800/80 bg-slate-950/40 text-[11px] text-slate-400 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <Sparkles className="w-3.5 h-3.5 text-orange-400" />
-          <span>Formula Engine 2.0</span>
+      {/* Role Badge Indicator at Footer */}
+      <div className="p-3 border-t border-slate-800/80 bg-slate-950/40 text-[11px] text-slate-400 space-y-1">
+        <div className="flex items-center justify-between">
+          <span className="text-slate-400 text-[10px]">Góc nhìn hiện tại:</span>
+          <span className="text-orange-400 font-bold text-[10px] font-mono">{currentRole}</span>
         </div>
-        <span className="text-emerald-400 font-mono text-[10px] bg-emerald-950/60 px-1.5 py-0.5 rounded border border-emerald-800/50">Online</span>
+        <p className="text-[10px] text-slate-500 truncate">
+          {isExecutiveOrHR
+            ? '✓ Quyền hạn cao nhất toàn hệ thống'
+            : isPlantationDirector
+            ? '✓ Quản lý quân số các tổ nông trường'
+            : isTeamLeader
+            ? '✓ Quản lý công nhân & xuất 3 sheet'
+            : '✓ Chấm công cá nhân & đơn không giấy'}
+        </p>
       </div>
     </aside>
   );
