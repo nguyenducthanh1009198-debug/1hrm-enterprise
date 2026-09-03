@@ -23,30 +23,48 @@ import {
   FileText,
   Clock,
   Laptop,
+  AlertTriangle,
+  CheckCircle2,
+  FileSpreadsheet,
+  Upload,
+  Check,
+  X,
+  AlertCircle
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
 import { Employee, LaborContract, AdminDecision } from '@/types';
+import { exportSureHCS_NhanSuTongHop } from '@/lib/exportEngine';
 
 export const HSNSModule: React.FC = () => {
-  const { employees, departments, positions, addEmployee, currentRole } = useHRM();
+  const { employees, departments, positions, addEmployee, updateEmployee, toggleDocumentUpload, currentRole } = useHRM();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('ALL');
+  const [profileStatusFilter, setProfileStatusFilter] = useState<'ALL' | 'INCOMPLETE' | 'COMPLETE'>('ALL');
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
-  const [activeTab360, setActiveTab360] = useState<'profile' | 'contract' | 'performance' | 'assets' | 'decisions'>('profile');
+  const [activeTab360, setActiveTab360] = useState<'profile' | 'checklist' | 'contract' | 'performance' | 'assets'>('profile');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   // New employee form state
   const [newEmpForm, setNewEmpForm] = useState({
     fullName: '',
     email: '',
     phone: '',
+    idCard: '',
+    birthday: '1998-01-01',
+    gender: 'Nam' as 'Nam' | 'Nữ',
     departmentId: 'dept-2',
-    positionId: 'pos-4',
-    baseSalary: 20000000,
+    positionId: 'pos-5',
+    baseSalary: 15000000,
     address: 'Hà Nội',
-    joinDate: '2026-08-01',
+    joinDate: new Date().toISOString().split('T')[0],
     contractType: 'Có thời hạn 1 năm',
   });
+
+  const showToast = (msg: string) => {
+    setToastMsg(msg);
+    setTimeout(() => setToastMsg(null), 3500);
+  };
 
   const filteredEmployees = employees.filter((emp) => {
     const matchSearch =
@@ -54,7 +72,13 @@ export const HSNSModule: React.FC = () => {
       emp.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       emp.positionTitle.toLowerCase().includes(searchTerm.toLowerCase());
     const matchDept = selectedDept === 'ALL' || emp.departmentId === selectedDept;
-    return matchSearch && matchDept;
+    const matchProfile =
+      profileStatusFilter === 'ALL'
+        ? true
+        : profileStatusFilter === 'INCOMPLETE'
+        ? emp.isProfileComplete === false
+        : emp.isProfileComplete !== false;
+    return matchSearch && matchDept && matchProfile;
   });
 
   const handleCreateEmployee = (e: React.FormEvent) => {
@@ -66,565 +90,502 @@ export const HSNSModule: React.FC = () => {
       fullName: newEmpForm.fullName,
       email: newEmpForm.email,
       phone: newEmpForm.phone,
+      idCard: newEmpForm.idCard || '001098000000',
+      birthday: newEmpForm.birthday,
+      gender: newEmpForm.gender,
       departmentId: newEmpForm.departmentId,
-      departmentName: dept?.name || 'Khối Kỹ Thuật',
+      departmentName: dept?.name || 'Nông Trường 1 (Bình Phước)',
       positionId: newEmpForm.positionId,
-      positionTitle: pos?.title || 'Chuyên viên',
+      positionTitle: pos?.title || 'Công Nhân Cạo Mủ',
       baseSalary: Number(newEmpForm.baseSalary),
       address: newEmpForm.address,
       contractType: newEmpForm.contractType,
+      profileCompleteness: 60,
+      isProfileComplete: false,
+      missingDocuments: ['Bản sao CCCD 2 mặt', 'Giấy khám sức khỏe', 'Sổ BHXH'],
     });
 
     setShowAddModal(false);
-    setNewEmpForm({
-      fullName: '',
-      email: '',
-      phone: '',
-      departmentId: 'dept-2',
-      positionId: 'pos-4',
-      baseSalary: 20000000,
-      address: 'Hà Nội',
-      joinDate: '2026-08-01',
-      contractType: 'Có thời hạn 1 năm',
-    });
+    showToast('✓ Đã tiếp nhận nhân sự mới! Hệ thống tự động kích hoạt cảnh báo thiếu hồ sơ.');
   };
+
+  const handleExportSureHCS = () => {
+    exportSureHCS_NhanSuTongHop(employees);
+    showToast('✓ Đã xuất file Báo cáo Nhân sự Tổng hợp Excel chuẩn SureHCS thành công!');
+  };
+
+  const incompleteCount = employees.filter((e) => e.isProfileComplete === false).length;
 
   return (
     <div className="space-y-6">
+      {/* Toast Alert */}
+      {toastMsg && (
+        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-emerald-500 flex items-center gap-3 animate-bounce">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+          <span className="text-sm font-semibold">{toastMsg}</span>
+        </div>
+      )}
+
       {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-5 rounded-xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-slate-900">Hồ Sơ Nhân Sự (HSNS 360°)</h1>
+            <h1 className="text-xl font-bold text-slate-900">Hồ Sơ Nhân Sự (HSNS 360°) & Onboarding</h1>
             <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-orange-100 text-orange-700">
-              {employees.length} Nhân sự
+              {employees.length} Nhân Sự
             </span>
+            {incompleteCount > 0 && (
+              <span className="text-xs px-2.5 py-0.5 rounded-full font-bold bg-amber-100 text-amber-800 flex items-center gap-1">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> {incompleteCount} Hồ sơ cần bổ sung
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Số hóa & lưu trữ toàn bộ bức chân dung 360 độ nhân viên: Sơ yếu lý lịch, Hợp đồng, Ý thức, Năng suất, Tài sản & Khen thưởng
+            Quản lý hồ sơ số hóa toàn diện: Tự động fill thông tin Onboard từ tuyển dụng, theo dõi checklist tài liệu còn thiếu và xuất báo cáo chuẩn SureHCS.
           </p>
         </div>
 
-        <button
-          onClick={() => setShowAddModal(true)}
-          className="flex items-center gap-2 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg text-xs font-semibold shadow-md shadow-orange-600/20 transition-all cursor-pointer"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Thêm Nhân Sự Mới</span>
-        </button>
-      </div>
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Export Excel SureHCS Button */}
+          <button
+            onClick={handleExportSureHCS}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+          >
+            <FileSpreadsheet className="w-4 h-4" />
+            <span>Xuất Excel Nhân Sự (SureHCS)</span>
+          </button>
 
-      {/* Filters & Search */}
-      <div className="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
-        <div className="flex items-center gap-3 flex-1 min-w-[300px]">
-          <div className="relative flex-1">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Tìm theo họ tên, mã nhân viên, chức danh..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-slate-400" />
-            <select
-              value={selectedDept}
-              onChange={(e) => setSelectedDept(e.target.value)}
-              className="py-2 px-3 text-xs bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 text-slate-700 font-medium"
-            >
-              <option value="ALL">Tất cả phòng ban ({departments.length})</option>
-              {departments.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name}
-                </option>
-              ))}
-            </select>
-          </div>
+          <button
+            onClick={() => setShowAddModal(true)}
+            className="flex items-center gap-1.5 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold shadow-md shadow-orange-600/20 transition-all cursor-pointer"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Tiếp Nhận Nhân Sự Mới</span>
+          </button>
         </div>
       </div>
 
-      {/* Employees Grid / Table */}
-      <div className="bg-white rounded-xl border border-slate-200 shadow-xs overflow-hidden">
+      {/* Filter Bar */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2 w-full md:w-80">
+          <div className="relative w-full">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Tìm theo họ tên, mã NV, vị trí..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto">
+          <span className="font-bold text-slate-700 shrink-0">Bộ lọc hồ sơ:</span>
+          <button
+            onClick={() => setProfileStatusFilter('ALL')}
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all shrink-0 ${
+              profileStatusFilter === 'ALL'
+                ? 'bg-slate-900 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            Tất Cả ({employees.length})
+          </button>
+
+          <button
+            onClick={() => setProfileStatusFilter('INCOMPLETE')}
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all shrink-0 flex items-center gap-1.5 ${
+              profileStatusFilter === 'INCOMPLETE'
+                ? 'bg-amber-500 text-white shadow-xs'
+                : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+            }`}
+          >
+            <AlertTriangle className="w-3.5 h-3.5" /> Chưa Đủ Hồ Sơ ({incompleteCount})
+          </button>
+
+          <button
+            onClick={() => setProfileStatusFilter('COMPLETE')}
+            className={`px-3 py-1.5 rounded-lg font-bold transition-all shrink-0 ${
+              profileStatusFilter === 'COMPLETE'
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+            }`}
+          >
+            ✓ Đã Đầy Đủ ({employees.length - incompleteCount})
+          </button>
+        </div>
+      </div>
+
+      {/* Incomplete Profile Alert Callout */}
+      {incompleteCount > 0 && profileStatusFilter !== 'COMPLETE' && (
+        <div className="p-4 bg-amber-50 rounded-2xl border border-amber-300 text-xs text-amber-900 flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <h4 className="font-bold text-amber-950">
+              Cảnh Báo Quản Trị: Có {incompleteCount} nhân sự mới Onboard chưa nộp đủ giấy tờ theo quy định
+            </h4>
+            <p className="text-amber-800 leading-relaxed">
+              Các giấy tờ còn thiếu phổ biến gồm: <b>Bản sao CCCD công chứng, Giấy khám sức khỏe định kỳ & Sổ BHXH gốc</b>. Bấm vào chi tiết nhân viên để xem Checklist và cập nhật trạng thái khi nhân sự nộp bổ sung.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Employees Table */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-slate-50/80 text-slate-600 border-b border-slate-200 font-semibold uppercase tracking-wider text-[11px]">
-              <tr>
-                <th className="py-3.5 px-4">Nhân sự</th>
-                <th className="py-3.5 px-4">Mã NV</th>
-                <th className="py-3.5 px-4">Phòng ban</th>
-                <th className="py-3.5 px-4">Chức danh</th>
-                <th className="py-3.5 px-4">Lương cơ bản</th>
-                <th className="py-3.5 px-4">Hiệu suất</th>
-                <th className="py-3.5 px-4">Trạng thái</th>
-                <th className="py-3.5 px-4 text-right">Thao tác</th>
+            <thead>
+              <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                <th className="py-3 px-4">Nhân Sự</th>
+                <th className="py-3 px-3">Phòng Ban / Nông Trường</th>
+                <th className="py-3 px-3">Vị Trí Chức Danh</th>
+                <th className="py-3 px-3">Hợp Đồng / Vào Làm</th>
+                <th className="py-3 px-4 text-center">Tiến Độ Hồ Sơ</th>
+                <th className="py-3 px-4">Cảnh Báo Giấy Tờ Thiếu</th>
+                <th className="py-3 px-4 text-center">Chi Tiết</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
-              {filteredEmployees.map((emp) => (
-                <tr
-                  key={emp.id}
-                  onClick={() => setSelectedEmployee(emp)}
-                  className="hover:bg-orange-50/40 cursor-pointer transition-colors"
-                >
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-3">
-                      <img
-                        src={emp.avatar}
-                        alt={emp.fullName}
-                        className="w-9 h-9 rounded-full object-cover ring-2 ring-slate-100"
-                      />
-                      <div>
-                        <p className="font-bold text-slate-900 text-xs">{emp.fullName}</p>
-                        <p className="text-[11px] text-slate-500 flex items-center gap-1">
-                          <Mail className="w-3 h-3" />
-                          {emp.email}
-                        </p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="py-3.5 px-4 font-mono font-semibold text-slate-700">{emp.code}</td>
-                  <td className="py-3.5 px-4 text-slate-700">{emp.departmentName}</td>
-                  <td className="py-3.5 px-4">
-                    <span className="px-2 py-0.5 rounded-md bg-slate-100 text-slate-800 font-medium">
-                      {emp.positionTitle}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 font-semibold text-slate-900">
-                    {currentRole === 'HR_MANAGER' ? (
-                      <span>{emp.baseSalary.toLocaleString('vi-VN')} đ</span>
-                    ) : (
-                      <span className="text-slate-400 font-mono flex items-center gap-1 text-[11px]" title="Chỉ HR mới xem được lương">
-                        <Lock className="w-3 h-3 text-slate-400" />
-                        <span>****** đ</span>
-                      </span>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <div className="flex items-center gap-2">
-                      <div className="w-16 bg-slate-100 rounded-full h-2 overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${
-                            emp.workEfficiency >= 100
-                              ? 'bg-emerald-500'
-                              : emp.workEfficiency >= 90
-                              ? 'bg-blue-500'
-                              : 'bg-amber-500'
-                          }`}
-                          style={{ width: `${Math.min(100, emp.workEfficiency)}%` }}
+            <tbody className="divide-y divide-slate-200">
+              {filteredEmployees.map((emp) => {
+                const completeness = emp.profileCompleteness || 100;
+                const isComplete = emp.isProfileComplete !== false;
+
+                return (
+                  <tr key={emp.id} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4">
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={emp.avatar}
+                          alt=""
+                          className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-xs"
                         />
+                        <div>
+                          <p className="font-bold text-slate-900 text-sm">{emp.fullName}</p>
+                          <p className="text-[10px] text-slate-500 font-mono">{emp.code} • {emp.phone}</p>
+                        </div>
                       </div>
-                      <span className="font-bold text-slate-700">{emp.workEfficiency}%</span>
-                    </div>
-                  </td>
-                  <td className="py-3.5 px-4">
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      {emp.status}
-                    </span>
-                  </td>
-                  <td className="py-3.5 px-4 text-right">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedEmployee(emp);
-                      }}
-                      className="p-1.5 hover:bg-orange-100 rounded-lg text-orange-600 transition-colors inline-flex items-center gap-1 font-semibold"
-                    >
-                      <Eye className="w-3.5 h-3.5" />
-                      <span>Xem 360°</span>
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                    </td>
+
+                    <td className="py-3 px-3 font-semibold text-slate-700">{emp.departmentName}</td>
+                    <td className="py-3 px-3 text-slate-900 font-medium">{emp.positionTitle}</td>
+
+                    <td className="py-3 px-3">
+                      <p className="font-semibold text-slate-800">{emp.contractType}</p>
+                      <p className="text-[10px] text-slate-400 font-mono">Ngày vào: {emp.joinDate}</p>
+                    </td>
+
+                    <td className="py-3 px-4 text-center">
+                      <div className="inline-flex flex-col items-center gap-1 w-24">
+                        <div className="flex justify-between w-full text-[10px] font-bold">
+                          <span className={isComplete ? 'text-emerald-700' : 'text-amber-700'}>
+                            {completeness}%
+                          </span>
+                          <span className="text-slate-400">{isComplete ? 'Đủ' : 'Thiếu'}</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all ${
+                              isComplete ? 'bg-emerald-500' : 'bg-amber-500'
+                            }`}
+                            style={{ width: `${completeness}%` }}
+                          />
+                        </div>
+                      </div>
+                    </td>
+
+                    <td className="py-3 px-4">
+                      {isComplete ? (
+                        <span className="px-2.5 py-0.5 rounded-full font-bold bg-emerald-100 text-emerald-800 text-[11px] inline-flex items-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Hồ sơ hợp lệ 100%
+                        </span>
+                      ) : (
+                        <div className="space-y-0.5">
+                          <span className="px-2 py-0.5 rounded font-bold bg-amber-100 text-amber-900 text-[10px] inline-flex items-center gap-1 border border-amber-200">
+                            <AlertTriangle className="w-3 h-3 text-amber-600" /> Chưa đủ giấy tờ
+                          </span>
+                          <p className="text-[10px] text-slate-500 italic truncate max-w-xs">
+                            Thiếu: {emp.missingDocuments?.join(', ')}
+                          </p>
+                        </div>
+                      )}
+                    </td>
+
+                    <td className="py-3 px-4 text-center">
+                      <button
+                        onClick={() => setSelectedEmployee(emp)}
+                        className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-orange-50 text-slate-700 hover:text-orange-600 font-bold text-xs transition-all"
+                      >
+                        Xem 360°
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
       </div>
 
-      {/* 360 Profile Modal */}
+      {/* 360° Profile Modal with Checklist */}
       {selectedEmployee && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200 overflow-hidden">
-            {/* Modal Header with 360 Banner */}
-            <div className="p-6 bg-gradient-to-r from-slate-900 to-slate-800 text-white relative">
-              <button
-                onClick={() => setSelectedEmployee(null)}
-                className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg bg-white/10 hover:bg-white/20 transition-colors"
-              >
-                ✕
-              </button>
-              <div className="flex items-start gap-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden space-y-4 max-h-[85vh] flex flex-col">
+            <div className="p-5 bg-gradient-to-r from-slate-950 to-orange-950 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-3">
                 <img
                   src={selectedEmployee.avatar}
-                  alt={selectedEmployee.fullName}
-                  className="w-16 h-16 rounded-2xl object-cover ring-4 ring-orange-500/40 shadow-lg"
+                  alt=""
+                  className="w-12 h-12 rounded-full object-cover border-2 border-orange-500 shadow-md"
                 />
                 <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-bold text-white">{selectedEmployee.fullName}</h2>
-                    <span className="px-2 py-0.5 text-[11px] font-semibold rounded-md bg-orange-500 text-white">
-                      {selectedEmployee.code}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-300 mt-0.5">
-                    {selectedEmployee.positionTitle} • {selectedEmployee.departmentName}
+                  <h3 className="font-black text-base">{selectedEmployee.fullName}</h3>
+                  <p className="text-xs text-slate-300 font-mono">
+                    {selectedEmployee.code} • {selectedEmployee.positionTitle} - {selectedEmployee.departmentName}
                   </p>
-                  <div className="flex flex-wrap items-center gap-4 mt-2 text-xs text-slate-300">
-                    <span className="flex items-center gap-1">
-                      <Mail className="w-3.5 h-3.5 text-orange-400" />
-                      {selectedEmployee.email}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Phone className="w-3.5 h-3.5 text-orange-400" />
-                      {selectedEmployee.phone}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5 text-orange-400" />
-                      Gia nhập: {selectedEmployee.joinDate}
-                    </span>
-                  </div>
                 </div>
               </div>
-
-              {/* 360 Tabs */}
-              <div className="flex items-center gap-2 mt-6 border-t border-slate-700/60 pt-4 overflow-x-auto text-xs">
-                {[
-                  { id: 'profile', label: 'Sơ yếu lý lịch & Liên hệ', icon: Users },
-                  { id: 'contract', label: 'Hợp đồng & Ký số', icon: FileBadge },
-                  { id: 'performance', label: 'Ý thức & Năng suất', icon: UserCheck },
-                  { id: 'assets', label: 'Tài sản & Công nợ', icon: Laptop },
-                  { id: 'decisions', label: 'Quyết định hành chính', icon: Award },
-                ].map((t) => {
-                  const Icon = t.icon;
-                  const isActive = activeTab360 === t.id;
-                  return (
-                    <button
-                      key={t.id}
-                      onClick={() => setActiveTab360(t.id as any)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all whitespace-nowrap ${
-                        isActive
-                          ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30'
-                          : 'text-slate-300 hover:bg-slate-700 hover:text-white'
-                      }`}
-                    >
-                      <Icon className="w-3.5 h-3.5" />
-                      <span>{t.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <button onClick={() => setSelectedEmployee(null)} className="text-slate-400 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            {/* Modal Body */}
-            <div className="p-6 overflow-y-auto max-h-[calc(90vh-220px)] space-y-6">
-              {activeTab360 === 'profile' && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs">
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <h3 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider border-b border-slate-200 pb-2">
-                      Thông tin cá nhân & Pháp lý
-                    </h3>
-                    <div className="grid grid-cols-2 gap-2 text-slate-600">
-                      <span className="text-slate-500">Giới tính:</span>
-                      <span className="font-semibold text-slate-800">{selectedEmployee.gender}</span>
-                      <span className="text-slate-500">Ngày sinh:</span>
-                      <span className="font-semibold text-slate-800">{selectedEmployee.birthday}</span>
-                      <span className="text-slate-500">CCCD/Hộ chiếu:</span>
-                      <span className="font-semibold text-slate-800">{selectedEmployee.idCard}</span>
-                      <span className="text-slate-500">Mã số thuế:</span>
-                      <span className="font-semibold text-slate-800">{selectedEmployee.taxCode}</span>
-                      <span className="text-slate-500">Mã số BHXH:</span>
-                      <span className="font-semibold text-slate-800">{selectedEmployee.socialInsuranceCode}</span>
-                      <span className="text-slate-500">Địa chỉ thường trú:</span>
-                      <span className="font-semibold text-slate-800">{selectedEmployee.address}</span>
-                    </div>
-                  </div>
+            {/* Sub-tabs */}
+            <div className="px-5 flex gap-2 border-b border-slate-100 shrink-0">
+              <button
+                onClick={() => setActiveTab360('profile')}
+                className={`pb-2.5 font-bold text-xs border-b-2 transition-all ${
+                  activeTab360 === 'profile'
+                    ? 'border-orange-500 text-orange-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                1. Thông Tin Lý Lịch
+              </button>
 
-                  <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                    <h3 className="font-bold text-slate-800 uppercase text-[11px] tracking-wider border-b border-slate-200 pb-2">
-                      Tài khoản Ngân hàng & Chi lương
-                    </h3>
-                    <div className="grid grid-cols-2 gap-2 text-slate-600">
-                      <span className="text-slate-500">Ngân hàng:</span>
-                      <span className="font-semibold text-slate-800">{selectedEmployee.bankName}</span>
-                      <span className="text-slate-500">Số tài khoản:</span>
-                      <span className="font-mono font-bold text-orange-600">{selectedEmployee.bankAccount}</span>
-                      <span className="text-slate-500">Chi nhánh:</span>
-                      <span className="font-semibold text-slate-800">{selectedEmployee.bankBranch}</span>
-                      <span className="text-slate-500">Lương cơ bản:</span>
-                      {currentRole === 'HR_MANAGER' ? (
-                        <span className="font-bold text-slate-900">{selectedEmployee.baseSalary.toLocaleString('vi-VN')} đ</span>
-                      ) : (
-                        <span className="font-mono text-slate-400 flex items-center gap-1 text-xs">
-                          <Lock className="w-3 h-3 text-slate-400" />
-                          <span>****** đ (Chỉ HR)</span>
-                        </span>
-                      )}
-                      <span className="text-slate-500">Phụ cấp cố định:</span>
-                      {currentRole === 'HR_MANAGER' ? (
-                        <span className="font-semibold text-slate-800">{selectedEmployee.allowance.toLocaleString('vi-VN')} đ</span>
-                      ) : (
-                        <span className="font-mono text-slate-400 flex items-center gap-1 text-xs">
-                          <Lock className="w-3 h-3 text-slate-400" />
-                          <span>****** đ (Chỉ HR)</span>
-                        </span>
-                      )}
-                    </div>
+              <button
+                onClick={() => setActiveTab360('checklist')}
+                className={`pb-2.5 font-bold text-xs border-b-2 transition-all flex items-center gap-1.5 ${
+                  activeTab360 === 'checklist'
+                    ? 'border-orange-500 text-orange-600'
+                    : 'border-transparent text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                2. Checklist Hồ Sơ Onboard
+                {selectedEmployee.isProfileComplete === false && (
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+                )}
+              </button>
+            </div>
+
+            <div className="p-5 overflow-y-auto space-y-4 text-xs">
+              {activeTab360 === 'profile' && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <p className="text-slate-400 font-semibold text-[10px]">Email & Số Điện Thoại</p>
+                    <p className="font-bold text-slate-900">{selectedEmployee.email}</p>
+                    <p className="font-mono text-slate-700">{selectedEmployee.phone}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <p className="text-slate-400 font-semibold text-[10px]">Số CCCD & Ngày Cấp</p>
+                    <p className="font-mono font-bold text-slate-900">{selectedEmployee.idCard}</p>
+                    <p className="text-slate-600">{selectedEmployee.idCardPlace}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <p className="text-slate-400 font-semibold text-[10px]">Địa Chỉ Thường Trú</p>
+                    <p className="font-bold text-slate-900">{selectedEmployee.address}</p>
+                  </div>
+                  <div className="p-3 bg-slate-50 rounded-xl space-y-1">
+                    <p className="text-slate-400 font-semibold text-[10px]">Tài Khoản Ngân Hàng</p>
+                    <p className="font-bold text-slate-900">{selectedEmployee.bankName}</p>
+                    <p className="font-mono text-slate-700">{selectedEmployee.bankAccount}</p>
                   </div>
                 </div>
               )}
 
-              {activeTab360 === 'contract' && (
+              {activeTab360 === 'checklist' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="font-bold text-slate-900 text-sm">Danh sách Hợp đồng Lao động</h3>
-                    <span className="text-xs px-2.5 py-1 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200">
-                      Hợp đồng hiệu lực
+                  <div className="p-3.5 bg-gradient-to-r from-orange-500/10 to-amber-500/10 rounded-xl border border-orange-200 flex items-center justify-between">
+                    <div>
+                      <p className="font-bold text-orange-950 text-sm">Tiến Độ Hoàn Tất Hồ Sơ Nhân Viên</p>
+                      <p className="text-xs text-orange-800">
+                        {selectedEmployee.isProfileComplete !== false
+                          ? '✓ Nhân sự đã nộp đầy đủ 100% hồ sơ giấy tờ gốc'
+                          : `⚠️ Chưa hoàn thiện: Còn thiếu ${selectedEmployee.missingDocuments?.length} loại giấy tờ`}
+                      </p>
+                    </div>
+                    <span className="text-xl font-black text-orange-600 font-mono">
+                      {selectedEmployee.profileCompleteness || 100}%
                     </span>
                   </div>
 
-                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 space-y-3">
-                    <div className="flex items-center justify-between border-b border-slate-200 pb-2">
-                      <div>
-                        <p className="font-bold text-slate-800 text-xs">HỢP ĐỒNG LAO ĐỘNG SỐ HĐ-2023/1HRM</p>
-                        <p className="text-[11px] text-slate-500">Loại: {selectedEmployee.contractType}</p>
-                      </div>
-                      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-blue-50 text-blue-700 text-[11px] font-bold border border-blue-200">
-                        <ShieldCheck className="w-3.5 h-3.5" />
-                        <span>Đã ký số (Viettel CA)</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
-                      <div>
-                        <span className="text-slate-500">Ngày bắt đầu:</span>
-                        <p className="font-semibold text-slate-800">{selectedEmployee.joinDate}</p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500">Lương đóng BHXH:</span>
-                        {currentRole === 'HR_MANAGER' ? (
-                          <p className="font-semibold text-slate-800">{selectedEmployee.baseSalary.toLocaleString('vi-VN')} đ</p>
-                        ) : (
-                          <p className="font-mono text-slate-400 flex items-center gap-1 text-xs">
-                            <Lock className="w-3 h-3 text-slate-400" />
-                            <span>****** đ (Chỉ HR)</span>
-                          </p>
-                        )}
-                      </div>
-                      <div>
-                        <span className="text-slate-500">Người ký đại diện:</span>
-                        <p className="font-semibold text-slate-800">Nguyễn Đức Minh (CEO)</p>
-                      </div>
-                      <div>
-                        <span className="text-slate-500">Tình trạng:</span>
-                        <p className="font-semibold text-emerald-600">Đang lưu trữ điện tử</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab360 === 'performance' && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-                  <div className="bg-orange-50/60 p-4 rounded-xl border border-orange-200 text-center">
-                    <p className="text-slate-600 font-medium">Hiệu suất công việc</p>
-                    <p className="text-2xl font-black text-orange-600 mt-1">{selectedEmployee.workEfficiency}%</p>
-                    <p className="text-[11px] text-slate-500 mt-1">Đạt chỉ tiêu đề ra</p>
-                  </div>
-                  <div className="bg-emerald-50/60 p-4 rounded-xl border border-emerald-200 text-center">
-                    <p className="text-slate-600 font-medium">Ý thức làm việc</p>
-                    <p className="text-2xl font-black text-emerald-600 mt-1">{selectedEmployee.lateTimes} lần</p>
-                    <p className="text-[11px] text-slate-500 mt-1">Đi muộn trong tháng</p>
-                  </div>
-                  <div className="bg-blue-50/60 p-4 rounded-xl border border-blue-200 text-center">
-                    <p className="text-slate-600 font-medium">Số ngày phép còn lại</p>
-                    <p className="text-2xl font-black text-blue-600 mt-1">{selectedEmployee.leaveDaysRemaining} / {selectedEmployee.totalLeaveDays}</p>
-                    <p className="text-[11px] text-slate-500 mt-1">Ngày phép năm</p>
-                  </div>
-                </div>
-              )}
-
-              {activeTab360 === 'assets' && (
-                <div className="space-y-3">
-                  <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Tài sản đang sử dụng</h3>
-                  {selectedEmployee.assets.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {selectedEmployee.assets.map((ast) => (
-                        <div key={ast.id} className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
-                          <div>
-                            <p className="font-bold text-slate-800">{ast.name}</p>
-                            <p className="text-[11px] text-slate-500 font-mono">Mã: {ast.code} • Cấp: {ast.assignedDate}</p>
+                  <div className="space-y-2">
+                    {[
+                      'Bản sao CCCD 2 mặt (Công chứng)',
+                      'Giấy khám sức khỏe định kỳ (Dưới 6 tháng)',
+                      'Bản sao Bằng cấp chuyên môn',
+                      'Sổ Bảo Hiểm Xã Hội gốc',
+                    ].map((docName) => {
+                      const isMissing = selectedEmployee.missingDocuments?.includes(docName);
+                      return (
+                        <div
+                          key={docName}
+                          onClick={() => {
+                            toggleDocumentUpload(selectedEmployee.id, docName);
+                            showToast(`✓ Đã cập nhật trạng thái giấy tờ "${docName}"!`);
+                          }}
+                          className={`p-3 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                            isMissing
+                              ? 'bg-amber-50/60 border-amber-300 hover:bg-amber-100/70'
+                              : 'bg-emerald-50/60 border-emerald-300 hover:bg-emerald-100/70'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span
+                              className={`w-5 h-5 rounded-md flex items-center justify-center font-bold text-xs ${
+                                isMissing ? 'bg-amber-200 text-amber-800' : 'bg-emerald-600 text-white'
+                              }`}
+                            >
+                              {isMissing ? '!' : '✓'}
+                            </span>
+                            <div>
+                              <p className={`font-bold ${isMissing ? 'text-amber-950' : 'text-emerald-950'}`}>
+                                {docName}
+                              </p>
+                              <p className="text-[10px] text-slate-500">
+                                {isMissing ? 'Chưa nộp (Bấm để đánh dấu đã nhận)' : 'Đã tiếp nhận hợp lệ'}
+                              </p>
+                            </div>
                           </div>
-                          <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-emerald-100 text-emerald-800">
-                            {ast.status}
+
+                          <span
+                            className={`px-2.5 py-1 rounded-lg font-bold text-[11px] ${
+                              isMissing
+                                ? 'bg-amber-200/80 text-amber-900'
+                                : 'bg-emerald-200/80 text-emerald-900'
+                            }`}
+                          >
+                            {isMissing ? 'Cần bổ sung' : 'Đã nộp'}
                           </span>
                         </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 italic">Chưa bàn giao tài sản thiết bị</p>
-                  )}
+                      );
+                    })}
+                  </div>
                 </div>
               )}
-
-              {activeTab360 === 'decisions' && (
-                <div className="space-y-3">
-                  <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">Quyết định Hành chính & Khen thưởng</h3>
-                  {selectedEmployee.decisions.length > 0 ? (
-                    <div className="space-y-2">
-                      {selectedEmployee.decisions.map((dec) => (
-                        <div key={dec.id} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-xs flex items-center justify-between">
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="font-bold text-slate-900">{dec.code}</span>
-                              <span className="px-2 py-0.5 rounded bg-orange-100 text-orange-800 font-bold text-[10px]">
-                                {dec.type}
-                              </span>
-                            </div>
-                            <p className="text-slate-600 mt-1">{dec.reason}</p>
-                            <p className="text-[11px] text-slate-400 mt-0.5">Hiệu lực: {dec.effectiveDate} • Người ban hành: {dec.issuedBy}</p>
-                          </div>
-                          {dec.amount && (
-                            <span className="font-bold text-emerald-600 text-sm">
-                              +{dec.amount.toLocaleString('vi-VN')} đ
-                            </span>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400 italic">Chưa có quyết định hành chính nào</p>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Modal Footer */}
-            <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-2">
-              <button
-                onClick={() => setSelectedEmployee(null)}
-                className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg text-xs font-semibold transition-colors"
-              >
-                Đóng
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Add Employee Modal */}
+      {/* New Employee Modal */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h2 className="text-base font-bold text-slate-900">Thêm Nhân Sự Mới</h2>
-              <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-slate-600">✕</button>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
+          <div className="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden space-y-4">
+            <div className="p-5 bg-gradient-to-r from-orange-600 to-amber-600 text-white flex items-center justify-between">
+              <div>
+                <h3 className="font-bold text-base">Tiếp Nhận Nhân Sự Mới (Onboarding)</h3>
+                <p className="text-xs text-orange-100">Hệ thống sẽ tự động gán mã và kích hoạt checklist hồ sơ</p>
+              </div>
+              <button onClick={() => setShowAddModal(false)} className="text-white/80 hover:text-white">
+                <X className="w-5 h-5" />
+              </button>
             </div>
 
-            <form onSubmit={handleCreateEmployee} className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">Họ và tên *</label>
-                <input
-                  type="text"
-                  required
-                  value={newEmpForm.fullName}
-                  onChange={(e) => setNewEmpForm({ ...newEmpForm, fullName: e.target.value })}
-                  placeholder="Nguyễn Văn A"
-                  className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
-                />
+            <form onSubmit={handleCreateEmployee} className="p-5 space-y-4 text-xs">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Họ Và Tên</label>
+                  <input
+                    type="text"
+                    placeholder="Ví dụ: Nguyễn Văn An"
+                    value={newEmpForm.fullName}
+                    onChange={(e) => setNewEmpForm({ ...newEmpForm, fullName: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl font-semibold"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Số CCCD / CMND</label>
+                  <input
+                    type="text"
+                    placeholder="12 số CCCD"
+                    value={newEmpForm.idCard}
+                    onChange={(e) => setNewEmpForm({ ...newEmpForm, idCard: e.target.value })}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Email công ty *</label>
+                  <label className="font-bold text-slate-700 block mb-1">Email</label>
                   <input
                     type="email"
-                    required
                     value={newEmpForm.email}
                     onChange={(e) => setNewEmpForm({ ...newEmpForm, email: e.target.value })}
-                    placeholder="a.nguyen@1hrm.vn"
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl"
+                    required
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Số điện thoại *</label>
+                  <label className="font-bold text-slate-700 block mb-1">Số Điện Thoại</label>
                   <input
-                    type="tel"
-                    required
+                    type="text"
                     value={newEmpForm.phone}
                     onChange={(e) => setNewEmpForm({ ...newEmpForm, phone: e.target.value })}
-                    placeholder="0988..."
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono"
+                    required
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Phòng ban</label>
+                  <label className="font-bold text-slate-700 block mb-1">Phòng Ban / Nông Trường</label>
                   <select
                     value={newEmpForm.departmentId}
                     onChange={(e) => setNewEmpForm({ ...newEmpForm, departmentId: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl font-semibold text-slate-800"
                   >
                     {departments.map((d) => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Chức danh</label>
-                  <select
-                    value={newEmpForm.positionId}
-                    onChange={(e) => setNewEmpForm({ ...newEmpForm, positionId: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
-                  >
-                    {positions.map((p) => (
-                      <option key={p.id} value={p.id}>{p.title}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Lương cơ bản (VND)</label>
+                  <label className="font-bold text-slate-700 block mb-1">Mức Lương Cơ Bản (VNĐ)</label>
                   <input
                     type="number"
                     value={newEmpForm.baseSalary}
                     onChange={(e) => setNewEmpForm({ ...newEmpForm, baseSalary: Number(e.target.value) })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-900"
+                    required
                   />
                 </div>
-                <div>
-                  <label className="block font-semibold text-slate-700 mb-1">Loại hợp đồng</label>
-                  <select
-                    value={newEmpForm.contractType}
-                    onChange={(e) => setNewEmpForm({ ...newEmpForm, contractType: e.target.value })}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg"
-                  >
-                    <option value="Thử việc 2 tháng">Thử việc 2 tháng</option>
-                    <option value="Có thời hạn 1 năm">Có thời hạn 1 năm</option>
-                    <option value="Có thời hạn 3 năm">Có thời hạn 3 năm</option>
-                    <option value="Không xác định thời hạn">Không xác định thời hạn</option>
-                  </select>
-                </div>
+              </div>
+
+              <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-[11px] flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                <span>Nhân sự mới sẽ được kích hoạt cảnh báo thiếu hồ sơ cho tới khi nộp đủ CCCD, Giấy KSK và Sổ BHXH.</span>
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg font-semibold"
+                  className="px-4 py-2 bg-slate-100 text-slate-700 font-bold rounded-xl"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-lg font-semibold"
+                  className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-xs"
                 >
-                  Lưu Nhân Sự
+                  Xác Nhận Onboard
                 </button>
               </div>
             </form>

@@ -1,15 +1,15 @@
-// 1HRM Data Types & Interfaces
+// 1HRM Data Types & Interfaces - SureHCS Analytics
 
 export type UserRole =
   | 'ADMIN'
   | 'HR_MANAGER'
   | 'DEPARTMENT_LEAD'
   | 'EMPLOYEE'
-  | 'TEAM_LEADER'            // Tổ Trưởng Nông Trường (Chấm công tổ 1-chạm, giao mủ)
-  | 'PLANTATION_DIRECTOR'    // Cán bộ cấp trên / BGĐ Nông trường (Check-in hiện trường, duyệt tổ)
-  | 'OFFICE_STAFF'           // Khối Văn phòng (FaceID, duyệt phép)
-  | 'HR_ADMIN'               // Phòng HCTH (Tổng hợp VP + Nông trường, chốt công)
-  | 'EXECUTIVE_DIRECTOR';    // Ban Tổng Giám Đốc (Dashboard điều hành, duyệt tờ trình 1-click)
+  | 'TEAM_LEADER'            // Tổ Trưởng Nông Trường
+  | 'PLANTATION_DIRECTOR'    // Cán bộ cấp trên / BGĐ Nông trường
+  | 'OFFICE_STAFF'           // Khối Văn phòng
+  | 'HR_ADMIN'               // Phòng HCTH
+  | 'EXECUTIVE_DIRECTOR';    // Ban Tổng Giám Đốc
 
 export interface Department {
   id: string;
@@ -75,6 +75,14 @@ export interface Employee {
   age?: number;
   education?: 'Đại học' | 'Cao đẳng' | 'Trung cấp' | 'Phổ thông / Sơ cấp' | 'Thạc sĩ / Sau ĐH';
   seniorityYears?: number;
+
+  // Onboarding & Profile Completeness Checklist
+  profileCompleteness?: number; // 0 - 100%
+  isProfileComplete?: boolean;
+  missingDocuments?: string[]; // e.g. ['Ảnh CCCD 2 mặt', 'Bằng cấp', 'Giấy KSK', 'Sổ BHXH']
+  emergencyContact?: string;
+  emergencyPhone?: string;
+
   assets: {
     id: string;
     name: string;
@@ -131,12 +139,66 @@ export interface WorkShift {
   id: string;
   name: string;
   code: string;
-  startTime: string; // 08:30 or 04:30 (ca cạo mủ sáng sớm)
-  endTime: string;   // 17:30 or 11:30
+  startTime: string;
+  endTime: string;
   lunchBreakStart?: string;
   lunchBreakEnd?: string;
   standardHours: number;
   type: 'Hành chính' | 'Ca cạo mủ sáng' | 'Ca gác vườn' | 'Ca nhà máy chế biến';
+}
+
+// -------------------------------------------------------------
+// CÁC LOẠI ĐƠN TỪ PHÁT SINH (SUREHCS STANDARD)
+// -------------------------------------------------------------
+
+export type RequestType =
+  | 'DI_MUON'            // Đi muộn (số phút muộn, lý do)
+  | 'VE_SOM'             // Về sớm (số phút về sớm, lý do)
+  | 'CON_OM'             // Con ốm (theo Luật BHXH, đính kèm giấy C65)
+  | 'OM_DAU'             // Bản thân ốm đau (giấy viện)
+  | 'PHEP_NAM'           // Nghỉ phép năm
+  | 'NGHI_KHONG_LUONG'   // Nghỉ việc riêng không lương
+  | 'THAI_SAN'           // Chế độ thai sản / khám thai / dưỡng sức
+  | 'CONG_TAC'           // Đi công tác / kiểm tra nông trường
+  | 'LAM_THEM_GIO'       // Làm thêm giờ (OT ca đêm / ngày lễ)
+  | 'CHOANG_LO'          // Choàng lô cạo thay
+  | 'GIAI_TRINH_CONG'    // Giải trình quên chấm công / lỗi máy
+  | 'LEAVE'              // Backward compatibility
+  | 'ABSENCE'
+  | 'OVERTIME'
+  | 'CHECKIN_OUT'
+  | 'BUSINESS_TRIP'
+  | 'SPECIAL_REGIME'
+  | 'SHIFT_CHANGE'
+  | 'RESIGNATION';
+
+export interface HRMRequest {
+  id: string;
+  code: string;
+  employeeId: string;
+  employeeName: string;
+  employeeAvatar: string;
+  departmentName: string;
+  type: RequestType;
+  typeName: string;
+  startDate: string;
+  endDate?: string;
+  durationDays: number;
+  durationHours?: number;
+  lateMinutes?: number;
+  earlyMinutes?: number;
+  childName?: string;
+  childAge?: number;
+  hospitalCertCode?: string;
+  tripDestination?: string;
+  overtimeHours?: number;
+  specificDetails?: string;
+  attachmentFileName?: string;
+  reason: string;
+  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  approverName?: string;
+  approvalComment?: string;
+  createdAt: string;
 }
 
 // -------------------------------------------------------------
@@ -145,26 +207,26 @@ export interface WorkShift {
 
 export interface PlantationUnit {
   id: string;
-  name: string; // Nông trường 1, Nông trường 2, Nông trường 3, Khối Văn phòng Công ty
+  name: string;
   code: string;
   location: string;
   directorName: string;
-  totalHectares: number; // Tổng diện tích lô cạo (ha)
+  totalHectares: number;
   workerCount: number;
   activeTeamsCount: number;
 }
 
 export interface ProductionTeam {
   id: string;
-  name: string; // Tổ 1, Tổ 2, Tổ 3...
+  name: string;
   code: string;
   plantationId: string;
   plantationName: string;
   leaderId: string;
   leaderName: string;
-  lotAssigned: string; // Lô A1-A5, Lô B1-B8...
-  lotAreaHectares: number; // 45.5 ha
-  memberCount: number; // Max 50 người
+  lotAssigned: string;
+  lotAreaHectares: number;
+  memberCount: number;
 }
 
 export type WorkerAttendanceStatus = 'DU' | 'NGHI_PHEP' | 'NGHI_KHONG_PHEP' | 'CHOANG_LO';
@@ -176,10 +238,10 @@ export interface TeamWorkerAttendanceItem {
   avatar: string;
   lotAssigned: string;
   status: WorkerAttendanceStatus;
-  coveredForWorkerName?: string; // Tên người được choàng lô
-  latexYieldKg?: number;         // Sản lượng mủ nước (kg)
-  cupLumpYieldKg?: number;       // Sản lượng mủ đông / mủ chén (kg)
-  tscDegree?: number;            // Độ khô cao su TSC (%)
+  coveredForWorkerName?: string;
+  latexYieldKg?: number;
+  cupLumpYieldKg?: number;
+  tscDegree?: number;
   note?: string;
 }
 
@@ -215,9 +277,9 @@ export interface FieldInspectionCheckIn {
   plantationId: string;
   plantationName: string;
   lotChecked: string;
-  gpsCoordinates: string; // e.g. "11.4582° N, 106.8921° E"
+  gpsCoordinates: string;
   distanceMeters: number;
-  photoUrl: string; // Ảnh chụp hiện trường lô cạo
+  photoUrl: string;
   notes: string;
   timestamp: string;
   approvedTeamsCount: number;
@@ -225,9 +287,9 @@ export interface FieldInspectionCheckIn {
 
 export interface MonthlyAttendanceSubmission {
   id: string;
-  month: string; // 08/2026
+  month: string;
   title: string;
-  submittedBy: string; // Phòng HCTH
+  submittedBy: string;
   submittedDate: string;
   totalEmployees: number;
   totalWorkdays: number;
@@ -242,10 +304,6 @@ export interface MonthlyAttendanceSubmission {
   executiveApproverName?: string;
   approvedAt?: string;
 }
-
-// -------------------------------------------------------------
-// GENERAL HRM DATA MODELS
-// -------------------------------------------------------------
 
 export interface AttendanceRecord {
   id: string;
@@ -264,38 +322,9 @@ export interface AttendanceRecord {
   gpsDistanceMeters?: number;
 }
 
-export type RequestType =
-  | 'LEAVE'
-  | 'ABSENCE'
-  | 'OVERTIME'
-  | 'CHECKIN_OUT'
-  | 'BUSINESS_TRIP'
-  | 'SPECIAL_REGIME'
-  | 'SHIFT_CHANGE'
-  | 'RESIGNATION';
-
-export interface HRMRequest {
-  id: string;
-  code: string;
-  employeeId: string;
-  employeeName: string;
-  employeeAvatar: string;
-  departmentName: string;
-  type: RequestType;
-  typeName: string;
-  startDate: string;
-  endDate?: string;
-  durationDays: number;
-  reason: string;
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
-  approverName?: string;
-  approvalComment?: string;
-  createdAt: string;
-}
-
 export interface Payslip {
   id: string;
-  month: string; // 08/2026
+  month: string;
   employeeId: string;
   employeeCode: string;
   employeeName: string;
@@ -332,10 +361,14 @@ export interface Candidate {
   departmentName: string;
   experienceYears: number;
   expectedSalary: number;
-  stage: 'APPLIED' | 'SCREENING' | 'INTERVIEW' | 'OFFER' | 'HIRED' | 'REJECTED';
+  stage: 'APPLIED' | 'SCREENING' | 'INTERVIEW' | 'OFFER' | 'HIRED' | 'REJECTED' | 'CV_NEW';
   aiMatchScore: number;
   source: string;
   appliedDate: string;
+  idCard?: string;
+  birthday?: string;
+  address?: string;
+  gender?: 'Nam' | 'Nữ' | 'Khác';
 }
 
 export interface RecruitmentPlan {
@@ -360,8 +393,8 @@ export interface OKRObjective {
   title: string;
   ownerName: string;
   departmentName?: string;
-  quarter: string; // Q3/2026
-  progress: number; // 0 - 100%
+  quarter: string;
+  progress: number;
   status: 'On track' | 'At risk' | 'Behind' | 'Completed';
   keyResults: OKRKeyResult[];
 }
@@ -372,16 +405,9 @@ export interface OKRKeyResult {
   title: string;
   targetValue: number;
   currentValue: number;
-  unit: string; // %, VND, hợp đồng, ứng viên
+  unit: string;
   progress: number;
-  weight: number; // 0 - 100%
-}
-
-export interface ASKCompetency {
-  category: 'Thái độ (Attitude)' | 'Kỹ năng (Skill)' | 'Kiến thức (Knowledge)';
-  criteria: string;
-  requiredScore: number; // thang 5
-  evaluatedScore: number; // thang 5
+  weight: number;
 }
 
 export interface ASKEvaluation {
@@ -389,11 +415,11 @@ export interface ASKEvaluation {
   employeeId: string;
   employeeName: string;
   positionTitle: string;
-  period: string; // 2026 - Kỳ 1
+  period: string;
   evaluatorName: string;
   averageScore: number;
   grade: 'A - Xuất sắc' | 'B - Tốt' | 'C - Đạt' | 'D - Cần cải thiện';
-  items: ASKCompetency[];
+  items: any[];
   strengths: string;
   improvements: string;
 }
@@ -414,10 +440,6 @@ export interface IVANRecord {
   responseNote?: string;
 }
 
-// -------------------------------------------------------------
-// 5 BỘ BÁO CÁO BI ANALYTICS MODEL
-// -------------------------------------------------------------
-
 export interface TrainingCourse {
   id: string;
   code: string;
@@ -431,8 +453,8 @@ export interface TrainingCourse {
   totalCost: number;
   costPerParticipant: number;
   trainerName: string;
-  feedbackScore: number; // e.g. 4.8 / 5.0
-  examPassRate: number;  // e.g. 96%
+  feedbackScore: number;
+  examPassRate: number;
   applicationLevel: 'Rất cao (90-100%)' | 'Cao (80-89%)' | 'Khá (70-79%)' | 'Trung bình';
   status: 'Đã hoàn thành' | 'Đang triển khai' | 'Dự kiến';
 }
@@ -444,7 +466,7 @@ export interface ComplianceViolation {
   employeeName: string;
   departmentOrPlantation: string;
   violationDate: string;
-  type: 'Đi làm trễ > 15p' | 'Nghỉ không phép' | 'Không đội mũ BHLĐ' | 'Vi phạm kỹ thuật cạo mủ' | 'Chấm công hộ';
-  disciplineForm: 'Nhắc nhở nội bộ' | 'Khiển trách bằng văn bản' | 'Trừ điểm chuyên cần' | 'Kỷ luật kéo dài nâng lương';
+  type: string;
+  disciplineForm: string;
   status: 'Đã xử lý' | 'Đang giải trình';
 }

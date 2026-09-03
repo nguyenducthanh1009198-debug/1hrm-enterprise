@@ -40,10 +40,6 @@ export const MOCK_POSITIONS: Position[] = [
   { id: 'pos-7', code: 'ACC_CHIEF', title: 'Kế Toán Trưởng', departmentId: 'dept-7', level: 'Manager', baseSalaryMin: 25000000, baseSalaryMax: 45000000 },
 ];
 
-// -------------------------------------------------------------
-// NÔNG TRƯỜNG & TỔ SẢN XUẤT MOCK DATA
-// -------------------------------------------------------------
-
 export const MOCK_PLANTATIONS: PlantationUnit[] = [
   {
     id: 'plant-1',
@@ -112,29 +108,6 @@ export const MOCK_PRODUCTION_TEAMS: ProductionTeam[] = [
     lotAreaHectares: 52.0,
     memberCount: 40,
   },
-  {
-    id: 'team-3',
-    name: 'Tổ Khai Thác 3 - Nông Trường 2',
-    code: 'TO-03-NT2',
-    plantationId: 'plant-2',
-    plantationName: 'Nông Trường 2 (Bình Dương)',
-    leaderId: 'emp-tt-3',
-    leaderName: 'Trần Hữu Thắng (Tổ Trưởng)',
-    lotAssigned: 'Lô C1 - Lô C6 (Cây 8 năm)',
-    lotAreaHectares: 44.0,
-    memberCount: 38,
-  },
-];
-
-export const MOCK_WORKERS_TEAM_1 = [
-  { id: 'w-1', code: 'CN-0101', name: 'Trần Văn Mạnh', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=120&auto=format&fit=crop&q=80', lot: 'Lô A1', yieldKg: 42.5, tsc: 34.2 },
-  { id: 'w-2', code: 'CN-0102', name: 'Lê Thị Mai', avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=120&auto=format&fit=crop&q=80', lot: 'Lô A1', yieldKg: 45.0, tsc: 35.1 },
-  { id: 'w-3', code: 'CN-0103', name: 'Hoàng Văn Phúc', avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=120&auto=format&fit=crop&q=80', lot: 'Lô A2', yieldKg: 38.0, tsc: 33.8 },
-  { id: 'w-4', code: 'CN-0104', name: 'Nguyễn Thị Tuyết', avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=120&auto=format&fit=crop&q=80', lot: 'Lô A2', yieldKg: 44.2, tsc: 34.5 },
-  { id: 'w-5', code: 'CN-0105', name: 'Phạm Đình Dũng', avatar: 'https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?w=120&auto=format&fit=crop&q=80', lot: 'Lô A3', yieldKg: 41.0, tsc: 34.0 },
-  { id: 'w-6', code: 'CN-0106', name: 'Bùi Thị Hà', avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=120&auto=format&fit=crop&q=80', lot: 'Lô A3', yieldKg: 43.5, tsc: 35.0 },
-  { id: 'w-7', code: 'CN-0107', name: 'Đỗ Văn Cường', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=120&auto=format&fit=crop&q=80', lot: 'Lô A4', yieldKg: 39.8, tsc: 33.5 },
-  { id: 'w-8', code: 'CN-0108', name: 'Vũ Thị Ngọc', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=120&auto=format&fit=crop&q=80', lot: 'Lô A4', yieldKg: 46.2, tsc: 35.4 },
 ];
 
 export const MOCK_TEAM_ATTENDANCE_BATCHES: TeamAttendanceBatch[] = [
@@ -169,27 +142,6 @@ export const MOCK_TEAM_ATTENDANCE_BATCHES: TeamAttendanceBatch[] = [
       { workerId: 'w-7', workerCode: 'CN-0107', workerName: 'Đỗ Văn Cường', avatar: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=120&auto=format&fit=crop&q=80', lotAssigned: 'Lô A4', status: 'DU', latexYieldKg: 39.8, cupLumpYieldKg: 6.0, tscDegree: 33.5 },
       { workerId: 'w-8', workerCode: 'CN-0108', workerName: 'Vũ Thị Ngọc', avatar: 'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=120&auto=format&fit=crop&q=80', lotAssigned: 'Lô A4', status: 'DU', latexYieldKg: 46.2, cupLumpYieldKg: 7.2, tscDegree: 35.4 },
     ]
-  },
-  {
-    id: 'batch-002',
-    date: '02/09/2026',
-    teamId: 'team-2',
-    teamName: 'Tổ Khai Thác 2 - Nông Trường 1',
-    plantationId: 'plant-1',
-    plantationName: 'Nông Trường 1 (Bình Phước)',
-    leaderId: 'emp-tt-2',
-    leaderName: 'Lê Văn Thành (Tổ Trưởng)',
-    totalMembers: 40,
-    presentCount: 39,
-    leaveCount: 1,
-    absentCount: 0,
-    coveredCount: 0,
-    totalLotAreaHectares: 52.0,
-    totalLatexYieldKg: 1680.0,
-    avgTscDegree: 34.8,
-    isOfflineSync: true,
-    status: 'PENDING_SUPERVISOR',
-    items: [],
   }
 ];
 
@@ -202,27 +154,12 @@ export const MOCK_FIELD_INSPECTIONS: FieldInspectionCheckIn[] = [
     plantationId: 'plant-1',
     plantationName: 'Nông Trường 1 (Bình Phước)',
     lotChecked: 'Lô A1 - A5 (Tổ 1 & Tổ 2)',
-    gpsCoordinates: '11.4582° N, 106.8921° E (Độ chính xác: 4m)',
+    gpsCoordinates: '11.4582° N, 106.8921° E',
     distanceMeters: 18,
     photoUrl: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=400&auto=format&fit=crop&q=80',
     notes: 'Kiểm tra đường cạo đúng độ sâu dăm, mủ chảy đều, công nhân trang bị đầy đủ BHLĐ.',
     timestamp: '07:35 AM',
     approvedTeamsCount: 2,
-  },
-  {
-    id: 'insp-2',
-    date: '01/09/2026',
-    supervisorId: 'emp-gdnt-1',
-    supervisorName: 'Nguyễn Văn Hùng (GĐ Nông Trường 1)',
-    plantationId: 'plant-1',
-    plantationName: 'Nông Trường 1 (Bình Phước)',
-    lotChecked: 'Lô B3 - B6 (Tổ 3)',
-    gpsCoordinates: '11.4610° N, 106.8950° E',
-    distanceMeters: 25,
-    photoUrl: 'https://images.unsplash.com/photo-1605000797499-95a51c5269ae?w=400&auto=format&fit=crop&q=80',
-    notes: 'Đã hoàn tất nghiệm thu sản lượng mủ giao nộp trạm thu mua số 2.',
-    timestamp: '11:15 AM',
-    approvedTeamsCount: 3,
   }
 ];
 
@@ -248,210 +185,7 @@ export const MOCK_MONTHLY_SUBMISSIONS: MonthlyAttendanceSubmission[] = [
 ];
 
 // -------------------------------------------------------------
-// 5 BỘ BÁO CÁO BI ANALYTICS MOCK DATA
-// -------------------------------------------------------------
-
-// 1. Báo cáo Tổng quan nhân sự & Cơ cấu
-export const MOCK_HR_GENERAL_DATA = {
-  totalHeadcount: 1018,
-  totalPlantations: 3,
-  retentionRate: 94.8,
-  turnoverRate: 5.2,
-  byDepartment: [
-    { name: 'Nông Trường 1 (Bình Phước)', count: 320, ratio: '31.4%', color: '#ea580c' },
-    { name: 'Nông Trường 3 (Tây Ninh)', count: 380, ratio: '37.3%', color: '#3b82f6' },
-    { name: 'Nông Trường 2 (Bình Dương)', count: 240, ratio: '23.6%', color: '#10b981' },
-    { name: 'Khối Văn Phòng & Kỹ Thuật', count: 45, ratio: '4.4%', color: '#8b5cf6' },
-    { name: 'Phòng HCTH & Tài Chính', count: 33, ratio: '3.3%', color: '#f59e0b' },
-  ],
-  byAge: [
-    { range: '18 - 25 tuổi', count: 185, percent: 18.2, color: '#38bdf8' },
-    { range: '26 - 35 tuổi', count: 462, percent: 45.4, color: '#ea580c' },
-    { range: '36 - 45 tuổi', count: 265, percent: 26.0, color: '#10b981' },
-    { range: 'Trên 45 tuổi', count: 106, percent: 10.4, color: '#a855f7' },
-  ],
-  byGender: [
-    { gender: 'Nam', count: 642, percent: 63.1, color: '#2563eb' },
-    { gender: 'Nữ', count: 376, percent: 36.9, color: '#ec4899' },
-  ],
-  byEducation: [
-    { level: 'Đại học & Thạc sĩ', count: 98, percent: 9.6, color: '#6366f1' },
-    { level: 'Cao đẳng / Trung cấp', count: 184, percent: 18.1, color: '#14b8a6' },
-    { level: 'Công nhân kỹ thuật / Sơ cấp', count: 520, percent: 51.1, color: '#f97316' },
-    { level: 'Lao động phổ thông', count: 216, percent: 21.2, color: '#64748b' },
-  ],
-  bySeniority: [
-    { tier: 'Dưới 1 năm', count: 112, percent: 11.0 },
-    { tier: '1 - 3 năm', count: 320, percent: 31.4 },
-    { tier: '3 - 5 năm', count: 384, percent: 37.7 },
-    { tier: 'Trên 5 năm', count: 202, percent: 19.9 },
-  ],
-  fluctuations: {
-    newHires: 42,
-    resigned: 18,
-    transferred: 14,
-    promoted: 9,
-  },
-  aiForecast: {
-    trend: 'Tăng trưởng ổn định',
-    expectedHiresQ4: 65,
-    riskPlantations: 'Nông trường 2 cần bổ sung 15 công nhân cạo mủ trước mùa thu hoạch cao điểm Q4',
-  }
-};
-
-// 2. Báo cáo Đào tạo nhân sự
-export const MOCK_TRAINING_COURSES: TrainingCourse[] = [
-  {
-    id: 'tc-1',
-    code: 'DT-CAO-01',
-    title: 'Kỹ Thuật Cạo Mủ Cao Su Chuẩn Quốc Tế & Bảo Vệ Mặt Cạo',
-    topic: 'Kỹ thuật khai thác mủ nông trường',
-    method: 'Hiện trường nông trường',
-    durationHours: 32,
-    startDate: '10/08/2026',
-    endDate: '15/08/2026',
-    participantsCount: 145,
-    totalCost: 72500000,
-    costPerParticipant: 500000,
-    trainerName: 'Chuyên gia Nông Nghiệp ThS. Đỗ Văn Lâm',
-    feedbackScore: 4.9,
-    examPassRate: 98,
-    applicationLevel: 'Rất cao (90-100%)',
-    status: 'Đã hoàn thành',
-  },
-  {
-    id: 'tc-2',
-    code: 'DT-ATLD-02',
-    title: 'An Toàn Vệ Sinh Lao Động & Phòng Chống Cháy Vườn',
-    topic: 'An toàn lao động & PCCC',
-    method: 'Trực tiếp tại hội trường',
-    durationHours: 16,
-    startDate: '18/08/2026',
-    endDate: '20/08/2026',
-    participantsCount: 210,
-    totalCost: 63000000,
-    costPerParticipant: 300000,
-    trainerName: 'Cục An Toàn Lao Động',
-    feedbackScore: 4.7,
-    examPassRate: 100,
-    applicationLevel: 'Rất cao (90-100%)',
-    status: 'Đã hoàn thành',
-  },
-  {
-    id: 'tc-3',
-    code: 'DT-DIGITAL-03',
-    title: 'Ứng Dụng 1HRM Mobile Chấm Công & Quản Lý Lô Cạo Cho Tổ Trưởng',
-    topic: 'Chuyển đổi số nông nghiệp',
-    method: 'Hiện trường nông trường',
-    durationHours: 12,
-    startDate: '24/08/2026',
-    endDate: '26/08/2026',
-    participantsCount: 48,
-    totalCost: 24000000,
-    costPerParticipant: 500000,
-    trainerName: 'Ban Dự Án Chuyển Đổi Số 1HRM',
-    feedbackScore: 4.9,
-    examPassRate: 96,
-    applicationLevel: 'Rất cao (90-100%)',
-    status: 'Đã hoàn thành',
-  },
-  {
-    id: 'tc-4',
-    code: 'DT-LEAD-04',
-    title: 'Kỹ Năng Quản Lý & Điều Hành Đội Ngũ Nông Trường 4.0',
-    topic: 'Kỹ năng quản trị lãnh đạo',
-    method: 'E-learning Trực tuyến',
-    durationHours: 24,
-    startDate: '01/09/2026',
-    endDate: '10/09/2026',
-    participantsCount: 35,
-    totalCost: 52500000,
-    costPerParticipant: 1500000,
-    trainerName: 'Học Viện Quản Trị Doanh Nghiệp',
-    feedbackScore: 4.8,
-    examPassRate: 94,
-    applicationLevel: 'Cao (80-89%)',
-    status: 'Đang triển khai',
-  },
-];
-
-// 3. Báo cáo Hiệu quả tuyển dụng
-export const MOCK_RECRUITMENT_REPORT_DATA = {
-  totalTarget: 85,
-  totalHired: 72,
-  hiringRate: 84.7,
-  avgTimeToHireDays: 14,
-  totalBudgetSpent: 128500000,
-  costPerHiredCandidate: 1784722,
-  byDepartmentNeeds: [
-    { dept: 'Nông Trường 1', target: 30, hired: 28, rate: '93.3%', progress: 93 },
-    { dept: 'Nông Trường 3', target: 35, hired: 30, rate: '85.7%', progress: 85 },
-    { dept: 'Nông Trường 2', target: 15, hired: 10, rate: '66.7%', progress: 67 },
-    { dept: 'Khối Văn Phòng & HR', target: 5, hired: 4, rate: '80.0%', progress: 80 },
-  ],
-  candidateSources: [
-    { source: 'Giới thiệu nội bộ & Nông trường', count: 184, hired: 42, percent: 58.3 },
-    { source: 'Ngày hội tuyển dụng địa phương', count: 96, hired: 18, percent: 25.0 },
-    { source: 'Mạng xã hội & Zalo tuyển dụng', count: 68, hired: 8, percent: 11.1 },
-    { source: 'Website & Cổng tuyển dụng 1HRM', count: 42, hired: 4, percent: 5.6 },
-  ],
-  conversionFunnel: [
-    { stage: '1. Tiếp nhận hồ sơ (Applied)', count: 390, dropRate: '0%' },
-    { stage: '2. Sơ loại tay nghề & Khám SK', count: 245, dropRate: '37.2%' },
-    { stage: '3. Phỏng vấn & Thử tay nghề', count: 128, dropRate: '47.7%' },
-    { stage: '4. Thử việc tại nông trường', count: 86, dropRate: '32.8%' },
-    { stage: '5. Ký hợp đồng chính thức', count: 72, dropRate: '16.3%' },
-  ]
-};
-
-// 4. Báo cáo Thu nhập nhân sự & Quỹ lương
-export const MOCK_INCOME_PAYROLL_DATA = {
-  totalPayrollMonth: 12850000000, // 12.85 tỷ VND
-  avgIncomePerWorker: 12620000,
-  growthComparedToLastMonth: 4.8,
-  structure: [
-    { name: 'Lương cơ bản & Công nhật', amount: 7200000000, percent: 56.0, color: '#3b82f6' },
-    { name: 'Thưởng sản lượng mủ cao su', amount: 3450000000, percent: 26.8, color: '#ea580c' },
-    { name: 'Phụ cấp nặng nhọc & Ăn trưa', amount: 1450000000, percent: 11.3, color: '#10b981' },
-    { name: 'Thưởng chuyên cần & KPI', amount: 750000000, percent: 5.9, color: '#8b5cf6' },
-  ],
-  byPlantationComparison: [
-    { name: 'Nông Trường 1 (Bình Phước)', workers: 320, payroll: 4160000000, avgIncome: 13000000, latexTons: 485.2 },
-    { name: 'Nông Trường 3 (Tây Ninh)', workers: 380, payroll: 4788000000, avgIncome: 12600000, latexTons: 540.8 },
-    { name: 'Nông Trường 2 (Bình Dương)', workers: 240, payroll: 2976000000, avgIncome: 12400000, latexTons: 362.0 },
-    { name: 'Khối Văn Phòng Tổng Cty', workers: 78, payroll: 926000000, avgIncome: 11870000, latexTons: 0 },
-  ],
-  deductions: {
-    totalSocialInsurance: 1349250000, // BHXH 10.5%
-    totalPitTaxNewLaw: 245000000,    // Thuế TNCN Luật 109/2025/QH15 (Giảm trừ 15.5M/người)
-    tradeUnionFee: 128500000,
-  }
-};
-
-// 5. Báo cáo Tuân thủ nội quy & Kỷ luật
-export const MOCK_COMPLIANCE_DATA = {
-  onTimeRate: 97.4,
-  attendanceComplianceRate: 98.6,
-  totalViolationsMonth: 26,
-  totalWarnings: 18,
-  totalDisciplined: 8,
-  byPlantationCompliance: [
-    { name: 'Nông Trường 1', onTime: 98.2, compliance: 99.1, violations: 5 },
-    { name: 'Nông Trường 3', onTime: 97.5, compliance: 98.4, violations: 9 },
-    { name: 'Nông Trường 2', onTime: 96.8, compliance: 97.8, violations: 8 },
-    { name: 'Khối Văn Phòng', onTime: 97.1, compliance: 99.0, violations: 4 },
-  ],
-  violationsList: [
-    { id: 'v-1', code: 'VP-001', employeeName: 'Trần Văn Bình', departmentOrPlantation: 'Tổ 2 - Nông Trường 1', date: '28/08/2026', type: 'Vi phạm kỹ thuật cạo mủ', disciplineForm: 'Nhắc nhở nội bộ', status: 'Đã xử lý' },
-    { id: 'v-2', code: 'VP-002', employeeName: 'Lê Hoàng Nam', departmentOrPlantation: 'Tổ 4 - Nông Trường 2', date: '25/08/2026', type: 'Không đội mũ BHLĐ', disciplineForm: 'Nhắc nhở nội bộ', status: 'Đã xử lý' },
-    { id: 'v-3', code: 'VP-003', employeeName: 'Vũ Đức Thịnh', departmentOrPlantation: 'Khối Văn Phòng', date: '22/08/2026', type: 'Đi làm trễ > 15p', disciplineForm: 'Trừ điểm chuyên cần', status: 'Đã xử lý' },
-    { id: 'v-4', code: 'VP-004', employeeName: 'Nguyễn Văn Hải', departmentOrPlantation: 'Tổ 1 - Nông Trường 3', date: '19/08/2026', type: 'Nghỉ không phép', disciplineForm: 'Khiển trách bằng văn bản', status: 'Đã xử lý' },
-    { id: 'v-5', code: 'VP-005', employeeName: 'Phạm Quốc Cường', departmentOrPlantation: 'Tổ 3 - Nông Trường 1', date: '15/08/2026', type: 'Chấm công hộ', disciplineForm: 'Khiển trách bằng văn bản', status: 'Đã xử lý' },
-  ] as ComplianceViolation[]
-};
-
-// -------------------------------------------------------------
-// CORE GENERAL MOCK DATA (EMPLOYEES, PAYSLIPS, REQUESTS)
+// EMPLOYEES VỚI PROFILE COMPLETENESS & CẢNH BÁO HỒ SƠ
 // -------------------------------------------------------------
 
 export const MOCK_EMPLOYEES: Employee[] = [
@@ -493,15 +227,12 @@ export const MOCK_EMPLOYEES: Employee[] = [
     age: 34,
     education: 'Đại học',
     seniorityYears: 6,
-    assets: [
-      { id: 'ass-1', name: 'MacBook Pro M2 Max', code: 'TS-MBP-01', assignedDate: '2023-01-10', status: 'Đang sử dụng' },
-      { id: 'ass-2', name: 'Màn hình Dell UltraSharp 27"', code: 'TS-DELL-04', assignedDate: '2023-01-10', status: 'Đang sử dụng' }
-    ],
+    profileCompleteness: 100,
+    isProfileComplete: true,
+    missingDocuments: [],
+    assets: [],
     debts: [],
-    workHistory: [
-      { period: '2020 - Hiện tại', company: '1HRM Enterprise Corp', position: 'Trưởng Phòng HCTH / HRM' },
-      { period: '2016 - 2020', company: 'Tập đoàn FPT', position: 'Chuyên Viên Cao Cấp Tuyển Dụng & C&B' }
-    ],
+    workHistory: [],
     contracts: [],
     decisions: []
   },
@@ -543,6 +274,9 @@ export const MOCK_EMPLOYEES: Employee[] = [
     age: 38,
     education: 'Thạc sĩ / Sau ĐH',
     seniorityYears: 7,
+    profileCompleteness: 100,
+    isProfileComplete: true,
+    missingDocuments: [],
     assets: [],
     debts: [],
     workHistory: [],
@@ -587,6 +321,9 @@ export const MOCK_EMPLOYEES: Employee[] = [
     age: 31,
     education: 'Đại học',
     seniorityYears: 5,
+    profileCompleteness: 75,
+    isProfileComplete: false,
+    missingDocuments: ['Giấy khám sức khỏe định kỳ 2026', 'Ảnh thẻ 3x4'],
     assets: [],
     debts: [],
     workHistory: [],
@@ -594,98 +331,191 @@ export const MOCK_EMPLOYEES: Employee[] = [
     decisions: []
   },
   {
-    id: 'emp-tt-1',
-    code: 'TT-0001',
-    fullName: 'Nguyễn Văn Lực',
+    id: 'emp-4',
+    code: 'NV-0004',
+    fullName: 'Nguyễn Văn Minh (Onboard Mới)',
     gender: 'Nam',
-    birthday: '1985-06-12',
+    birthday: '1998-05-14',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    email: 'luc.nguyen@1hrm.vn',
-    phone: '0987 111 222',
-    idCard: '070085001234',
-    idCardDate: '2015-02-10',
+    email: 'minh.nguyen@1hrm.vn',
+    phone: '0908 777 666',
+    idCard: '070098001122',
+    idCardDate: '2020-03-10',
     idCardPlace: 'Công an Tỉnh Bình Phước',
-    address: 'Xã Tân Khai, Hớn Quản, Bình Phước',
+    address: 'Hớn Quản, Bình Phước',
     nativePlace: 'Bình Phước',
-    taxCode: '8025320230',
-    socialInsuranceCode: '0120142548',
-    bankName: 'Agribank (Ngân hàng Nông nghiệp)',
-    bankAccount: '5600205123456',
-    bankBranch: 'Chi nhánh Hớn Quản, Bình Phước',
+    taxCode: '8025320235',
+    socialInsuranceCode: '',
+    bankName: 'Agribank',
+    bankAccount: '5600205999888',
+    bankBranch: 'Chi nhánh Hớn Quản',
     departmentId: 'dept-2',
     departmentName: 'Nông Trường 1 (Bình Phước)',
-    plantationId: 'plant-1',
-    plantationName: 'Nông Trường 1 (Bình Phước)',
-    teamId: 'team-1',
-    teamName: 'Tổ Khai Thác 1 - Nông Trường 1',
-    positionId: 'pos-4',
-    positionTitle: 'Tổ Trưởng Sản Xuất Nông Trường',
-    role: 'TEAM_LEADER',
-    joinDate: '2014-05-01',
-    contractType: 'Không xác định thời hạn',
-    status: 'Đang làm việc',
-    baseSalary: 18000000,
-    allowance: 4000000,
-    workEfficiency: 97,
-    completedTasks: 50,
-    lateTimes: 0,
-    earlyTimes: 0,
-    leaveDaysRemaining: 11,
-    totalLeaveDays: 12,
-    age: 41,
-    education: 'Cao đẳng / Trung cấp',
-    seniorityYears: 12,
-    assets: [],
-    debts: [],
-    workHistory: [],
-    contracts: [],
-    decisions: []
-  },
-  {
-    id: 'emp-gdnt-1',
-    code: 'GDNT-0001',
-    fullName: 'Nguyễn Văn Hùng',
-    gender: 'Nam',
-    birthday: '1979-11-05',
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80',
-    email: 'hung.nguyen@1hrm.vn',
-    phone: '0913 222 333',
-    idCard: '070079009876',
-    idCardDate: '2014-03-15',
-    idCardPlace: 'Công an Tỉnh Bình Phước',
-    address: 'Thị xã Bình Long, Bình Phước',
-    nativePlace: 'Bình Phước',
-    taxCode: '8025320231',
-    socialInsuranceCode: '0120142549',
-    bankName: 'BIDV',
-    bankAccount: '65010001234567',
-    bankBranch: 'Chi nhánh Bình Phước',
-    departmentId: 'dept-2',
-    departmentName: 'Nông Trường 1 (Bình Phước)',
-    plantationId: 'plant-1',
-    plantationName: 'Nông Trường 1 (Bình Phước)',
-    positionId: 'pos-2',
-    positionTitle: 'Giám Đốc Nông Trường 1',
-    role: 'PLANTATION_DIRECTOR',
-    joinDate: '2010-02-01',
-    contractType: 'Không xác định thời hạn',
-    status: 'Đang làm việc',
-    baseSalary: 38000000,
-    allowance: 8000000,
-    workEfficiency: 98,
-    completedTasks: 60,
+    positionId: 'pos-5',
+    positionTitle: 'Kỹ Sư Nông Nghiệp & Quản Lý Lô Cạo',
+    role: 'EMPLOYEE',
+    joinDate: '2026-08-15',
+    contractType: 'Thử việc 2 tháng',
+    status: 'Thử việc',
+    baseSalary: 16000000,
+    allowance: 2500000,
+    workEfficiency: 88,
+    completedTasks: 10,
     lateTimes: 0,
     earlyTimes: 0,
     leaveDaysRemaining: 12,
     totalLeaveDays: 12,
-    age: 47,
+    age: 28,
     education: 'Đại học',
-    seniorityYears: 16,
+    seniorityYears: 0,
+    profileCompleteness: 60,
+    isProfileComplete: false,
+    missingDocuments: ['Bản sao Bằng tốt nghiệp Đại học', 'Sổ Bảo Hiểm Xã Hội gốc', 'Giấy khám sức khỏe'],
     assets: [],
     debts: [],
     workHistory: [],
     contracts: [],
     decisions: []
+  }
+];
+
+// -------------------------------------------------------------
+// ĐẦY ĐỦ CÁC LOẠI ĐƠN TỪ PHÁT SINH (SUREHCS STANDARD)
+// -------------------------------------------------------------
+
+export const MOCK_REQUESTS: HRMRequest[] = [
+  {
+    id: 'req-1',
+    code: 'ĐƠN-DM01',
+    employeeId: 'emp-3',
+    employeeName: 'Trần Thị Huệ',
+    employeeAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+    departmentName: 'Khối Văn Phòng & Kỹ Thuật',
+    type: 'DI_MUON',
+    typeName: 'Đơn giải trình đi muộn',
+    startDate: '2026-09-02',
+    durationDays: 0,
+    durationHours: 0.5,
+    lateMinutes: 25,
+    reason: 'Kẹt xe đường Nguyễn Trãi do mưa ngập buổi sáng',
+    specificDetails: 'Đi muộn 25 phút (Vào lúc 08:55 AM)',
+    status: 'APPROVED',
+    approverName: 'Phạm Thùy Linh',
+    createdAt: '2026-09-02 09:05',
+  },
+  {
+    id: 'req-2',
+    code: 'ĐƠN-VS02',
+    employeeId: 'emp-4',
+    employeeName: 'Nguyễn Văn Minh',
+    employeeAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    departmentName: 'Nông Trường 1 (Bình Phước)',
+    type: 'VE_SOM',
+    typeName: 'Đơn xin về sớm',
+    startDate: '2026-09-01',
+    durationDays: 0,
+    durationHours: 1,
+    earlyMinutes: 60,
+    reason: 'Có lịch hẹn làm thủ tục công chứng nhà đất',
+    specificDetails: 'Về sớm 60 phút (Rời lô cạo lúc 16:30)',
+    status: 'APPROVED',
+    approverName: 'Nguyễn Văn Hùng (GĐ Nông Trường)',
+    createdAt: '2026-09-01 14:00',
+  },
+  {
+    id: 'req-3',
+    code: 'ĐƠN-CO03',
+    employeeId: 'emp-1',
+    employeeName: 'Phạm Thùy Linh',
+    employeeAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    departmentName: 'Phòng Hành Chính Tổng Hợp & HR',
+    type: 'CON_OM',
+    typeName: 'Đơn nghỉ chế độ con ốm (BHXH)',
+    startDate: '2026-08-25',
+    endDate: '2026-08-26',
+    durationDays: 2,
+    childName: 'Lê Gia Hưng',
+    childAge: 3,
+    hospitalCertCode: 'BV-NHI-C65-88992',
+    reason: 'Chăm sóc con nhỏ 3 tuổi bị sốt virus điều trị tại BV Nhi Trung Ương',
+    specificDetails: 'Con: Lê Gia Hưng (3 tuổi) | Giấy viện C65-HD: BV-NHI-C65-88992',
+    status: 'APPROVED',
+    approverName: 'Lê Việt Thắng (TGĐ)',
+    createdAt: '2026-08-24 18:30',
+  },
+  {
+    id: 'req-4',
+    code: 'ĐƠN-OM04',
+    employeeId: 'emp-tt-1',
+    employeeName: 'Nguyễn Văn Lực (Tổ Trưởng)',
+    employeeAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    departmentName: 'Nông Trường 1 (Bình Phước)',
+    type: 'OM_DAU',
+    typeName: 'Đơn nghỉ ốm đau bản thân',
+    startDate: '2026-08-20',
+    endDate: '2026-08-21',
+    durationDays: 2,
+    hospitalCertCode: 'TTYT-HQ-99882',
+    reason: 'Sốt xuất huyết điều trị tại TTYT Huyện Hớn Quản',
+    specificDetails: 'Giấy chứng nhận nghỉ việc hưởng BHXH số TTYT-HQ-99882',
+    status: 'APPROVED',
+    approverName: 'Nguyễn Văn Hùng',
+    createdAt: '2026-08-19 20:00',
+  },
+  {
+    id: 'req-5',
+    code: 'ĐƠN-PN05',
+    employeeId: 'emp-3',
+    employeeName: 'Trần Thị Huệ',
+    employeeAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+    departmentName: 'Khối Văn Phòng & Kỹ Thuật',
+    type: 'PHEP_NAM',
+    typeName: 'Đơn xin nghỉ phép năm',
+    startDate: '2026-08-28',
+    endDate: '2026-08-28',
+    durationDays: 1,
+    reason: 'Nghỉ giải quyết việc gia đình cá nhân',
+    specificDetails: 'Trừ vào quỹ phép năm 2026 (Còn 8 ngày)',
+    status: 'PENDING',
+    createdAt: '2026-08-27 09:30',
+  },
+  {
+    id: 'req-6',
+    code: 'ĐƠN-CT06',
+    employeeId: 'emp-1',
+    employeeName: 'Phạm Thùy Linh',
+    employeeAvatar: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
+    departmentName: 'Phòng Hành Chính Tổng Hợp & HR',
+    type: 'CONG_TAC',
+    typeName: 'Đơn đăng ký công tác nông trường',
+    startDate: '2026-09-05',
+    endDate: '2026-09-07',
+    durationDays: 3,
+    tripDestination: 'Nông Trường 1 (Bình Phước) & Nông Trường 2 (Bình Dương)',
+    reason: 'Kiểm tra thực địa định mức cạo mủ và hướng dẫn cài đặt app 1HRM cho các Tổ trưởng',
+    specificDetails: 'Điểm đến: NT1 & NT2 | Phương tiện: Xe công vụ',
+    status: 'APPROVED',
+    approverName: 'Lê Việt Thắng (TGĐ)',
+    createdAt: '2026-09-01 11:00',
+  },
+  {
+    id: 'req-7',
+    code: 'ĐƠN-OT07',
+    employeeId: 'emp-4',
+    employeeName: 'Nguyễn Văn Minh',
+    employeeAvatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
+    departmentName: 'Nông Trường 1 (Bình Phước)',
+    type: 'LAM_THEM_GIO',
+    typeName: 'Đơn đăng ký làm thêm giờ (OT)',
+    startDate: '2026-08-30',
+    durationDays: 0,
+    durationHours: 4,
+    overtimeHours: 4,
+    reason: 'Hỗ trợ trạm thu mua mủ nước số 2 phân loại và cân mủ vào ca đêm',
+    specificDetails: 'OT Ca đêm: 4 giờ (Hưởng 200% lương theo Luật)',
+    status: 'APPROVED',
+    approverName: 'Nguyễn Văn Hùng',
+    createdAt: '2026-08-29 16:30',
   }
 ];
 
@@ -747,71 +577,45 @@ export const MOCK_PAYSLIPS: Payslip[] = [
     pitTax: 8615800,
     netSalary: 74970200,
     status: 'Đã thanh toán',
-  },
-  {
-    id: 'ps-3',
-    month: '08/2026',
-    employeeId: 'emp-tt-1',
-    employeeCode: 'TT-0001',
-    employeeName: 'Nguyễn Văn Lực',
-    departmentName: 'Nông Trường 1 (Bình Phước)',
-    positionTitle: 'Tổ Trưởng Sản Xuất Nông Trường',
-    standardDays: 24,
-    actualDays: 24,
-    baseSalary: 18000000,
-    actualBaseSalary: 18000000,
-    positionAllowance: 2000000,
-    lunchAllowance: 1500000,
-    kpiBonus: 4500000,
-    commission: 1500000,
-    totalIncome: 27500000,
-    socialInsuranceEmp: 1440000,
-    healthInsuranceEmp: 270000,
-    unemploymentInsuranceEmp: 180000,
-    totalInsurance: 1890000,
-    taxableIncome: 26000000,
-    personalDeduction: 15500000,
-    dependentDeduction: 6200000,
-    taxAssessableIncome: 2410000,
-    pitTax: 120500,
-    netSalary: 25489500,
-    status: 'Đã thanh toán',
-  }
-];
-
-export const MOCK_REQUESTS: HRMRequest[] = [
-  {
-    id: 'req-1',
-    code: 'DXP-00123',
-    employeeId: 'emp-3',
-    employeeName: 'Trần Thị Huệ',
-    employeeAvatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
-    departmentName: 'Khối Văn Phòng & Kỹ Thuật',
-    type: 'LEAVE',
-    typeName: 'Đơn xin nghỉ phép năm',
-    startDate: '2026-08-28',
-    endDate: '2026-08-28',
-    durationDays: 1,
-    reason: 'Giải quyết công việc gia đình đột xuất',
-    status: 'PENDING',
-    createdAt: '2026-08-27 09:30',
   }
 ];
 
 export const MOCK_CANDIDATES: Candidate[] = [
   {
     id: 'can-1',
-    fullName: 'Nguyễn Thị Mai Lan',
-    email: 'mailan.nguyen@gmail.com',
-    phone: '0904 112 233',
+    fullName: 'Hoàng Quốc Việt',
+    email: 'viet.hoang@gmail.com',
+    phone: '0912 345 678',
+    idCard: '070099008877',
+    birthday: '1999-07-20',
+    gender: 'Nam',
+    address: 'Dầu Tiếng, Bình Dương',
     positionTitle: 'Kỹ Sư Nông Nghiệp & Quản Lý Lô Cạo',
-    departmentName: 'Nông Trường 1 (Bình Phước)',
-    experienceYears: 5,
-    expectedSalary: 18000000,
-    stage: 'INTERVIEW',
-    aiMatchScore: 92,
+    departmentName: 'Nông Trường 2 (Bình Dương)',
+    experienceYears: 4,
+    expectedSalary: 16000000,
+    stage: 'OFFER',
+    aiMatchScore: 94,
     source: 'Giới thiệu nội bộ',
     appliedDate: '2026-08-20',
+  },
+  {
+    id: 'can-2',
+    fullName: 'Đặng Thị Thanh Hằng',
+    email: 'hang.dang@gmail.com',
+    phone: '0978 999 888',
+    idCard: '001198005544',
+    birthday: '1998-11-12',
+    gender: 'Nữ',
+    address: 'Hà Nội',
+    positionTitle: 'Chuyên Viên C&B & Tiền Lương',
+    departmentName: 'Phòng Hành Chính Tổng Hợp & HR',
+    experienceYears: 3,
+    expectedSalary: 15000000,
+    stage: 'INTERVIEW',
+    aiMatchScore: 91,
+    source: 'Website 1HRM',
+    appliedDate: '2026-08-25',
   }
 ];
 
@@ -867,3 +671,113 @@ export const MOCK_IVAN_RECORDS: IVANRecord[] = [
     responseNote: 'Cơ quan BHXH TP. Hà Nội đã duyệt'
   }
 ];
+
+export const MOCK_TRAINING_COURSES: TrainingCourse[] = [
+  {
+    id: 'tc-1',
+    code: 'DT-CAO-01',
+    title: 'Kỹ Thuật Cạo Mủ Cao Su Chuẩn Quốc Tế & Bảo Vệ Mặt Cạo',
+    topic: 'Kỹ thuật khai thác mủ nông trường',
+    method: 'Hiện trường nông trường',
+    durationHours: 32,
+    startDate: '10/08/2026',
+    endDate: '15/08/2026',
+    participantsCount: 145,
+    totalCost: 72500000,
+    costPerParticipant: 500000,
+    trainerName: 'Chuyên gia Nông Nghiệp ThS. Đỗ Văn Lâm',
+    feedbackScore: 4.9,
+    examPassRate: 98,
+    applicationLevel: 'Rất cao (90-100%)',
+    status: 'Đã hoàn thành',
+  }
+];
+
+export const MOCK_COMPLIANCE_DATA = {
+  onTimeRate: 97.4,
+  attendanceComplianceRate: 98.6,
+  totalViolationsMonth: 26,
+  totalWarnings: 18,
+  totalDisciplined: 8,
+  byPlantationCompliance: [
+    { name: 'Nông Trường 1', onTime: 98.2, compliance: 99.1, violations: 5 },
+    { name: 'Nông Trường 3', onTime: 97.5, compliance: 98.4, violations: 9 },
+    { name: 'Nông Trường 2', onTime: 96.8, compliance: 97.8, violations: 8 },
+    { name: 'Khối Văn Phòng', onTime: 97.1, compliance: 99.0, violations: 4 },
+  ],
+  violationsList: [
+    { id: 'v-1', code: 'VP-001', employeeName: 'Trần Văn Bình', departmentOrPlantation: 'Tổ 2 - Nông Trường 1', date: '28/08/2026', type: 'Vi phạm kỹ thuật cạo mủ', disciplineForm: 'Nhắc nhở nội bộ', status: 'Đã xử lý' },
+    { id: 'v-2', code: 'VP-002', employeeName: 'Lê Hoàng Nam', departmentOrPlantation: 'Tổ 4 - Nông Trường 2', date: '25/08/2026', type: 'Không đội mũ BHLĐ', disciplineForm: 'Nhắc nhở nội bộ', status: 'Đã xử lý' },
+  ] as ComplianceViolation[]
+};
+
+export const MOCK_HR_GENERAL_DATA = {
+  totalHeadcount: 1018,
+  retentionRate: 94.8,
+  turnoverRate: 5.2,
+  byDepartment: [
+    { name: 'Nông Trường 1 (Bình Phước)', count: 320, ratio: '31.4%', color: '#ea580c' },
+    { name: 'Nông Trường 3 (Tây Ninh)', count: 380, ratio: '37.3%', color: '#3b82f6' },
+    { name: 'Nông Trường 2 (Bình Dương)', count: 240, ratio: '23.6%', color: '#10b981' },
+    { name: 'Khối Văn Phòng & Kỹ Thuật', count: 45, ratio: '4.4%', color: '#8b5cf6' },
+    { name: 'Phòng HCTH & Tài Chính', count: 33, ratio: '3.3%', color: '#f59e0b' },
+  ],
+  byAge: [
+    { range: '18 - 25 tuổi', count: 185, percent: 18.2, color: '#38bdf8' },
+    { range: '26 - 35 tuổi', count: 462, percent: 45.4, color: '#ea580c' },
+    { range: '36 - 45 tuổi', count: 265, percent: 26.0, color: '#10b981' },
+    { range: 'Trên 45 tuổi', count: 106, percent: 10.4, color: '#a855f7' },
+  ],
+  fluctuations: {
+    newHires: 42,
+    resigned: 18,
+    transferred: 14,
+    promoted: 9,
+  },
+  aiForecast: {
+    riskPlantations: 'Nông trường 2 cần bổ sung 15 công nhân cạo mủ trước mùa thu hoạch cao điểm Q4',
+  }
+};
+
+export const MOCK_RECRUITMENT_REPORT_DATA = {
+  totalTarget: 85,
+  totalHired: 72,
+  hiringRate: 84.7,
+  avgTimeToHireDays: 14,
+  costPerHiredCandidate: 1784722,
+  byDepartmentNeeds: [
+    { dept: 'Nông Trường 1', target: 30, hired: 28, rate: '93.3%' },
+    { dept: 'Nông Trường 3', target: 35, hired: 30, rate: '85.7%' },
+    { dept: 'Nông Trường 2', target: 15, hired: 10, rate: '66.7%' },
+    { dept: 'Khối Văn Phòng & HR', target: 5, hired: 4, rate: '80.0%' },
+  ],
+  candidateSources: [
+    { source: 'Giới thiệu nội bộ', count: 184, hired: 42, percent: 58.3 },
+    { source: 'Ngày hội tuyển dụng địa phương', count: 96, hired: 18, percent: 25.0 },
+    { source: 'Mạng xã hội & Zalo tuyển dụng', count: 68, hired: 8, percent: 11.1 },
+    { source: 'Website & Cổng tuyển dụng 1HRM', count: 42, hired: 4, percent: 5.6 },
+  ],
+  conversionFunnel: [
+    { stage: '1. Tiếp nhận hồ sơ (Applied)', count: 390 },
+    { stage: '2. Sơ loại tay nghề & Khám SK', count: 245 },
+    { stage: '3. Phỏng vấn & Thử tay nghề', count: 128 },
+    { stage: '4. Thử việc tại nông trường', count: 86 },
+    { stage: '5. Ký hợp đồng chính thức', count: 72 },
+  ]
+};
+
+export const MOCK_INCOME_PAYROLL_DATA = {
+  totalPayrollMonth: 12850000000,
+  avgIncomePerWorker: 12620000,
+  growthComparedToLastMonth: 4.8,
+  byPlantationComparison: [
+    { name: 'Nông Trường 1 (Bình Phước)', workers: 320, payroll: 4160000000, avgIncome: 13000000, latexTons: 485.2 },
+    { name: 'Nông Trường 3 (Tây Ninh)', workers: 380, payroll: 4788000000, avgIncome: 12600000, latexTons: 540.8 },
+    { name: 'Nông Trường 2 (Bình Dương)', workers: 240, payroll: 2976000000, avgIncome: 12400000, latexTons: 362.0 },
+    { name: 'Khối Văn Phòng Tổng Cty', workers: 78, payroll: 926000000, avgIncome: 11870000, latexTons: 0 },
+  ],
+  deductions: {
+    totalSocialInsurance: 1349250000,
+    totalPitTaxNewLaw: 245000000,
+  }
+};

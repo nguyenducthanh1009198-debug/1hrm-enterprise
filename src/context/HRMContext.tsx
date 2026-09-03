@@ -1,18 +1,16 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 import {
   UserRole,
   Employee,
   Department,
   Position,
-  WorkShift,
   HRMRequest,
   Payslip,
   Candidate,
   RecruitmentPlan,
   OKRObjective,
-  ASKEvaluation,
   IVANRecord,
   AttendanceRecord,
   PlantationUnit,
@@ -79,11 +77,12 @@ interface HRMContextType {
   approveRequest: (requestId: string, note?: string) => void;
   rejectRequest: (requestId: string, note?: string) => void;
   updateCandidateStage: (candidateId: string, newStage: Candidate['stage']) => void;
-  convertCandidateToEmployee: (candidateId: string) => void;
+  convertCandidateToEmployee: (candidateId: string, customData?: Partial<Employee>) => void;
   updateOKRProgress: (keyResultId: string, newValue: number) => void;
   recalculatePayroll: () => void;
   addEmployee: (emp: Partial<Employee>) => void;
   updateEmployee: (id: string, updates: Partial<Employee>) => void;
+  toggleDocumentUpload: (employeeId: string, docName: string) => void;
 
   // Plantation Actions
   updateWorkerAttendanceStatus: (
@@ -142,7 +141,6 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return e.id === 'emp-1';
     }) || employees[0];
 
-  // Today attendance state
   const [todayAttendance, setTodayAttendance] = useState<AttendanceRecord[]>([
     {
       id: 'att-1',
@@ -219,11 +217,21 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       employeeName: currentUser.fullName,
       employeeAvatar: currentUser.avatar,
       departmentName: currentUser.departmentName,
-      type: request.type || 'LEAVE',
-      typeName: request.typeName || 'Đơn xin nghỉ',
+      type: request.type || 'PHEP_NAM',
+      typeName: request.typeName || 'Đơn xin nghỉ phép năm',
       startDate: request.startDate || new Date().toISOString().split('T')[0],
-      durationDays: request.durationDays || 1,
-      reason: request.reason || 'Nhân viên gửi yêu cầu',
+      endDate: request.endDate || request.startDate || new Date().toISOString().split('T')[0],
+      durationDays: request.durationDays !== undefined ? request.durationDays : 1,
+      durationHours: request.durationHours || 0,
+      lateMinutes: request.lateMinutes,
+      earlyMinutes: request.earlyMinutes,
+      childName: request.childName,
+      childAge: request.childAge,
+      hospitalCertCode: request.hospitalCertCode,
+      tripDestination: request.tripDestination,
+      overtimeHours: request.overtimeHours,
+      specificDetails: request.specificDetails,
+      reason: request.reason || 'Nhân viên gửi yêu cầu phát sinh',
       status: 'PENDING',
       createdAt: new Date().toLocaleString('vi-VN'),
     };
@@ -256,26 +264,31 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
-  const convertCandidateToEmployee = (candidateId: string) => {
+  /**
+   * Tự động Fill thông tin Onboard từ Ứng viên & Thiết lập Cảnh báo Hồ sơ chưa đủ
+   */
+  const convertCandidateToEmployee = (candidateId: string, customData?: Partial<Employee>) => {
     const cand = candidates.find((c) => c.id === candidateId);
     if (!cand) return;
 
+    const generatedCode = `NV-${Math.floor(1000 + Math.random() * 9000)}`;
+
     const newEmp: Employee = {
       id: `emp-${Date.now()}`,
-      code: `NV-${Math.floor(1000 + Math.random() * 9000)}`,
+      code: generatedCode,
       fullName: cand.fullName,
-      gender: 'Nam',
-      birthday: '1996-01-01',
+      gender: cand.gender || 'Nam',
+      birthday: cand.birthday || '1998-01-01',
       avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
       email: cand.email,
       phone: cand.phone,
-      idCard: '001096000000',
+      idCard: cand.idCard || '001098001122',
       idCardDate: '2020-01-01',
       idCardPlace: 'Cục CS QLHC về TTXH',
-      address: 'Việt Nam',
+      address: cand.address || 'Việt Nam',
       nativePlace: 'Việt Nam',
-      taxCode: '8000000000',
-      socialInsuranceCode: '0100000000',
+      taxCode: `80253${Math.floor(10000 + Math.random() * 90000)}`,
+      socialInsuranceCode: `0120${Math.floor(100000 + Math.random() * 900000)}`,
       bankName: 'Vietcombank',
       bankAccount: '1000000000',
       bankBranch: 'Hà Nội',
@@ -287,7 +300,7 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       joinDate: new Date().toISOString().split('T')[0],
       contractType: 'Thử việc 2 tháng',
       status: 'Thử việc',
-      baseSalary: cand.expectedSalary || 12000000,
+      baseSalary: cand.expectedSalary || 15000000,
       allowance: 2000000,
       workEfficiency: 85,
       completedTasks: 0,
@@ -295,15 +308,51 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       earlyTimes: 0,
       leaveDaysRemaining: 12,
       totalLeaveDays: 12,
+
+      // Auto-set Incomplete Profile with Warning
+      profileCompleteness: 60,
+      isProfileComplete: false,
+      missingDocuments: [
+        'Bản sao CCCD 2 mặt (Công chứng)',
+        'Giấy khám sức khỏe định kỳ (Dưới 6 tháng)',
+        'Bản sao Bằng cấp chuyên môn',
+        'Sổ Bảo Hiểm Xã Hội gốc'
+      ],
+
       assets: [],
       debts: [],
       workHistory: [],
       contracts: [],
       decisions: [],
+      ...customData,
     };
 
-    setEmployees([...employees, newEmp]);
+    setEmployees([newEmp, ...employees]);
     updateCandidateStage(candidateId, 'HIRED');
+  };
+
+  const toggleDocumentUpload = (employeeId: string, docName: string) => {
+    setEmployees((prev) =>
+      prev.map((e) => {
+        if (e.id !== employeeId) return e;
+        const currentMissing = e.missingDocuments || [];
+        const isCurrentlyMissing = currentMissing.includes(docName);
+        const newMissing = isCurrentlyMissing
+          ? currentMissing.filter((d) => d !== docName)
+          : [...currentMissing, docName];
+
+        const totalRequiredDocs = 4;
+        const uploadedCount = totalRequiredDocs - newMissing.length;
+        const newCompleteness = Math.round((uploadedCount / totalRequiredDocs) * 100);
+
+        return {
+          ...e,
+          missingDocuments: newMissing,
+          isProfileComplete: newMissing.length === 0,
+          profileCompleteness: newCompleteness,
+        };
+      })
+    );
   };
 
   const updateOKRProgress = (keyResultId: string, newValue: number) => {
@@ -336,7 +385,6 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const recalculatePayroll = () => {
-    // Law 109/2025/QH15 calculation
     setPayslips((prev) =>
       prev.map((p) => {
         const actualBase = Math.round((p.baseSalary / p.standardDays) * p.actualDays);
@@ -346,7 +394,6 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const taxable = Math.max(0, totalInc - p.lunchAllowance);
         const taxAssessable = Math.max(0, taxable - 15500000 - p.dependentDeduction - totalIns);
 
-        // 5-bracket progressive tax
         let pit = 0;
         if (taxAssessable <= 10000000) {
           pit = taxAssessable * 0.05;
@@ -410,6 +457,9 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       earlyTimes: 0,
       leaveDaysRemaining: 12,
       totalLeaveDays: 12,
+      profileCompleteness: 60,
+      isProfileComplete: false,
+      missingDocuments: ['Bản sao CCCD 2 mặt', 'Giấy khám sức khỏe', 'Sổ BHXH'],
       assets: [],
       debts: [],
       workHistory: [],
@@ -422,10 +472,6 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const updateEmployee = (id: string, updates: Partial<Employee>) => {
     setEmployees((prev) => prev.map((e) => (e.id === id ? { ...e, ...updates } : e)));
   };
-
-  // -------------------------------------------------------------
-  // PLANTATION & 5-TIER ATTENDANCE ACTIONS
-  // -------------------------------------------------------------
 
   const updateWorkerAttendanceStatus = (
     batchId: string,
@@ -592,6 +638,7 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         recalculatePayroll,
         addEmployee,
         updateEmployee,
+        toggleDocumentUpload,
 
         updateWorkerAttendanceStatus,
         updateRubberYield,
