@@ -155,14 +155,14 @@ export const DashboardModule: React.FC = () => {
     <div className="space-y-6">
       {/* Toast Alert */}
       {toastMessage && (
-        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-emerald-500 flex items-center gap-3 animate-bounce">
+        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-md shadow-2xl border border-emerald-500 flex items-center gap-3 animate-bounce">
           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
           <span className="text-sm font-semibold">{toastMessage}</span>
         </div>
       )}
 
       {/* Top Banner with Excel Export Only */}
-      <div className="p-6 bg-gradient-to-r from-slate-950 via-slate-900 to-orange-950 rounded-2xl text-white shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border border-slate-800">
+      <div className="p-6 bg-gradient-to-r from-slate-950 via-slate-900 to-orange-950 rounded-lg text-white shadow-xl flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border border-slate-800">
         <div>
           <div className="flex items-center gap-2">
             <span className="px-2.5 py-0.5 rounded bg-orange-500 text-white font-bold text-[11px] uppercase tracking-wider">
@@ -184,10 +184,10 @@ export const DashboardModule: React.FC = () => {
         </div>
 
         {/* Pure Excel Export Button Group */}
-        <div className="flex flex-wrap items-center gap-2 bg-white/10 p-2.5 rounded-2xl border border-white/10 backdrop-blur-xs">
+        <div className="flex flex-wrap items-center gap-2 bg-white/10 p-2.5 rounded-lg border border-white/10 backdrop-blur-xs">
           <button
             onClick={handleExportExcel}
-            className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
+            className="px-4 py-2.5 rounded-md btn-primary font-black text-xs flex items-center gap-2 shadow-lg shadow-emerald-600/30 transition-all cursor-pointer"
             title="Xuất bảng Excel"
           >
             <FileSpreadsheet className="w-4 h-4" />
@@ -198,7 +198,7 @@ export const DashboardModule: React.FC = () => {
 
       {/* Role Security Notice for Non-HR / Non-BGD */}
       {!canViewSalary && (
-        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3 text-xs text-amber-900">
+        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-md flex items-center gap-3 text-xs text-amber-900">
           <Lock className="w-4 h-4 text-amber-600 shrink-0" />
           <div>
             <strong>Phân Quyền Bảo Mật Lương:</strong> Bạn đang ở góc nhìn{' '}
@@ -209,9 +209,9 @@ export const DashboardModule: React.FC = () => {
 
       {/* Incomplete Profile Alert Callout */}
       {incompleteProfilesCount > 0 && (
-        <div className="p-4 bg-amber-500/10 rounded-2xl border border-amber-300 flex items-center justify-between gap-4 text-xs">
+        <div className="p-4 bg-amber-500/10 rounded-lg border border-amber-300 flex items-center justify-between gap-4 text-xs">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-700 shrink-0">
+            <div className="w-9 h-9 rounded-md bg-amber-500/20 flex items-center justify-center text-amber-700 shrink-0">
               <AlertTriangle className="w-5 h-5" />
             </div>
             <div>
@@ -225,7 +225,7 @@ export const DashboardModule: React.FC = () => {
           </div>
           <button
             onClick={() => exportBaoCaoNhanSuTongHop(employees)}
-            className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl shadow-xs shrink-0"
+            className="px-3.5 py-2 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-md shadow-xs shrink-0"
           >
             Xuất DS Cần Bổ Sung Excel
           </button>
@@ -233,7 +233,7 @@ export const DashboardModule: React.FC = () => {
       )}
 
       {/* Unit Filter Bar for HR (Từng Nông Trường & Các Khối Văn Phòng) */}
-      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+      <div className="bg-white p-4 rounded-lg border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2">
           <Building2 className="w-4 h-4 text-orange-600 shrink-0" />
           <span className="font-black text-slate-900">Phạm Vi Báo Cáo HR:</span>
@@ -252,9 +252,9 @@ export const DashboardModule: React.FC = () => {
             <button
               key={unit.id}
               onClick={() => setSelectedUnitFilter(unit.id)}
-              className={`px-3 py-1.5 rounded-xl font-bold transition-all text-xs ${
+              className={`px-3 py-1.5 rounded-md font-bold transition-all text-xs ${
                 selectedUnitFilter === unit.id
-                  ? 'bg-orange-600 text-white shadow-xs'
+                  ? 'bg-[#E05600] text-white shadow-xs'
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
@@ -265,11 +265,11 @@ export const DashboardModule: React.FC = () => {
       </div>
 
       {/* Tab Selector for 5 Comprehensive Report Suites */}
-      <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
+      <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-xs">
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2">
           <button
             onClick={() => setActiveReportTab('HR_GENERAL')}
-            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
+            className={`p-3.5 rounded-md text-left transition-all border flex flex-col justify-between gap-1.5 ${
               activeReportTab === 'HR_GENERAL'
                 ? 'bg-orange-50 border-orange-500 text-orange-950 ring-2 ring-orange-500/20 shadow-xs'
                 : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
@@ -289,7 +289,7 @@ export const DashboardModule: React.FC = () => {
 
           <button
             onClick={() => setActiveReportTab('COMPLIANCE')}
-            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
+            className={`p-3.5 rounded-md text-left transition-all border flex flex-col justify-between gap-1.5 ${
               activeReportTab === 'COMPLIANCE'
                 ? 'bg-purple-50 border-purple-500 text-purple-950 ring-2 ring-purple-500/20 shadow-xs'
                 : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
@@ -309,7 +309,7 @@ export const DashboardModule: React.FC = () => {
 
           <button
             onClick={() => setActiveReportTab('INCOME')}
-            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
+            className={`p-3.5 rounded-md text-left transition-all border flex flex-col justify-between gap-1.5 ${
               activeReportTab === 'INCOME'
                 ? 'bg-amber-50 border-amber-500 text-amber-950 ring-2 ring-amber-500/20 shadow-xs'
                 : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
@@ -333,7 +333,7 @@ export const DashboardModule: React.FC = () => {
 
           <button
             onClick={() => setActiveReportTab('TURNOVER')}
-            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
+            className={`p-3.5 rounded-md text-left transition-all border flex flex-col justify-between gap-1.5 ${
               activeReportTab === 'TURNOVER'
                 ? 'bg-blue-50 border-blue-500 text-blue-950 ring-2 ring-blue-500/20 shadow-xs'
                 : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
@@ -353,7 +353,7 @@ export const DashboardModule: React.FC = () => {
 
           <button
             onClick={() => setActiveReportTab('RECRUITMENT_TRAINING')}
-            className={`p-3.5 rounded-xl text-left transition-all border flex flex-col justify-between gap-1.5 ${
+            className={`p-3.5 rounded-md text-left transition-all border flex flex-col justify-between gap-1.5 ${
               activeReportTab === 'RECRUITMENT_TRAINING'
                 ? 'bg-emerald-50 border-emerald-500 text-emerald-950 ring-2 ring-emerald-500/20 shadow-xs'
                 : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100'
@@ -379,8 +379,8 @@ export const DashboardModule: React.FC = () => {
       {activeReportTab === 'HR_GENERAL' && (
         <div className="space-y-6">
           {/* Bảng 1.1: Phân Bổ Nhân Lực Theo Đơn Vị & Nông Trường */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200 flex items-center justify-between">
               <h3 className="text-sm font-black text-slate-900">
                 Bảng 1.1: Tổng Hợp Quy Mô Nhân Sự Theo Phòng Ban & Nông Trường
               </h3>
@@ -389,7 +389,7 @@ export const DashboardModule: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr className="data-table-header">
                     <th className="py-3 px-4">STT</th>
                     <th className="py-3 px-4">Đơn Vị / Phòng Ban / Nông Trường</th>
                     <th className="py-3 px-3 text-right">Số Lượng Nhân Sự</th>
@@ -400,7 +400,7 @@ export const DashboardModule: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {hrGeneralData.byDepartment.map((d, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50">
+                    <tr key={idx} className="data-table-row">
                       <td className="py-3 px-4 font-mono font-bold text-slate-500">{idx + 1}</td>
                       <td className="py-3 px-4 font-bold text-slate-900">{d.name}</td>
                       <td className="py-3 px-3 text-right font-black text-slate-900">{d.count} người</td>
@@ -420,15 +420,15 @@ export const DashboardModule: React.FC = () => {
 
           {/* Bảng 1.2: Cơ Cấu Nhân Sự Theo Độ Tuổi, Giới Tính, Học Vấn */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-4 bg-slate-50 border-b border-slate-200">
+            <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+              <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200">
                 <h3 className="text-sm font-black text-slate-900">
                   Bảng 1.2A: Cơ Cấu Độ Tuổi Lực Lượng Lao Động
                 </h3>
               </div>
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr className="data-table-header">
                     <th className="py-3 px-4">Nhóm Độ Tuổi</th>
                     <th className="py-3 px-3 text-right">Số Lượng (Người)</th>
                     <th className="py-3 px-3 text-right">Tỷ Lệ Phần Trăm</th>
@@ -437,7 +437,7 @@ export const DashboardModule: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {hrGeneralData.byAge.map((a, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50">
+                    <tr key={idx} className="data-table-row">
                       <td className="py-3 px-4 font-bold text-slate-900">{a.range}</td>
                       <td className="py-3 px-3 text-right font-black text-slate-900">{a.count} người</td>
                       <td className="py-3 px-3 text-right font-black text-blue-600">{a.percent}%</td>
@@ -450,15 +450,15 @@ export const DashboardModule: React.FC = () => {
               </table>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-4 bg-slate-50 border-b border-slate-200">
+            <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+              <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200">
                 <h3 className="text-sm font-black text-slate-900">
                   Bảng 1.2B: Cơ Cấu Trình Độ Học Vấn & Giới Tính
                 </h3>
               </div>
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr className="data-table-header">
                     <th className="py-3 px-4">Trình Độ Học Vấn</th>
                     <th className="py-3 px-3 text-right">Số Lượng</th>
                     <th className="py-3 px-3 text-right">Tỷ Lệ (%)</th>
@@ -466,25 +466,25 @@ export const DashboardModule: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-slate-900">Phổ Thông / Sơ Cấp (Công nhân)</td>
                     <td className="py-3 px-3 text-right font-black text-slate-900">768 người</td>
                     <td className="py-3 px-3 text-right font-bold text-orange-600">75.4%</td>
                     <td className="py-3 px-4 text-slate-700">Nam: 58% | Nữ: 42%</td>
                   </tr>
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-slate-900">Trung Cấp / Cao Đẳng Kỹ Thuật</td>
                     <td className="py-3 px-3 text-right font-black text-slate-900">142 người</td>
                     <td className="py-3 px-3 text-right font-bold text-orange-600">14.0%</td>
                     <td className="py-3 px-4 text-slate-700">Nam: 65% | Nữ: 35%</td>
                   </tr>
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-slate-900">Đại Học (Kỹ sư, Cử nhân)</td>
                     <td className="py-3 px-3 text-right font-black text-slate-900">96 người</td>
                     <td className="py-3 px-3 text-right font-bold text-orange-600">9.4%</td>
                     <td className="py-3 px-4 text-slate-700">Nam: 50% | Nữ: 50%</td>
                   </tr>
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-slate-900">Thạc Sĩ / Sau Đại Học (BGĐ)</td>
                     <td className="py-3 px-3 text-right font-black text-slate-900">12 người</td>
                     <td className="py-3 px-3 text-right font-bold text-orange-600">1.2%</td>
@@ -496,14 +496,14 @@ export const DashboardModule: React.FC = () => {
           </div>
 
           {/* Bảng 1.3: Danh Sách Nhân Sự & Tiến Độ Hồ Sơ (Lương có bảo mật) */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-sm font-black text-slate-900">
                 Bảng 1.3: Trích Lục Danh Sách Hồ Sơ Nhân Sự & Tình Trạng Giấy Tờ Onboarding
               </h3>
               <button
                 onClick={() => exportBaoCaoNhanSuTongHop(employees)}
-                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
+                className="px-3 py-1 btn-primary font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" /> Xuất Toàn Bộ DS Excel
               </button>
@@ -511,7 +511,7 @@ export const DashboardModule: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr className="data-table-header">
                     <th className="py-3 px-4">Mã NV</th>
                     <th className="py-3 px-4">Họ Và Tên</th>
                     <th className="py-3 px-3">Phòng Ban / Nông Trường</th>
@@ -523,7 +523,7 @@ export const DashboardModule: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {filteredEmployees.map((e) => (
-                    <tr key={e.id} className="hover:bg-slate-50">
+                    <tr key={e.id} className="data-table-row">
                       <td className="py-3 px-4 font-mono font-bold text-slate-800">{e.code}</td>
                       <td className="py-3 px-4 font-bold text-slate-900">{e.fullName}</td>
                       <td className="py-3 px-3 text-slate-700">{e.departmentName}</td>
@@ -566,14 +566,14 @@ export const DashboardModule: React.FC = () => {
       {activeReportTab === 'COMPLIANCE' && (
         <div className="space-y-6">
           {/* Bảng 2.1: Tổng Hợp Các Đơn Phát Sinh (Đi muộn, về sớm, con ốm, ốm đau) */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-sm font-black text-slate-900">
                 Bảng 2.1: Sổ Theo Dõi Chi Tiết Các Đơn Phát Sinh (Đi Muộn, Về Sớm, Con Ốm, Ốm Đau, Nghỉ Phép)
               </h3>
               <button
                 onClick={() => exportBaoCaoDonTuVaNoiQuy(requests)}
-                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
+                className="px-3 py-1 btn-primary font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" /> Xuất Excel Đơn Từ
               </button>
@@ -581,7 +581,7 @@ export const DashboardModule: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr className="data-table-header">
                     <th className="py-3 px-4">Mã Đơn</th>
                     <th className="py-3 px-4">Nhân Sự Tạo Đơn</th>
                     <th className="py-3 px-3">Phòng Ban / Nông Trường</th>
@@ -594,7 +594,7 @@ export const DashboardModule: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {filteredRequests.map((r) => (
-                    <tr key={r.id} className="hover:bg-slate-50">
+                    <tr key={r.id} className="data-table-row">
                       <td className="py-3 px-4 font-mono font-bold text-slate-800">{r.code}</td>
                       <td className="py-3 px-4 font-bold text-slate-900">{r.employeeName}</td>
                       <td className="py-3 px-3 text-slate-700">{r.departmentName}</td>
@@ -625,13 +625,13 @@ export const DashboardModule: React.FC = () => {
 
           {/* Bảng 2.2: Báo Cáo Làm Thêm Giờ (OT) & Công Tác */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-4 bg-slate-50 border-b border-slate-200">
+            <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+              <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200">
                 <h3 className="text-sm font-black text-slate-900">Bảng 2.2: Danh Sách Nhân Sự Đăng Ký Làm Thêm Giờ (OT)</h3>
               </div>
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr className="data-table-header">
                     <th className="py-3 px-4">Nhân Sự</th>
                     <th className="py-3 px-3">Ngày Làm OT</th>
                     <th className="py-3 px-3 text-right">Số Giờ OT</th>
@@ -639,13 +639,13 @@ export const DashboardModule: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-slate-900">Nguyễn Văn Minh (Nông Trường 1)</td>
                     <td className="py-3 px-3 font-mono">30/08/2026</td>
                     <td className="py-3 px-3 text-right font-black text-orange-600">4 Giờ</td>
                     <td className="py-3 px-4 text-slate-600">Cân & phân loại mủ nước trạm 2 (Ca đêm 200%)</td>
                   </tr>
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-slate-900">Trần Văn Mạnh (Tổ 1 - NT1)</td>
                     <td className="py-3 px-3 font-mono">01/09/2026</td>
                     <td className="py-3 px-3 text-right font-black text-orange-600">3 Giờ</td>
@@ -655,13 +655,13 @@ export const DashboardModule: React.FC = () => {
               </table>
             </div>
 
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-              <div className="p-4 bg-slate-50 border-b border-slate-200">
+            <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+              <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200">
                 <h3 className="text-sm font-black text-slate-900">Bảng 2.3: Danh Sách Nhân Sự Đi Công Tác Nông Trường</h3>
               </div>
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr className="data-table-header">
                     <th className="py-3 px-4">Cán Bộ Công Tác</th>
                     <th className="py-3 px-3">Thời Gian</th>
                     <th className="py-3 px-4">Địa Điểm Đến</th>
@@ -669,7 +669,7 @@ export const DashboardModule: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-slate-900">Phạm Thùy Linh (Trưởng phòng)</td>
                     <td className="py-3 px-3 font-mono">05/09 - 07/09</td>
                     <td className="py-3 px-4 font-semibold text-emerald-700">Nông Trường 1 & Nông Trường 2</td>
@@ -688,8 +688,8 @@ export const DashboardModule: React.FC = () => {
       {activeReportTab === 'INCOME' && (
         <div className="space-y-6">
           {!canViewSalary ? (
-            <div className="p-12 bg-white rounded-2xl border border-slate-200 shadow-xs text-center space-y-4">
-              <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-inner">
+            <div className="p-12 bg-white rounded-lg border border-slate-200 shadow-xs text-center space-y-4">
+              <div className="w-16 h-16 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-inner">
                 <Lock className="w-8 h-8" />
               </div>
               <div className="space-y-1">
@@ -698,15 +698,15 @@ export const DashboardModule: React.FC = () => {
                   Chỉ thành viên <strong>Ban Tổng Giám Đốc (BGĐ)</strong> và <strong>Phòng Nhân Sự (HR/HCTH)</strong> mới được phân quyền truy cập thông tin bảng lương, thuế TNCN và tổng quỹ chi trả của công ty.
                 </p>
               </div>
-              <p className="text-[11px] text-amber-800 bg-amber-50 px-4 py-2 rounded-xl inline-block border border-amber-200">
+              <p className="text-[11px] text-amber-800 bg-amber-50 px-4 py-2 rounded-md inline-block border border-amber-200">
                 Vai trò hiện tại của bạn: <b>{currentRole}</b> • Vui lòng chuyển sang vai trò Ban Giám Đốc hoặc HR trên thanh Menu để xem.
               </p>
             </div>
           ) : (
             <>
               {/* Bảng 3.1: Tổng Quan Quỹ Lương Theo Đơn Vị */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-                <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+                <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                   <h3 className="text-sm font-black text-slate-900">
                     Bảng 3.1: Tổng Quan Chi Trả Lương & Sản Lượng Mủ Thu Hoạch Toàn Hệ Thống
                   </h3>
@@ -717,7 +717,7 @@ export const DashboardModule: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                      <tr className="data-table-header">
                         <th className="py-3 px-4">Nông Trường / Đơn Vị</th>
                         <th className="py-3 px-3 text-right">Quân Số</th>
                         <th className="py-3 px-3 text-right">Tổng Quỹ Lương (VNĐ)</th>
@@ -728,7 +728,7 @@ export const DashboardModule: React.FC = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-200">
                       {incomePayrollData.byPlantationComparison.map((p, idx) => (
-                        <tr key={idx} className="hover:bg-slate-50">
+                        <tr key={idx} className="data-table-row">
                           <td className="py-3 px-4 font-bold text-slate-900">{p.name}</td>
                           <td className="py-3 px-3 text-right text-slate-700">{p.workers} người</td>
                           <td className="py-3 px-3 text-right font-black text-slate-900">{p.payroll.toLocaleString('vi-VN')} đ</td>
@@ -743,14 +743,14 @@ export const DashboardModule: React.FC = () => {
               </div>
 
               {/* Bảng 3.2: Bảng Thanh Toán Lương Chi Tiết */}
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-                <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+              <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+                <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
                   <h3 className="text-sm font-black text-slate-900">
                     Bảng 3.2: Bảng Thanh Toán Lương & Khấu Trừ Thuế TNCN (Luật 109/2025/QH15)
                   </h3>
                   <button
                     onClick={() => exportBaoCaoQuyLuong(payslips, incomePayrollData.totalPayrollMonth)}
-                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
+                    className="px-3 py-1 btn-primary font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
                   >
                     <FileSpreadsheet className="w-3.5 h-3.5" /> Xuất Bảng Lương Excel
                   </button>
@@ -758,7 +758,7 @@ export const DashboardModule: React.FC = () => {
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs">
                     <thead>
-                      <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                      <tr className="data-table-header">
                         <th className="py-3 px-4">Mã NV</th>
                         <th className="py-3 px-4">Họ Và Tên</th>
                         <th className="py-3 px-3">Phòng Ban</th>
@@ -773,7 +773,7 @@ export const DashboardModule: React.FC = () => {
                     </thead>
                     <tbody className="divide-y divide-slate-200">
                       {filteredPayslips.map((p) => (
-                        <tr key={p.id} className="hover:bg-slate-50">
+                        <tr key={p.id} className="data-table-row">
                           <td className="py-3 px-4 font-mono font-bold text-slate-800">{p.employeeCode}</td>
                           <td className="py-3 px-4 font-bold text-slate-900">{p.employeeName}</td>
                           <td className="py-3 px-3 text-slate-700">{p.departmentName}</td>
@@ -800,14 +800,14 @@ export const DashboardModule: React.FC = () => {
       {/* ========================================================================= */}
       {activeReportTab === 'TURNOVER' && (
         <div className="space-y-6">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-sm font-black text-slate-900">
                 Bảng 4.1: Ma Trận Biến Động Nhân Sự 12 Tháng Trong Năm 2026
               </h3>
               <button
                 onClick={() => exportBaoCaoBienDongNhanSu(hrGeneralData)}
-                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
+                className="px-3 py-1 btn-primary font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
               >
                 <FileSpreadsheet className="w-3.5 h-3.5" /> Xuất Biến Động 12T Excel
               </button>
@@ -815,7 +815,7 @@ export const DashboardModule: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr className="data-table-header">
                     <th className="py-3 px-4">Chỉ Tiêu Biến Động</th>
                     <th className="py-3 px-2 text-center">T1</th>
                     <th className="py-3 px-2 text-center">T2</th>
@@ -832,31 +832,31 @@ export const DashboardModule: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-slate-900">1. Dư đầu tháng</td>
                     {[940, 952, 965, 980, 992, 1005, 998, 1018, 1042, 1065, 1070, 1075].map((v, i) => (
                       <td key={i} className={`py-3 px-2 text-center font-mono ${i === 7 ? 'bg-orange-50 font-black text-orange-950' : ''}`}>{v}</td>
                     ))}
                   </tr>
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-emerald-700">2. Tuyển mới trong tháng</td>
                     {[24, 28, 32, 25, 30, 18, 38, 42, 35, 20, 15, 12].map((v, i) => (
                       <td key={i} className={`py-3 px-2 text-center font-mono font-bold text-emerald-600 ${i === 7 ? 'bg-orange-50 font-black' : ''}`}>+{v}</td>
                     ))}
                   </tr>
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-rose-700">3. Thôi việc / nghỉ việc</td>
                     {[12, 15, 17, 13, 17, 25, 18, 18, 12, 15, 10, 8].map((v, i) => (
                       <td key={i} className={`py-3 px-2 text-center font-mono font-bold text-rose-600 ${i === 7 ? 'bg-orange-50 font-black' : ''}`}>-{v}</td>
                     ))}
                   </tr>
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-blue-700">4. Điều chuyển nội bộ</td>
                     {[8, 10, 12, 9, 14, 11, 15, 14, 10, 8, 6, 5].map((v, i) => (
                       <td key={i} className={`py-3 px-2 text-center font-mono text-blue-600 ${i === 7 ? 'bg-orange-50 font-black' : ''}`}>{v}</td>
                     ))}
                   </tr>
-                  <tr className="hover:bg-slate-50">
+                  <tr className="data-table-row">
                     <td className="py-3 px-4 font-bold text-purple-700">5. Thăng chức / bổ nhiệm</td>
                     {[3, 5, 4, 6, 5, 4, 8, 9, 6, 5, 4, 4].map((v, i) => (
                       <td key={i} className={`py-3 px-2 text-center font-mono text-purple-600 ${i === 7 ? 'bg-orange-50 font-black' : ''}`}>{v}</td>
@@ -881,8 +881,8 @@ export const DashboardModule: React.FC = () => {
       {activeReportTab === 'RECRUITMENT_TRAINING' && (
         <div className="space-y-6">
           {/* Bảng 5.1: Tiến Độ Tuyển Dụng Theo Đơn Vị */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-200">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200">
               <h3 className="text-sm font-black text-slate-900">
                 Bảng 5.1: Báo Cáo Kế Hoạch Tuyển Dụng & Phễu Chuyển Đổi 5 Vòng
               </h3>
@@ -890,7 +890,7 @@ export const DashboardModule: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr className="data-table-header">
                     <th className="py-3 px-4">Đơn Vị Có Nhu Cầu</th>
                     <th className="py-3 px-3 text-right">Chỉ Tiêu</th>
                     <th className="py-3 px-3 text-right">Đã Tuyển Dụng</th>
@@ -900,7 +900,7 @@ export const DashboardModule: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {recruitmentReportData.byDepartmentNeeds.map((r, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50">
+                    <tr key={idx} className="data-table-row">
                       <td className="py-3 px-4 font-bold text-slate-900">{r.dept}</td>
                       <td className="py-3 px-3 text-right font-medium">{r.target} người</td>
                       <td className="py-3 px-3 text-right font-black text-emerald-600">{r.hired} người</td>
@@ -916,8 +916,8 @@ export const DashboardModule: React.FC = () => {
           </div>
 
           {/* Bảng 5.2: Danh Sách Các Khóa Đào Tạo Nghiệp Vụ */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-200">
+          <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
+            <div className="p-4 h-10 px-4 bg-gray-50 border-b border-gray-200">
               <h3 className="text-sm font-black text-slate-900">
                 Bảng 5.2: Báo Cáo Đào Tạo & Đánh Giá Mức Độ Ứng Dụng Sau Đào Tạo
               </h3>
@@ -925,7 +925,7 @@ export const DashboardModule: React.FC = () => {
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                  <tr className="data-table-header">
                     <th className="py-3 px-4">Mã Khóa</th>
                     <th className="py-3 px-4">Tên Khóa Đào Tạo</th>
                     <th className="py-3 px-3">Hình Thức</th>
@@ -937,7 +937,7 @@ export const DashboardModule: React.FC = () => {
                 </thead>
                 <tbody className="divide-y divide-slate-200">
                   {trainingCourses.map((c) => (
-                    <tr key={c.id} className="hover:bg-slate-50">
+                    <tr key={c.id} className="data-table-row">
                       <td className="py-3 px-4 font-mono font-bold text-slate-800">{c.code}</td>
                       <td className="py-3 px-4 font-bold text-slate-900">{c.title}</td>
                       <td className="py-3 px-3 text-blue-700 font-semibold">{c.method}</td>

@@ -154,14 +154,14 @@ export const DonTuModule: React.FC = () => {
     <div className="space-y-6">
       {/* Toast Alert */}
       {toastMsg && (
-        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-xl shadow-2xl border border-emerald-500 flex items-center gap-3 animate-bounce">
+        <div className="fixed top-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-md shadow-2xl border border-emerald-500 flex items-center gap-3 animate-bounce">
           <CheckCircle2 className="w-5 h-5 text-emerald-400" />
           <span className="text-sm font-semibold">{toastMsg}</span>
         </div>
       )}
 
       {/* Top Header */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-2xl border border-slate-200 shadow-xs">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-white p-5 rounded-lg border border-slate-200 shadow-xs">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl font-bold text-slate-900">Quản Lý Đơn Từ Điện Tử (Không Giấy) & Workflow BPA</h1>
@@ -178,7 +178,7 @@ export const DonTuModule: React.FC = () => {
           {isExecutiveOrHR && (
             <button
               onClick={handleExportExcel}
-              className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-3.5 py-2 btn-primary rounded-md text-xs font-bold shadow-xs transition-all cursor-pointer"
             >
               <FileSpreadsheet className="w-4 h-4" />
               <span>Xuất Sổ Đơn Từ (.xlsx)</span>
@@ -187,7 +187,7 @@ export const DonTuModule: React.FC = () => {
 
           <button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-1.5 px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white rounded-xl text-xs font-bold shadow-md shadow-orange-600/20 transition-all cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-2 btn-primary rounded-md text-xs font-bold shadow-md shadow-orange-600/20 transition-all cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Tạo Đơn Điện Tử Mới</span>
@@ -197,8 +197,8 @@ export const DonTuModule: React.FC = () => {
 
       {/* Tra cứu Quỹ Ngày Phép & Tiện ích Khối Văn Phòng */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
+        <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-xs flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-md bg-blue-100 text-blue-600 flex items-center justify-center shrink-0">
             <Calendar className="w-5 h-5" />
           </div>
           <div>
@@ -208,8 +208,8 @@ export const DonTuModule: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
+        <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-xs flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-md bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">
             <Clock className="w-5 h-5" />
           </div>
           <div>
@@ -219,8 +219,8 @@ export const DonTuModule: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
+        <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-xs flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-md bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">
             <CheckCircle2 className="w-5 h-5" />
           </div>
           <div>
@@ -230,8 +230,8 @@ export const DonTuModule: React.FC = () => {
           </div>
         </div>
 
-        <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
+        <div className="p-4 bg-white rounded-lg border border-slate-200 shadow-xs flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-md bg-purple-100 text-purple-600 flex items-center justify-center shrink-0">
             <DollarSign className="w-5 h-5" />
           </div>
           <div className="min-w-0">
@@ -245,10 +245,10 @@ export const DonTuModule: React.FC = () => {
       </div>
 
       {/* Tab Selectors */}
-      <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap gap-2 text-xs">
+      <div className="bg-white p-2 rounded-lg border border-slate-200 shadow-xs flex flex-wrap gap-2 text-xs">
         <button
           onClick={() => setActiveTab('my_requests')}
-          className={`px-4 py-2 rounded-xl font-bold transition-all ${
+          className={`px-4 py-2 rounded-md font-bold transition-all ${
             activeTab === 'my_requests'
               ? 'bg-orange-600 text-white shadow-xs'
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -260,7 +260,7 @@ export const DonTuModule: React.FC = () => {
         {isExecutiveOrHR && (
           <button
             onClick={() => setActiveTab('all_requests')}
-            className={`px-4 py-2 rounded-xl font-bold transition-all ${
+            className={`px-4 py-2 rounded-md font-bold transition-all ${
               activeTab === 'all_requests'
                 ? 'bg-orange-600 text-white shadow-xs'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -272,7 +272,7 @@ export const DonTuModule: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('workflow_tracking')}
-          className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-md font-bold transition-all flex items-center gap-1.5 ${
             activeTab === 'workflow_tracking'
               ? 'bg-orange-600 text-white shadow-xs'
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -283,7 +283,7 @@ export const DonTuModule: React.FC = () => {
 
         <button
           onClick={() => setActiveTab('leave_balance')}
-          className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-md font-bold transition-all flex items-center gap-1.5 ${
             activeTab === 'leave_balance'
               ? 'bg-orange-600 text-white shadow-xs'
               : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
@@ -297,7 +297,7 @@ export const DonTuModule: React.FC = () => {
       {/* SECTION: DANH SÁCH ĐƠN & TIẾN ĐỘ PHÊ DUYỆT */}
       {/* ========================================================================= */}
       {(activeTab === 'my_requests' || activeTab === 'all_requests') && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+        <div className="bg-white rounded-lg border border-slate-200 shadow-xs overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
@@ -368,7 +368,7 @@ export const DonTuModule: React.FC = () => {
                                 approveRequest(r.id);
                                 showToast(`✓ Đã phê duyệt đơn ${r.code}!`);
                               }}
-                              className="p-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white"
+                              className="p-1 rounded-lg btn-primary"
                               title="Duyệt đơn"
                             >
                               <Check className="w-3.5 h-3.5" />
@@ -401,7 +401,7 @@ export const DonTuModule: React.FC = () => {
       {/* SECTION: THEO DÕI TIẾN ĐỘ DUYỆT 3 BƯỚC TRỰC QUAN (WORKFLOW APPROVAL TRACKER) */}
       {/* ========================================================================= */}
       {activeTab === 'workflow_tracking' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-6">
+        <div className="bg-white rounded-lg border border-slate-200 shadow-xs p-6 space-y-6">
           <div className="flex justify-between items-center border-b border-slate-100 pb-4">
             <div>
               <h3 className="font-black text-slate-900 text-base">Sơ Đồ Luồng Duyệt Đơn Tự Động (BPA 3 Bước)</h3>
@@ -415,9 +415,9 @@ export const DonTuModule: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-orange-50 rounded-2xl border border-orange-200 space-y-2">
+            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200 space-y-2">
               <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded-xl bg-orange-600 text-white font-black flex items-center justify-center text-xs">
+                <span className="w-7 h-7 rounded-md bg-orange-600 text-white font-black flex items-center justify-center text-xs">
                   1
                 </span>
                 <h4 className="font-bold text-orange-950 text-xs">Bước 1: Trưởng Phòng / GĐ Phê Duyệt</h4>
@@ -430,9 +430,9 @@ export const DonTuModule: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-purple-50 rounded-2xl border border-purple-200 space-y-2">
+            <div className="p-4 bg-purple-50 rounded-lg border border-purple-200 space-y-2">
               <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded-xl bg-purple-600 text-white font-black flex items-center justify-center text-xs">
+                <span className="w-7 h-7 rounded-md bg-purple-600 text-white font-black flex items-center justify-center text-xs">
                   2
                 </span>
                 <h4 className="font-bold text-purple-950 text-xs">Bước 2: Phòng HCTH / HR Xác Nhận</h4>
@@ -445,9 +445,9 @@ export const DonTuModule: React.FC = () => {
               </div>
             </div>
 
-            <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 space-y-2">
+            <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200 space-y-2">
               <div className="flex items-center gap-2">
-                <span className="w-7 h-7 rounded-xl bg-emerald-600 text-white font-black flex items-center justify-center text-xs">
+                <span className="w-7 h-7 rounded-md bg-emerald-600 text-white font-black flex items-center justify-center text-xs">
                   3
                 </span>
                 <h4 className="font-bold text-emerald-950 text-xs">Bước 3: Hoàn Tất & Đồng Bộ Lương</h4>
@@ -467,7 +467,7 @@ export const DonTuModule: React.FC = () => {
       {/* SECTION: TRA CỨU QUỸ PHÉP CHI TIẾT */}
       {/* ========================================================================= */}
       {activeTab === 'leave_balance' && (
-        <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-slate-200 shadow-xs p-6 space-y-4">
           <h3 className="font-black text-slate-900 text-sm">Bảng Kê Chi Tiết Quỹ Phép Năm 2026 - {currentUser.fullName}</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
@@ -520,7 +520,7 @@ export const DonTuModule: React.FC = () => {
       {/* ========================================================================= */}
       {showCreateModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs">
-          <div className="bg-white w-full max-w-2xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden space-y-4 max-h-[90vh] flex flex-col">
+          <div className="bg-white w-full max-w-2xl rounded-lg shadow-2xl border border-slate-200 overflow-hidden space-y-4 max-h-[90vh] flex flex-col">
             <div className="p-5 bg-gradient-to-r from-slate-950 to-orange-950 text-white flex items-center justify-between shrink-0">
               <div>
                 <h3 className="font-black text-base">Tạo Đơn Điện Tử Mới (100% Không Dùng Giấy)</h3>
@@ -537,7 +537,7 @@ export const DonTuModule: React.FC = () => {
                 <select
                   value={reqType}
                   onChange={(e) => setReqType(e.target.value as RequestType)}
-                  className="w-full px-3 py-2.5 border border-slate-300 rounded-xl font-bold text-slate-900 bg-slate-50 focus:bg-white"
+                  className="w-full px-3 py-2.5 border border-slate-300 rounded-md font-bold text-slate-900 bg-slate-50 focus:bg-white"
                 >
                   <optgroup label="1. Khối Đơn Nghỉ Phép & Chế Độ">
                     <option value="PHEP_NAM">Đơn xin nghỉ phép năm (Trừ quỹ phép)</option>
@@ -561,7 +561,7 @@ export const DonTuModule: React.FC = () => {
 
               {/* Dynamic Sub-form: Đơn giải trình chấm công / Bổ sung công */}
               {reqType === 'GIAI_TRINH_CONG' && (
-                <div className="p-3.5 bg-cyan-50 rounded-xl border border-cyan-200 space-y-3">
+                <div className="p-3.5 bg-cyan-50 rounded-md border border-cyan-200 space-y-3">
                   <h4 className="font-bold text-cyan-950 text-xs">Chi Tiết Giải Trình Bổ Sung Công</h4>
                   <div className="grid grid-cols-3 gap-2">
                     {[
@@ -611,7 +611,7 @@ export const DonTuModule: React.FC = () => {
 
               {/* Dynamic Sub-form: Đơn công tác */}
               {reqType === 'CONG_TAC' && (
-                <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 space-y-3">
+                <div className="p-3.5 bg-emerald-50 rounded-md border border-emerald-200 space-y-3">
                   <h4 className="font-bold text-emerald-950 text-xs">Thông Tin Chuyến Công Tác / Ra Ngoài</h4>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -641,7 +641,7 @@ export const DonTuModule: React.FC = () => {
 
               {/* Dynamic Sub-form: Đơn làm thêm giờ (OT) */}
               {reqType === 'LAM_THEM_GIO' && (
-                <div className="p-3.5 bg-orange-50 rounded-xl border border-orange-200 space-y-3">
+                <div className="p-3.5 bg-orange-50 rounded-md border border-orange-200 space-y-3">
                   <h4 className="font-bold text-orange-950 text-xs">Khung Giờ Đăng Ký Làm Thêm Giờ (OT)</h4>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
@@ -680,7 +680,7 @@ export const DonTuModule: React.FC = () => {
 
               {/* Dynamic Sub-form: Con ốm */}
               {reqType === 'CON_OM' && (
-                <div className="p-3.5 bg-pink-50 rounded-xl border border-pink-200 space-y-3">
+                <div className="p-3.5 bg-pink-50 rounded-md border border-pink-200 space-y-3">
                   <h4 className="font-bold text-pink-950 text-xs">Chế Độ Nghỉ Chăm Con Ốm (Mẫu C65-HD)</h4>
                   <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-2">
@@ -716,7 +716,7 @@ export const DonTuModule: React.FC = () => {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono bg-slate-50"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md font-mono bg-slate-50"
                     required
                   />
                 </div>
@@ -726,7 +726,7 @@ export const DonTuModule: React.FC = () => {
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full px-3 py-2 border border-slate-300 rounded-xl font-mono bg-slate-50"
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md font-mono bg-slate-50"
                   />
                 </div>
               </div>
@@ -737,7 +737,7 @@ export const DonTuModule: React.FC = () => {
                   value={reason}
                   onChange={(e) => setReason(e.target.value)}
                   rows={2}
-                  className="w-full px-3 py-2 border border-slate-300 rounded-xl"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-md"
                   placeholder="Ghi rõ nội dung và lý do để quản lý phê duyệt..."
                   required
                 />
@@ -747,13 +747,13 @@ export const DonTuModule: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowCreateModal(false)}
-                  className="px-4 py-2 bg-slate-100 font-bold rounded-xl text-slate-700"
+                  className="px-4 py-2 bg-slate-100 font-bold rounded-md text-slate-700"
                 >
                   Hủy
                 </button>
                 <button
                   type="submit"
-                  className="px-5 py-2 bg-orange-600 hover:bg-orange-700 text-white font-bold rounded-xl shadow-xs"
+                  className="px-5 py-2 btn-primary font-bold rounded-md shadow-xs"
                 >
                   Gửi Đơn Lên Quản Lý
                 </button>
