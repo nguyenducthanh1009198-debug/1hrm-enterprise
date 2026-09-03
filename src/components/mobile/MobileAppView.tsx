@@ -36,25 +36,36 @@ import {
   Lock,
   Camera,
   Layers,
-  RotateCw
+  RotateCw,
+  Tractor,
+  Building2,
+  Users,
+  CheckSquare,
+  Award,
+  ChevronDown
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
-import { RequestType, WorkerAttendanceStatus } from '@/types';
+import { RequestType, WorkerAttendanceStatus, Role } from '@/types';
 import {
   exportBangChamCongExcel,
   exportPhieuLuongCaNhanExcel,
   exportBaoCaoDonTuVaNoiQuy,
+  exportBaoCaoChamCongToTruong,
+  exportBaoCaoQuyLuong
 } from '@/lib/exportEngine';
 
 export const MobileAppView: React.FC = () => {
   const {
     currentUser,
     currentRole,
+    switchRole,
     todayAttendance,
     handleCheckIn,
     handleCheckOut,
     requests,
     createRequest,
+    approveRequest,
+    rejectRequest,
     payslips,
     teamBatches,
     updateWorkerAttendanceStatus,
@@ -62,14 +73,22 @@ export const MobileAppView: React.FC = () => {
     toggleOfflineSync,
     approveTeamBatch,
     toggleDocumentUpload,
+    employees,
+    fieldInspections,
+    addFieldInspection
   } = useHRM();
 
   const [activeBottomNav, setActiveBottomNav] = useState<'home' | 'attendance' | 'requests' | 'payroll' | 'profile'>('home');
-  const [requestFilter, setRequestFilter] = useState<'all' | 'pending' | 'approved'>('all');
   const [showNewRequestSheet, setShowNewRequestSheet] = useState(false);
   const [showMobileNotifSheet, setShowMobileNotifSheet] = useState(false);
+  const [showRoleSelectorSheet, setShowRoleSelectorSheet] = useState(false);
   const [showYieldModal, setShowYieldModal] = useState<any | null>(null);
+  const [showInspectionModal, setShowInspectionModal] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
+
+  // Inspection state for Plantation Director
+  const [inspectionLot, setInspectionLot] = useState('Lô A1 - A5 (Tổ 1)');
+  const [inspectionNotes, setInspectionNotes] = useState('Kiểm tra dăm cạo mủ đạt chuẩn độ sâu, trang bị BHLĐ đầy đủ.');
 
   // Form states for comprehensive incident requests
   const [reqType, setReqType] = useState<RequestType>('PHEP_NAM');
@@ -83,6 +102,9 @@ export const MobileAppView: React.FC = () => {
   const [reqHospitalCode, setReqHospitalCode] = useState('');
   const [reqTripDest, setReqTripDest] = useState('Nông Trường 1 (Bình Phước)');
   const [reqOtHours, setReqOtHours] = useState(2);
+  const [missedTimeType, setMissedTimeType] = useState<'MAY_HONG' | 'MAT_DIEN' | 'QUEN_QUET_THE'>('QUEN_QUET_THE');
+  const [missedTimeIn, setMissedTimeIn] = useState('08:00');
+  const [missedTimeOut, setMissedTimeOut] = useState('17:30');
   const [reqReason, setReqReason] = useState('');
 
   // Yield inputs in modal
@@ -112,11 +134,18 @@ export const MobileAppView: React.FC = () => {
     setTimeout(() => setToastMsg(null), 3500);
   };
 
-  // PHÂN QUYỀN BẢO MẬT: Chỉ Ban Giám Đốc (BGĐ) và Nhân Sự (HR) mới được xem mức lương toàn công ty
-  const canViewSalary = ['ADMIN', 'EXECUTIVE_DIRECTOR', 'HR_MANAGER', 'HR_ADMIN'].includes(currentRole);
+  // Determine current role category
+  const isTeamLeader = currentRole === 'TEAM_LEADER';
+  const isPlantationDirector = currentRole === 'PLANTATION_DIRECTOR';
+  const isOffice = currentRole === 'OFFICE_STAFF' || currentRole === 'EMPLOYEE' || currentRole === 'DEPARTMENT_LEAD';
+  const isExecutiveOrHR = ['ADMIN', 'EXECUTIVE_DIRECTOR', 'HR_MANAGER', 'HR_ADMIN'].includes(currentRole);
+  const canViewSalary = isExecutiveOrHR;
 
   const myPayslip = payslips.find((p) => p.employeeId === currentUser.id) || payslips[0];
   const activeBatch = teamBatches[0];
+  const ntRequests = requests.filter((r) => r.departmentName.includes('Nông Trường') || r.departmentName.includes('Tổ'));
+  const ntEmployees = employees.filter((e) => e.departmentName.includes('Nông Trường 1') || e.departmentName.includes('Tổ'));
+  const myRequests = requests.filter((r) => r.employeeId === currentUser.id || r.employeeName === currentUser.fullName);
 
   const handleCreateSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -124,7 +153,11 @@ export const MobileAppView: React.FC = () => {
     let specificDetails = '';
     let typeName = 'Đơn xin nghỉ phép năm';
 
-    if (reqType === 'DI_MUON') {
+    if (reqType === 'GIAI_TRINH_CONG') {
+      const reasonLabel = missedTimeType === 'MAY_HONG' ? 'Máy hỏng' : missedTimeType === 'MAT_DIEN' ? 'Mất điện' : 'Quên quẹt thẻ';
+      typeName = 'Đơn giải trình chấm công (Bổ sung công)';
+      specificDetails = `Bổ sung giờ: Vào ${missedTimeIn} - Ra ${missedTimeOut} (${reasonLabel})`;
+    } else if (reqType === 'DI_MUON') {
       typeName = 'Đơn giải trình đi muộn';
       specificDetails = `Đi muộn: ${reqLateMinutes} phút`;
     } else if (reqType === 'VE_SOM') {
@@ -167,7 +200,7 @@ export const MobileAppView: React.FC = () => {
 
     setShowNewRequestSheet(false);
     setReqReason('');
-    showToast('✓ Đã gửi đơn phát sinh thành công lên quản lý duyệt!');
+    showToast('✓ Đã tạo đơn điện tử thành công và chuyển lên quản lý duyệt!');
   };
 
   const handleSaveYield = () => {
@@ -181,6 +214,25 @@ export const MobileAppView: React.FC = () => {
     );
     setShowYieldModal(null);
     showToast(`✓ Đã ghi nhận sản lượng mủ cho ${showYieldModal.workerName}!`);
+  };
+
+  const handleSaveInspection = (e: React.FormEvent) => {
+    e.preventDefault();
+    addFieldInspection({
+      date: new Date().toLocaleDateString('vi-VN'),
+      supervisorId: currentUser.id,
+      supervisorName: `${currentUser.fullName} (GĐ Nông Trường)`,
+      plantationId: 'plant-1',
+      plantationName: 'Nông Trường 1 (Bình Phước)',
+      lotChecked: inspectionLot,
+      gpsCoordinates: '11.4590° N, 106.8935° E (GPS Chính xác: 3m)',
+      distanceMeters: 12,
+      photoUrl: 'https://images.unsplash.com/photo-1586771107445-d3ca888129ff?w=400&auto=format&fit=crop&q=80',
+      notes: inspectionNotes,
+      approvedTeamsCount: 1,
+    });
+    setShowInspectionModal(false);
+    showToast('✓ Đã lưu kết quả kiểm tra thực địa lô cạo!');
   };
 
   return (
@@ -208,25 +260,31 @@ export const MobileAppView: React.FC = () => {
           </div>
         </div>
 
-        {/* Top App Bar with Role & Notification Bell */}
+        {/* Top App Bar with Role Switcher & Bell */}
         <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-orange-950 text-white px-4 py-3 flex items-center justify-between shadow-md shrink-0">
-          <div className="flex items-center gap-2.5">
+          <div
+            onClick={() => setShowRoleSelectorSheet(true)}
+            className="flex items-center gap-2.5 cursor-pointer active:opacity-80"
+          >
             <img
               src={currentUser.avatar}
               alt=""
               className="w-9 h-9 rounded-full object-cover border-2 border-orange-500 shadow-sm"
             />
             <div>
-              <p className="font-black text-xs leading-tight">{currentUser.fullName}</p>
+              <p className="font-black text-xs leading-tight flex items-center gap-1">
+                <span>{currentUser.fullName}</span>
+                <ChevronDown className="w-3 h-3 text-orange-400" />
+              </p>
               <p className="text-[10px] text-orange-200 font-mono flex items-center gap-1">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
-                {currentRole === 'TEAM_LEADER'
+                {isTeamLeader
                   ? 'Tổ Trưởng Nông Trường'
-                  : currentRole === 'PLANTATION_DIRECTOR'
-                  ? 'GĐ Nông Trường'
-                  : currentRole === 'ADMIN'
-                  ? 'Tổng Giám Đốc'
-                  : 'CBNV 1HRM'}
+                  : isPlantationDirector
+                  ? 'Giám Đốc Nông Trường'
+                  : isOffice
+                  ? 'Khối Văn Phòng'
+                  : 'HR & Ban Giám Đốc'}
               </p>
             </div>
           </div>
@@ -245,270 +303,481 @@ export const MobileAppView: React.FC = () => {
         {/* Main Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 text-xs pb-20">
           {/* ========================================================================= */}
-          {/* TAB 1: HOME (TỔNG QUAN / 1-TAP ACTION) */}
+          {/* TAB 1: HOME (TỔNG QUAN THEO CẤP BẬC) */}
           {/* ========================================================================= */}
           {activeBottomNav === 'home' && (
             <div className="space-y-4">
-              {/* Live Time Card & 1-Tap Check-in */}
-              <div className="p-4 bg-gradient-to-br from-orange-600 to-amber-600 rounded-2xl text-white shadow-lg space-y-3">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <span className="px-2 py-0.5 rounded bg-black/20 text-[10px] font-bold">
-                      Ca Sáng: 05:00 - 13:00
-                    </span>
-                    <h2 className="text-2xl font-black mt-1 font-mono tracking-tight">
-                      {isMounted ? timeString : '08:30:00'}
-                    </h2>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[10px] text-orange-100">Định vị GPS Lô cạo</p>
-                    <p className="font-bold text-xs flex items-center justify-end gap-1">
-                      <MapPin className="w-3.5 h-3.5 text-emerald-300" /> Nông Trường 1
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-2 pt-1">
-                  <button
-                    onClick={() => {
-                      handleCheckIn('Mobile GPS', 'Nông Trường 1 (Bình Phước)');
-                      showToast('✓ Đã Check-in chấm công thành công!');
-                    }}
-                    className="py-2.5 bg-white text-orange-950 font-black rounded-xl shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all"
-                  >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Check-in Vào Ca</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      handleCheckOut();
-                      showToast('✓ Đã Check-out kết thúc ca làm việc!');
-                    }}
-                    className="py-2.5 bg-slate-950/40 text-white font-bold rounded-xl border border-white/20 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
-                  >
-                    <Clock className="w-4 h-4 text-amber-300" />
-                    <span>Check-out Hết Ca</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Quick Actions Grid */}
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={() => setActiveBottomNav('attendance')}
-                  className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col items-center justify-center text-center gap-1.5 active:bg-orange-50 transition-all"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
-                    <CalendarCheck className="w-4 h-4" />
-                  </div>
-                  <span className="font-bold text-[11px] text-slate-800">Chấm Công</span>
-                </button>
-
-                <button
-                  onClick={() => setShowNewRequestSheet(true)}
-                  className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col items-center justify-center text-center gap-1.5 active:bg-orange-50 transition-all"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
-                    <Plus className="w-4 h-4" />
-                  </div>
-                  <span className="font-bold text-[11px] text-slate-800">Tạo Đơn Từ</span>
-                </button>
-
-                <button
-                  onClick={() => setActiveBottomNav('payroll')}
-                  className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs flex flex-col items-center justify-center text-center gap-1.5 active:bg-orange-50 transition-all"
-                >
-                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
-                    <DollarSign className="w-4 h-4" />
-                  </div>
-                  <span className="font-bold text-[11px] text-slate-800">Phiếu Lương</span>
-                </button>
-              </div>
-
-              {/* Quick Export Cards (Bảng Chấm Công & Phiếu Lương) */}
-              <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2.5">
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-slate-900 text-xs">Xuất File Báo Cáo Nhanh (Excel)</span>
-                  <span className="text-[10px] text-slate-400 font-mono">Tải trực tiếp</span>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => {
-                      exportBangChamCongExcel(activeBatch, activeBatch.teamName);
-                      showToast('✓ Đã tải Bảng chấm công tổ về máy!');
-                    }}
-                    className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950 font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all text-[11px]"
-                  >
-                    <FileSpreadsheet className="w-3.5 h-3.5 text-emerald-600" />
-                    <span>Xuất Bảng Công</span>
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      exportPhieuLuongCaNhanExcel(myPayslip);
-                      showToast('✓ Đã tải Phiếu lương cá nhân về máy!');
-                    }}
-                    className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all text-[11px]"
-                  >
-                    <Download className="w-3.5 h-3.5 text-amber-600" />
-                    <span>Xuất Phiếu Lương</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Production Team Summary (Tổ Khai Thác Mủ) */}
-              <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <TreePine className="w-4 h-4 text-emerald-600" />
-                    <span className="font-bold text-slate-900">{activeBatch.teamName}</span>
-                  </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
-                    {activeBatch.presentCount}/{activeBatch.totalMembers} Đủ
-                  </span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 bg-slate-50 rounded-xl">
-                    <p className="text-[10px] text-slate-500">Diện Tích</p>
-                    <p className="font-black text-slate-900 mt-0.5">{activeBatch.totalLotAreaHectares} ha</p>
-                  </div>
-                  <div className="p-2 bg-slate-50 rounded-xl">
-                    <p className="text-[10px] text-slate-500">Mủ Nước</p>
-                    <p className="font-black text-orange-600 mt-0.5">{activeBatch.totalLatexYieldKg} kg</p>
-                  </div>
-                  <div className="p-2 bg-slate-50 rounded-xl">
-                    <p className="text-[10px] text-slate-500">Độ TSC</p>
-                    <p className="font-black text-blue-600 mt-0.5">{activeBatch.avgTscDegree}°</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* TAB 2: ATTENDANCE (CHẤM CÔNG 1-CHẠM & SẢN LƯỢNG MỦ) */}
-          {/* ========================================================================= */}
-          {activeBottomNav === 'attendance' && (
-            <div className="space-y-3">
-              {/* Header & Offline Sync Toggle */}
-              <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
-                <div>
-                  <h3 className="font-black text-slate-900 text-xs">Chấm Công Danh Sách Tổ</h3>
-                  <p className="text-[10px] text-slate-500">{activeBatch.teamName} ({activeBatch.totalMembers} người)</p>
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => {
-                      toggleOfflineSync(activeBatch.id);
-                      showToast(activeBatch.isOfflineSync ? '⚡ Đã chuyển sang chế độ Online 5G' : '📡 Đã bật chế độ Lưu Offline trong vườn');
-                    }}
-                    className={`px-2.5 py-1 rounded-xl text-[10px] font-bold border flex items-center gap-1 transition-all ${
-                      activeBatch.isOfflineSync
-                        ? 'bg-amber-100 text-amber-900 border-amber-300'
-                        : 'bg-emerald-100 text-emerald-900 border-emerald-300'
-                    }`}
-                  >
-                    <Wifi className="w-3 h-3" />
-                    {activeBatch.isOfflineSync ? 'Offline' : 'Online 5G'}
-                  </button>
-
-                  <button
-                    onClick={() => {
-                      exportBangChamCongExcel(activeBatch, activeBatch.teamName);
-                      showToast('✓ Đã xuất Bảng chấm công tổ Excel!');
-                    }}
-                    className="p-1.5 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
-                    title="Xuất Excel bảng công"
-                  >
-                    <FileSpreadsheet className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-
-              {/* Worker Attendance List with 1-Tap Status & Yield */}
-              <div className="space-y-2">
-                {activeBatch.items.map((worker) => (
-                  <div key={worker.workerId} className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2.5">
-                        <img
-                          src={worker.avatar}
-                          alt=""
-                          className="w-8 h-8 rounded-full object-cover border border-slate-200"
-                        />
-                        <div>
-                          <p className="font-bold text-slate-900 text-xs">{worker.workerName}</p>
-                          <p className="text-[10px] text-slate-500 font-mono">{worker.workerCode} • {worker.lotAssigned}</p>
-                        </div>
+              {/* 1.1 Tổ Trưởng Home View */}
+              {isTeamLeader && (
+                <>
+                  <div className="p-4 bg-gradient-to-br from-orange-600 to-amber-600 rounded-2xl text-white shadow-lg space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="px-2 py-0.5 rounded bg-black/20 text-[10px] font-bold">
+                          Tổ Khai Thác 1 • Ca Sáng (05:00 - 13:00)
+                        </span>
+                        <h2 className="text-2xl font-black mt-1 font-mono tracking-tight">
+                          {isMounted ? timeString : '08:30:00'}
+                        </h2>
                       </div>
-
-                      {/* Yield Button */}
-                      <button
-                        onClick={() => {
-                          setShowYieldModal(worker);
-                          setLatexYieldInput(worker.latexYieldKg || 42.5);
-                          setCupLumpYieldInput(worker.cupLumpYieldKg || 6.0);
-                          setTscDegreeInput(worker.tscDegree || 34.5);
-                        }}
-                        className="px-2 py-1 bg-orange-50 text-orange-700 font-bold rounded-lg border border-orange-200 text-[10px] flex items-center gap-1"
-                      >
-                        <TreePine className="w-3 h-3" />
-                        <span>{worker.latexYieldKg ? `${worker.latexYieldKg} kg (${worker.tscDegree}°)` : 'Nhập mủ'}</span>
-                      </button>
+                      <div className="text-right">
+                        <p className="text-[10px] text-orange-100">Lô Cạo Vườn Cây</p>
+                        <p className="font-bold text-xs flex items-center justify-end gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-emerald-300" /> Lô A1 - A10 (35 ha)
+                        </p>
+                      </div>
                     </div>
 
-                    {/* 1-Tap Status Selector */}
-                    <div className="grid grid-cols-4 gap-1">
-                      {[
-                        { id: 'DU', label: '✓ Đủ', color: worker.status === 'DU' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700' },
-                        { id: 'CHOANG_LO', label: '⚡ Choàng', color: worker.status === 'CHOANG_LO' ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-700' },
-                        { id: 'NGHI_PHEP', label: 'Phép', color: worker.status === 'NGHI_PHEP' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700' },
-                        { id: 'NGHI_KHONG_PHEP', label: 'Vắng', color: worker.status === 'NGHI_KHONG_PHEP' ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-700' },
-                      ].map((st) => (
-                        <button
-                          key={st.id}
-                          onClick={() => {
-                            updateWorkerAttendanceStatus(activeBatch.id, worker.workerId, st.id as WorkerAttendanceStatus);
-                            showToast(`Đã cập nhật ${worker.workerName}: ${st.label}`);
-                          }}
-                          className={`py-1 rounded-lg text-[10px] font-bold transition-all ${st.color}`}
-                        >
-                          {st.label}
-                        </button>
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button
+                        onClick={() => setActiveBottomNav('attendance')}
+                        className="py-2.5 bg-white text-orange-950 font-black rounded-xl shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                      >
+                        <CalendarCheck className="w-4 h-4 text-orange-600" />
+                        <span>Điểm Danh Tổ 1-Chạm</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          exportBaoCaoChamCongToTruong(activeBatch, activeBatch.teamName);
+                          showToast('✓ Đã tải file Chấm công & Sản lượng 3 Sheet!');
+                        }}
+                        className="py-2.5 bg-slate-950/40 text-white font-bold rounded-xl border border-white/20 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                      >
+                        <FileSpreadsheet className="w-4 h-4 text-emerald-300" />
+                        <span>Xuất Excel 3 Sheet</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Team Production Summary */}
+                  <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-2">
+                        <TreePine className="w-4 h-4 text-emerald-600" />
+                        <span className="font-bold text-slate-900">{activeBatch.teamName}</span>
+                      </div>
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800">
+                        {activeBatch.presentCount}/{activeBatch.totalMembers} Đi làm đủ
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-center">
+                      <div className="p-2 bg-slate-50 rounded-xl">
+                        <p className="text-[10px] text-slate-500">Mủ Nước</p>
+                        <p className="font-black text-orange-600 mt-0.5">{activeBatch.totalLatexYieldKg} kg</p>
+                      </div>
+                      <div className="p-2 bg-slate-50 rounded-xl">
+                        <p className="text-[10px] text-slate-500">Độ TSC</p>
+                        <p className="font-black text-blue-600 mt-0.5">{activeBatch.avgTscDegree}°</p>
+                      </div>
+                      <div className="p-2 bg-slate-50 rounded-xl">
+                        <p className="text-[10px] text-slate-500">Trạng Thái</p>
+                        <p className="font-bold text-emerald-700 mt-0.5">Đạt Khoán</p>
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* 1.2 Giám Đốc Nông Trường Home View */}
+              {isPlantationDirector && (
+                <>
+                  <div className="p-4 bg-gradient-to-br from-blue-700 to-indigo-800 rounded-2xl text-white shadow-lg space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="px-2 py-0.5 rounded bg-black/20 text-[10px] font-bold">
+                          Giám Đốc Nông Trường 1 (Bình Phước)
+                        </span>
+                        <h2 className="text-2xl font-black mt-1 font-mono tracking-tight">320 Công Nhân</h2>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-blue-200">Sản Lượng Ngày</p>
+                        <p className="font-black text-lg text-orange-300">13.250 kg</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button
+                        onClick={() => {
+                          approveTeamBatch(activeBatch.id);
+                          showToast('✓ Giám đốc đã 1-click phê duyệt toàn bộ các tổ!');
+                        }}
+                        className="py-2.5 bg-white text-blue-950 font-black rounded-xl shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                      >
+                        <CheckSquare className="w-4 h-4 text-blue-600" />
+                        <span>1-Click Duyệt Bảng Công</span>
+                      </button>
+
+                      <button
+                        onClick={() => setShowInspectionModal(true)}
+                        className="py-2.5 bg-slate-950/40 text-white font-bold rounded-xl border border-white/20 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                      >
+                        <Camera className="w-4 h-4 text-emerald-300" />
+                        <span>Check-in Hiện Trường</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Plantation Teams Breakdown */}
+                  <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="font-bold text-slate-900 text-xs">Tổng Hợp Các Tổ Sản Xuất</span>
+                      <span className="text-[10px] text-blue-600 font-bold">3 Tổ Trực Thuộc</span>
+                    </div>
+
+                    <div className="space-y-2">
+                      {teamBatches.map((b) => (
+                        <div key={b.id} className="p-2.5 bg-slate-50 rounded-xl flex items-center justify-between">
+                          <div>
+                            <p className="font-bold text-slate-900">{b.teamName}</p>
+                            <p className="text-[10px] text-slate-500">Tổ trưởng: {b.leaderName} • {b.totalMembers} người</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-black text-orange-600">{b.totalLatexYieldKg} kg</span>
+                            <p className="text-[10px] text-emerald-700 font-bold">✓ {b.presentCount} đủ</p>
+                          </div>
+                        </div>
                       ))}
                     </div>
                   </div>
-                ))}
-              </div>
+                </>
+              )}
+
+              {/* 1.3 Khối Văn Phòng Home View */}
+              {isOffice && (
+                <>
+                  <div className="p-4 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-2xl text-white shadow-lg space-y-3">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="px-2 py-0.5 rounded bg-black/20 text-[10px] font-bold">
+                          Ca Hành Chính (08:00 - 17:30)
+                        </span>
+                        <h2 className="text-2xl font-black mt-1 font-mono tracking-tight">
+                          {isMounted ? timeString : '08:30:00'}
+                        </h2>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-emerald-100">Wifi Công Ty</p>
+                        <p className="font-bold text-xs flex items-center justify-end gap-1">
+                          <Building2 className="w-3.5 h-3.5 text-emerald-200" /> Five Star Kim Giang
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <button
+                        onClick={() => {
+                          handleCheckIn('FaceID / Wifi', 'Văn Phòng Tổng Công Ty');
+                          showToast('✓ Đã Check-in vào ca làm việc!');
+                        }}
+                        className="py-2.5 bg-white text-emerald-950 font-black rounded-xl shadow-md flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                      >
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                        <span>Check-in FaceID</span>
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          handleCheckOut();
+                          showToast('✓ Đã Check-out hết ca làm việc!');
+                        }}
+                        className="py-2.5 bg-slate-950/40 text-white font-bold rounded-xl border border-white/20 flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                      >
+                        <Clock className="w-4 h-4 text-amber-300" />
+                        <span>Check-out Hết Ca</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Leave Balance & Paperless Request Shortcut */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1">
+                      <p className="text-[10px] text-slate-500 font-medium">Quỹ Phép Năm Còn Lại</p>
+                      <p className="text-lg font-black text-emerald-600">11 Ngày</p>
+                      <p className="text-[9px] text-slate-400">Đã dùng: 2 ngày</p>
+                    </div>
+
+                    <div
+                      onClick={() => setShowNewRequestSheet(true)}
+                      className="p-3 bg-orange-50 rounded-2xl border border-orange-200 shadow-xs space-y-1 cursor-pointer active:scale-95 transition-all"
+                    >
+                      <p className="text-[10px] text-orange-950 font-bold">Tạo Đơn Điện Tử</p>
+                      <p className="text-xs font-bold text-orange-700 flex items-center gap-1">
+                        <Plus className="w-3.5 h-3.5" /> Nghỉ phép / Quên công
+                      </p>
+                      <p className="text-[9px] text-orange-600">Duyệt tự động 3 bước</p>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* 1.4 HR & Ban Giám Đốc Home View */}
+              {isExecutiveOrHR && (
+                <>
+                  <div className="p-4 bg-gradient-to-br from-slate-950 via-slate-900 to-orange-950 rounded-2xl text-white shadow-lg space-y-3 border border-slate-800">
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <span className="px-2.5 py-0.5 rounded bg-orange-500 text-white font-bold text-[10px]">
+                          ĐIỀU HÀNH TOÀN HỆ THỐNG
+                        </span>
+                        <h2 className="text-2xl font-black mt-1 font-mono tracking-tight">1.018 Cán Bộ CNV</h2>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-slate-400">Sản Lượng Toàn Công Ty</p>
+                        <p className="font-black text-lg text-orange-400">42.8 Tấn / Ngày</p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <div className="p-2 bg-white/10 rounded-xl text-center">
+                        <p className="text-[10px] text-slate-300">Khối Cạo Mủ (3 NT)</p>
+                        <p className="font-black text-white text-sm">940 Người</p>
+                      </div>
+                      <div className="p-2 bg-white/10 rounded-xl text-center">
+                        <p className="text-[10px] text-slate-300">Khối Văn Phòng</p>
+                        <p className="font-black text-white text-sm">78 Người</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Summary Metric Cards */}
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1">
+                      <p className="text-[10px] text-slate-500">Tỷ Lệ Đúng Giờ</p>
+                      <p className="text-lg font-black text-blue-600">97.5%</p>
+                      <p className="text-[9px] text-emerald-700 font-bold">✓ 3 Nông trường + VP</p>
+                    </div>
+                    <div className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1">
+                      <p className="text-[10px] text-slate-500">Chốt Bảng Lương</p>
+                      <p className="text-lg font-black text-purple-600">100% Đồng Bộ</p>
+                      <p className="text-[9px] text-purple-700 font-bold">Luật Thuế 109/2025</p>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
 
           {/* ========================================================================= */}
-          {/* TAB 3: REQUESTS (ĐƠN TỪ PHÁT SINH & CHẾ ĐỘ) */}
+          {/* TAB 2: ATTENDANCE (CHẤM CÔNG THEO PHÂN CẤP) */}
+          {/* ========================================================================= */}
+          {activeBottomNav === 'attendance' && (
+            <div className="space-y-3">
+              {/* Tổ Trưởng Attendance */}
+              {isTeamLeader && (
+                <>
+                  <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                      <h3 className="font-black text-slate-900 text-xs">Chấm Công Danh Sách Tổ</h3>
+                      <p className="text-[10px] text-slate-500">{activeBatch.teamName} ({activeBatch.totalMembers} người)</p>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => {
+                          toggleOfflineSync(activeBatch.id);
+                          showToast(activeBatch.isOfflineSync ? '⚡ Online 5G' : '📡 Lưu Offline vườn cạo');
+                        }}
+                        className={`px-2 py-1 rounded-xl text-[10px] font-bold border ${activeBatch.isOfflineSync ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-emerald-100 text-emerald-900 border-emerald-300'}`}
+                      >
+                        <Wifi className="w-3 h-3" />
+                      </button>
+
+                      <button
+                        onClick={() => {
+                          exportBaoCaoChamCongToTruong(activeBatch, activeBatch.teamName);
+                          showToast('✓ Đã xuất file Chấm công & Sản lượng 3 Sheet!');
+                        }}
+                        className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-[10px] flex items-center gap-1"
+                      >
+                        <FileSpreadsheet className="w-3 h-3" /> Xuất 3 Sheet
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    {activeBatch.items.map((worker) => (
+                      <div key={worker.workerId} className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <img src={worker.avatar} alt="" className="w-8 h-8 rounded-full object-cover border border-slate-200" />
+                            <div>
+                              <p className="font-bold text-slate-900 text-xs">{worker.workerName}</p>
+                              <p className="text-[10px] text-slate-500 font-mono">{worker.workerCode} • {worker.lotAssigned}</p>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => {
+                              setShowYieldModal(worker);
+                              setLatexYieldInput(worker.latexYieldKg || 42.5);
+                              setCupLumpYieldInput(worker.cupLumpYieldKg || 6.0);
+                              setTscDegreeInput(worker.tscDegree || 34.5);
+                            }}
+                            className="px-2 py-1 bg-orange-50 text-orange-700 font-bold rounded-lg border border-orange-200 text-[10px] flex items-center gap-1"
+                          >
+                            <TreePine className="w-3 h-3" />
+                            <span>{worker.latexYieldKg ? `${worker.latexYieldKg} kg (${worker.tscDegree}°)` : 'Nhập mủ'}</span>
+                          </button>
+                        </div>
+
+                        <div className="grid grid-cols-4 gap-1">
+                          {[
+                            { id: 'DU', label: '✓ Đủ', color: worker.status === 'DU' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700' },
+                            { id: 'CHOANG_LO', label: '⚡ Choàng', color: worker.status === 'CHOANG_LO' ? 'bg-orange-600 text-white' : 'bg-slate-100 text-slate-700' },
+                            { id: 'NGHI_PHEP', label: 'Phép', color: worker.status === 'NGHI_PHEP' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700' },
+                            { id: 'NGHI_KHONG_PHEP', label: 'Vắng', color: worker.status === 'NGHI_KHONG_PHEP' ? 'bg-rose-600 text-white' : 'bg-slate-100 text-slate-700' },
+                          ].map((st) => (
+                            <button
+                              key={st.id}
+                              onClick={() => {
+                                updateWorkerAttendanceStatus(activeBatch.id, worker.workerId, st.id as WorkerAttendanceStatus);
+                                showToast(`Đã cập nhật ${worker.workerName}: ${st.label}`);
+                              }}
+                              className={`py-1 rounded-lg text-[10px] font-bold transition-all ${st.color}`}
+                            >
+                              {st.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Giám Đốc Nông Trường Attendance */}
+              {isPlantationDirector && (
+                <>
+                  <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                      <h3 className="font-black text-slate-900 text-xs">Tổng Hợp Chấm Công 3 Tổ</h3>
+                      <p className="text-[10px] text-slate-500">Nông Trường 1 • 320 Công nhân</p>
+                    </div>
+
+                    <button
+                      onClick={() => {
+                        approveTeamBatch(activeBatch.id);
+                        showToast('✓ Giám đốc đã 1-click phê duyệt toàn bộ các tổ!');
+                      }}
+                      className="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl text-[11px] flex items-center gap-1 shadow-xs"
+                    >
+                      <CheckSquare className="w-3.5 h-3.5" /> 1-Click Duyệt
+                    </button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {teamBatches.map((b) => (
+                      <div key={b.id} className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="font-bold text-slate-900 text-xs">{b.teamName}</span>
+                          <span className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${b.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                            {b.status === 'APPROVED' ? 'Đã duyệt' : 'Chờ GĐ duyệt'}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1.5 text-center text-[10px]">
+                          <div className="p-1.5 bg-slate-50 rounded-lg">
+                            <p className="text-slate-400">Quân số</p>
+                            <p className="font-bold text-slate-900">{b.totalMembers} người</p>
+                          </div>
+                          <div className="p-1.5 bg-slate-50 rounded-lg">
+                            <p className="text-slate-400">Đi làm</p>
+                            <p className="font-bold text-emerald-700">{b.presentCount} đủ</p>
+                          </div>
+                          <div className="p-1.5 bg-slate-50 rounded-lg">
+                            <p className="text-slate-400">Sản lượng mủ</p>
+                            <p className="font-bold text-orange-600">{b.totalLatexYieldKg} kg</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
+              {/* Khối Văn Phòng Attendance */}
+              {isOffice && (
+                <>
+                  <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                      <h3 className="font-black text-slate-900 text-xs">Lịch Chấm Công Cá Nhân Tháng 08</h3>
+                      <p className="text-[10px] text-emerald-600 font-bold">Công chuẩn 24 • Thực tế 24 (100%)</p>
+                    </div>
+                  </div>
+
+                  <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3 space-y-2">
+                    <div className="grid grid-cols-7 gap-1 text-center text-[10px]">
+                      {['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map((d) => (
+                        <div key={d} className="font-bold text-slate-400 py-1">{d}</div>
+                      ))}
+                      {Array.from({ length: 31 }, (_, i) => i + 1).map((day) => {
+                        const isWeekend = day % 7 === 6 || day % 7 === 0;
+                        return (
+                          <div
+                            key={day}
+                            className={`p-1.5 rounded-lg border text-center ${isWeekend ? 'bg-slate-50 border-slate-100 text-slate-300' : 'bg-emerald-50/70 border-emerald-200 text-emerald-950 font-bold'}`}
+                          >
+                            <p className="text-[9px] text-slate-400">{day}</p>
+                            <p className="text-[10px] font-black">{isWeekend ? '-' : '1.0'}</p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* HR & Ban Giám Đốc Attendance */}
+              {isExecutiveOrHR && (
+                <>
+                  <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                    <div>
+                      <h3 className="font-black text-slate-900 text-xs">Đối Soát Công Ca Toàn Công Ty</h3>
+                      <p className="text-[10px] text-slate-500">3 Nông Trường + Khối Văn Phòng</p>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    {[
+                      { name: 'Nông Trường 1 (Bình Phước)', workers: 320, present: 312, yieldTons: '14.5 Tấn' },
+                      { name: 'Nông Trường 3 (Tây Ninh)', workers: 380, present: 371, yieldTons: '17.2 Tấn' },
+                      { name: 'Nông Trường 2 (Bình Dương)', workers: 240, present: 235, yieldTons: '11.1 Tấn' },
+                      { name: 'Khối Văn Phòng Tổng Công Ty', workers: 78, present: 76, yieldTons: '-' },
+                    ].map((unit, idx) => (
+                      <div key={idx} className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
+                        <div>
+                          <p className="font-bold text-slate-900 text-xs">{unit.name}</p>
+                          <p className="text-[10px] text-slate-500">{unit.workers} CBNV • {unit.present} đi làm đủ</p>
+                        </div>
+                        <div className="text-right">
+                          <span className="font-black text-orange-600 text-xs">{unit.yieldTons}</span>
+                          <p className="text-[10px] text-emerald-700 font-bold">✓ Đã chốt công</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* TAB 3: REQUESTS (QUẢN LÝ ĐƠN TỪ THEO PHÂN CẤP) */}
           {/* ========================================================================= */}
           {activeBottomNav === 'requests' && (
             <div className="space-y-3">
               <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
                 <div>
-                  <h3 className="font-black text-slate-900 text-xs">Đơn Từ & Chế Độ Phát Sinh</h3>
-                  <p className="text-[10px] text-slate-500">Đi muộn, về sớm, con ốm, OT, công tác...</p>
+                  <h3 className="font-black text-slate-900 text-xs">
+                    {isPlantationDirector ? 'Phê Duyệt Đơn Nông Trường' : 'Đơn Từ Điện Tử (Không Giấy)'}
+                  </h3>
+                  <p className="text-[10px] text-slate-500">
+                    {isPlantationDirector ? `Có ${ntRequests.length} đơn nộp lên từ các tổ` : 'Phép năm, quên công, công tác, OT...'}
+                  </p>
                 </div>
 
                 <div className="flex items-center gap-1.5">
-                  <button
-                    onClick={() => {
-                      exportBaoCaoDonTuVaNoiQuy(requests);
-                      showToast('✓ Đã xuất Sổ đơn từ phát sinh Excel!');
-                    }}
-                    className="p-1.5 rounded-xl bg-slate-900 text-white"
-                    title="Xuất Excel Đơn từ"
-                  >
-                    <FileSpreadsheet className="w-3.5 h-3.5" />
-                  </button>
-
                   <button
                     onClick={() => setShowNewRequestSheet(true)}
                     className="px-3 py-1.5 bg-orange-600 hover:bg-orange-700 text-white rounded-xl font-bold text-xs flex items-center gap-1 shadow-xs"
@@ -520,20 +789,16 @@ export const MobileAppView: React.FC = () => {
 
               {/* Requests List */}
               <div className="space-y-2">
-                {requests.map((r) => (
+                {(isPlantationDirector ? ntRequests : isExecutiveOrHR ? requests : myRequests).map((r) => (
                   <div key={r.id} className="p-3 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-1.5">
                     <div className="flex justify-between items-center">
-                      <span className="font-mono font-bold text-[10px] text-slate-500">{r.code}</span>
+                      <span className="font-mono font-bold text-[10px] text-slate-500">{r.code} • {r.employeeName}</span>
                       <span
                         className={`px-2 py-0.5 rounded-full font-bold text-[10px] ${
-                          r.status === 'APPROVED'
-                            ? 'bg-emerald-100 text-emerald-800'
-                            : r.status === 'REJECTED'
-                            ? 'bg-rose-100 text-rose-800'
-                            : 'bg-amber-100 text-amber-800'
+                          r.status === 'APPROVED' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
                         }`}
                       >
-                        {r.status === 'APPROVED' ? 'Đã duyệt' : r.status === 'REJECTED' ? 'Từ chối' : 'Chờ duyệt'}
+                        {r.status === 'APPROVED' ? 'Đã duyệt' : 'Chờ duyệt'}
                       </span>
                     </div>
 
@@ -544,9 +809,30 @@ export const MobileAppView: React.FC = () => {
                       </p>
                     )}
                     <p className="text-[10px] text-slate-500 italic">{r.reason}</p>
-                    <p className="text-[9px] text-slate-400 font-mono pt-1 border-t border-slate-100">
-                      Thời gian: {r.startDate} • Người gửi: {r.employeeName}
-                    </p>
+
+                    {/* Actions for Plantation Director or HR */}
+                    {(isPlantationDirector || isExecutiveOrHR) && r.status === 'PENDING' && (
+                      <div className="flex items-center justify-end gap-1.5 pt-1.5 border-t border-slate-100">
+                        <button
+                          onClick={() => {
+                            approveRequest(r.id);
+                            showToast(`✓ Đã duyệt đơn ${r.code}!`);
+                          }}
+                          className="px-3 py-1 bg-emerald-600 text-white rounded-lg font-bold text-[11px]"
+                        >
+                          Duyệt Đơn
+                        </button>
+                        <button
+                          onClick={() => {
+                            rejectRequest(r.id);
+                            showToast(`Đã từ chối đơn ${r.code}`);
+                          }}
+                          className="px-2.5 py-1 bg-rose-100 text-rose-800 rounded-lg font-bold text-[11px]"
+                        >
+                          Từ chối
+                        </button>
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -554,20 +840,27 @@ export const MobileAppView: React.FC = () => {
           )}
 
           {/* ========================================================================= */}
-          {/* TAB 4: PAYROLL (PHIẾU LƯƠNG CÁ NHÂN & BẢO MẬT) */}
+          {/* TAB 4: PAYROLL (TIỀN LƯƠNG THEO CẤP BẬC) */}
           {/* ========================================================================= */}
           {activeBottomNav === 'payroll' && (
             <div className="space-y-3">
               <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center justify-between">
                 <div>
-                  <h3 className="font-black text-slate-900 text-xs">Phiếu Lương Cá Nhân Tháng 08/2026</h3>
-                  <p className="text-[10px] text-emerald-600 font-bold">Thuế Luật 109/2025/QH15 (5 Bậc)</p>
+                  <h3 className="font-black text-slate-900 text-xs">
+                    {isExecutiveOrHR ? 'Quỹ Lương Toàn Công Ty' : 'Phiếu Lương Cá Nhân'}
+                  </h3>
+                  <p className="text-[10px] text-emerald-600 font-bold">Luật Thuế 109/2025/QH15 (5 Bậc)</p>
                 </div>
 
                 <button
                   onClick={() => {
-                    exportPhieuLuongCaNhanExcel(myPayslip);
-                    showToast('✓ Đã tải phiếu lương cá nhân Excel!');
+                    if (isExecutiveOrHR) {
+                      exportBaoCaoQuyLuong(payslips, 12850000000);
+                      showToast('✓ Đã tải Báo cáo Quỹ lương 6 Sheet!');
+                    } else {
+                      exportPhieuLuongCaNhanExcel(myPayslip);
+                      showToast('✓ Đã tải Phiếu lương cá nhân!');
+                    }
                   }}
                   className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-[11px] flex items-center gap-1 shadow-xs"
                 >
@@ -578,66 +871,49 @@ export const MobileAppView: React.FC = () => {
               {/* Net Salary Highlight Card */}
               <div className="p-4 bg-gradient-to-br from-slate-950 to-slate-900 rounded-2xl text-white shadow-xl space-y-2 border border-slate-800">
                 <p className="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">
-                  Thực Lĩnh Chuyển Khoản (NET)
+                  {isExecutiveOrHR ? 'Tổng Quỹ Lương Thực Chi (NET)' : 'Thực Lĩnh Chuyển Khoản (NET)'}
                 </p>
                 <h2 className="text-2xl font-black text-emerald-400 font-mono">
-                  {myPayslip.netSalary.toLocaleString('vi-VN')} đ
+                  {isExecutiveOrHR ? '11.255.750.000 đ' : `${myPayslip.netSalary.toLocaleString('vi-VN')} đ`}
                 </h2>
-                <div className="flex justify-between items-center text-[10px] text-slate-300 pt-2 border-t border-slate-800">
-                  <span>Tổng thu nhập: <b>{myPayslip.totalIncome.toLocaleString('vi-VN')} đ</b></span>
-                  <span>Đã thanh toán qua MBBank</span>
-                </div>
+                <p className="text-[10px] text-slate-300 pt-2 border-t border-slate-800">
+                  {isExecutiveOrHR ? 'Chi trả toàn thể CBNV qua MBBank' : `Lương cơ bản: ${myPayslip.baseSalary.toLocaleString('vi-VN')} đ • Thưởng mủ: +${myPayslip.commission.toLocaleString('vi-VN')} đ`}
+                </p>
               </div>
 
-              {/* Detailed Breakdown */}
+              {/* Salary Breakdown */}
               <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 space-y-2 text-xs">
-                <h4 className="font-black text-slate-900 text-[11px] uppercase tracking-wider border-b border-slate-100 pb-1.5">
-                  Chi Tiết Các Khoản Mục Thu Nhập
-                </h4>
-
-                <div className="space-y-1.5">
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">Lương cơ bản ({myPayslip.actualDays}/{myPayslip.standardDays} công)</span>
-                    <span className="font-bold text-slate-900">{myPayslip.actualBaseSalary.toLocaleString('vi-VN')} đ</span>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Lương thời gian ({myPayslip.actualDays}/{myPayslip.standardDays} công)</span>
+                  <span className="font-bold text-slate-900">{myPayslip.actualBaseSalary.toLocaleString('vi-VN')} đ</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-600">Phụ cấp ăn ca & trách nhiệm</span>
+                  <span className="font-bold text-slate-900">{(myPayslip.lunchAllowance + myPayslip.positionAllowance).toLocaleString('vi-VN')} đ</span>
+                </div>
+                {myPayslip.commission > 0 && (
+                  <div className="flex justify-between text-orange-600">
+                    <span className="font-bold">Thưởng sản lượng mủ cao su</span>
+                    <span className="font-black">+{myPayslip.commission.toLocaleString('vi-VN')} đ</span>
                   </div>
-
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">Phụ cấp ăn ca & trách nhiệm</span>
-                    <span className="font-bold text-slate-900">{(myPayslip.lunchAllowance + myPayslip.positionAllowance).toLocaleString('vi-VN')} đ</span>
-                  </div>
-
-                  {myPayslip.commission > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-orange-700 font-bold">Thưởng sản lượng mủ cao su</span>
-                      <span className="font-black text-orange-600">+{myPayslip.commission.toLocaleString('vi-VN')} đ</span>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">Thưởng hiệu quả KPI</span>
-                    <span className="font-bold text-slate-900">+{myPayslip.kpiBonus.toLocaleString('vi-VN')} đ</span>
-                  </div>
-
-                  <div className="flex justify-between pt-1 border-t border-slate-100 text-rose-600">
-                    <span>Trích nộp BHXH, BHYT, BHTN (10.5%)</span>
-                    <span className="font-bold">-{myPayslip.totalInsurance.toLocaleString('vi-VN')} đ</span>
-                  </div>
-
-                  <div className="flex justify-between text-amber-700">
-                    <span>Thuế TNCN (Luật 109 - Giảm trừ 15.5M)</span>
-                    <span className="font-bold">-{myPayslip.pitTax.toLocaleString('vi-VN')} đ</span>
-                  </div>
+                )}
+                <div className="flex justify-between text-rose-600 pt-1 border-t border-slate-100">
+                  <span>BHXH, BHYT, BHTN (10.5%)</span>
+                  <span className="font-bold">-{myPayslip.totalInsurance.toLocaleString('vi-VN')} đ</span>
+                </div>
+                <div className="flex justify-between text-amber-700">
+                  <span>Thuế TNCN (Luật 109 Giảm trừ 15.5M)</span>
+                  <span className="font-bold">-{myPayslip.pitTax.toLocaleString('vi-VN')} đ</span>
                 </div>
               </div>
             </div>
           )}
 
           {/* ========================================================================= */}
-          {/* TAB 5: PROFILE (HỒ SƠ CÁ NHÂN & CẢNH BÁO THIẾU GIẤY TỜ) */}
+          {/* TAB 5: PROFILE (HỒ SƠ CÁ NHÂN HOẶC NHÂN SỰ NÔNG TRƯỜNG) */}
           {/* ========================================================================= */}
           {activeBottomNav === 'profile' && (
             <div className="space-y-3">
-              {/* Profile Card */}
               <div className="p-4 bg-white rounded-2xl border border-slate-200 shadow-xs flex items-center gap-3">
                 <img
                   src={currentUser.avatar}
@@ -651,55 +927,64 @@ export const MobileAppView: React.FC = () => {
                 </div>
               </div>
 
-              {/* Incomplete Profile Alert & Checklist */}
-              <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <h4 className="font-bold text-slate-900 text-xs">Tiến Độ Hoàn Tất Hồ Sơ</h4>
-                    <p className="text-[10px] text-slate-500">Checklist giấy tờ Onboarding gốc</p>
-                  </div>
-                  <span className="font-black text-orange-600 text-sm font-mono">
-                    {currentUser.profileCompleteness || 100}%
-                  </span>
-                </div>
-
-                {currentUser.isProfileComplete === false && (
-                  <div className="p-2.5 bg-amber-50 rounded-xl border border-amber-200 text-amber-900 text-[10px] flex items-center gap-2">
-                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                    <span>⚠️ Bạn còn thiếu {currentUser.missingDocuments?.length} loại giấy tờ cần nộp bổ sung.</span>
-                  </div>
-                )}
-
-                <div className="space-y-1.5">
-                  {[
-                    'Bản sao CCCD 2 mặt (Công chứng)',
-                    'Giấy khám sức khỏe định kỳ (Dưới 6 tháng)',
-                    'Bản sao Bằng cấp chuyên môn',
-                    'Sổ Bảo Hiểm Xã Hội gốc',
-                  ].map((docName) => {
-                    const isMissing = currentUser.missingDocuments?.includes(docName);
-                    return (
-                      <div
-                        key={docName}
-                        onClick={() => {
-                          toggleDocumentUpload(currentUser.id, docName);
-                          showToast(`✓ Đã cập nhật trạng thái "${docName}"!`);
-                        }}
-                        className={`p-2 rounded-xl border flex items-center justify-between cursor-pointer text-[10px] ${
-                          isMissing
-                            ? 'bg-amber-50/50 border-amber-200 text-amber-900'
-                            : 'bg-emerald-50/50 border-emerald-200 text-emerald-900'
-                        }`}
-                      >
-                        <span className="font-semibold">{docName}</span>
-                        <span className={`px-2 py-0.5 rounded font-bold ${isMissing ? 'bg-amber-200 text-amber-950' : 'bg-emerald-200 text-emerald-950'}`}>
-                          {isMissing ? 'Chưa nộp' : 'Đã nộp'}
-                        </span>
+              {/* Plantation Personnel for Plantation Director */}
+              {isPlantationDirector ? (
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-xs p-3.5 space-y-2">
+                  <h4 className="font-bold text-slate-900 text-xs">Báo Cáo Nhân Sự Nông Trường 1 ({ntEmployees.length} người)</h4>
+                  <div className="space-y-1.5 max-h-64 overflow-y-auto">
+                    {ntEmployees.map((e) => (
+                      <div key={e.id} className="p-2 bg-slate-50 rounded-xl flex items-center justify-between text-[11px]">
+                        <div>
+                          <p className="font-bold text-slate-900">{e.fullName}</p>
+                          <p className="text-[9px] text-slate-500">{e.code} • {e.positionTitle}</p>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-700">{e.profileCompleteness || 100}%</span>
                       </div>
-                    );
-                  })}
+                    ))}
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* Checklist for Individual Worker */
+                <div className="p-3.5 bg-white rounded-2xl border border-slate-200 shadow-xs space-y-3">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <h4 className="font-bold text-slate-900 text-xs">Tiến Độ Hoàn Tất Hồ Sơ</h4>
+                      <p className="text-[10px] text-slate-500">Checklist giấy tờ Onboarding gốc</p>
+                    </div>
+                    <span className="font-black text-orange-600 text-sm font-mono">
+                      {currentUser.profileCompleteness || 100}%
+                    </span>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    {[
+                      'Bản sao CCCD 2 mặt (Công chứng)',
+                      'Giấy khám sức khỏe định kỳ (Dưới 6 tháng)',
+                      'Bản sao Bằng cấp chuyên môn',
+                      'Sổ Bảo Hiểm Xã Hội gốc',
+                    ].map((docName) => {
+                      const isMissing = currentUser.missingDocuments?.includes(docName);
+                      return (
+                        <div
+                          key={docName}
+                          onClick={() => {
+                            toggleDocumentUpload(currentUser.id, docName);
+                            showToast(`✓ Đã cập nhật "${docName}"!`);
+                          }}
+                          className={`p-2 rounded-xl border flex items-center justify-between cursor-pointer text-[10px] ${
+                            isMissing ? 'bg-amber-50/50 border-amber-200 text-amber-900' : 'bg-emerald-50/50 border-emerald-200 text-emerald-900'
+                          }`}
+                        >
+                          <span className="font-semibold">{docName}</span>
+                          <span className={`px-2 py-0.5 rounded font-bold ${isMissing ? 'bg-amber-200 text-amber-950' : 'bg-emerald-200 text-emerald-950'}`}>
+                            {isMissing ? 'Chưa nộp' : 'Đã nộp'}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -713,15 +998,13 @@ export const MobileAppView: React.FC = () => {
             { id: 'attendance', label: 'Chấm Công', icon: CalendarCheck },
             { id: 'requests', label: 'Đơn Từ', icon: FileText },
             { id: 'payroll', label: 'Tiền Lương', icon: DollarSign },
-            { id: 'profile', label: 'Cá Nhân', icon: User },
+            { id: 'profile', label: isPlantationDirector ? 'Nhân Sự' : 'Cá Nhân', icon: User },
           ].map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveBottomNav(tab.id as any)}
               className={`flex flex-col items-center gap-0.5 py-1 px-2.5 rounded-xl transition-all cursor-pointer ${
-                activeBottomNav === tab.id
-                  ? 'text-orange-600 font-bold'
-                  : 'text-slate-400 hover:text-slate-600'
+                activeBottomNav === tab.id ? 'text-orange-600 font-bold' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               <tab.icon className={`w-4 h-4 ${activeBottomNav === tab.id ? 'stroke-[2.5]' : 'stroke-2'}`} />
@@ -729,6 +1012,45 @@ export const MobileAppView: React.FC = () => {
             </button>
           ))}
         </div>
+
+        {/* Modal Sheet: Chuyển Đổi Góc Nhìn Vai Trò Trên Mobile */}
+        {showRoleSelectorSheet && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end justify-center">
+            <div className="bg-white rounded-t-3xl p-5 w-full shadow-2xl space-y-3 text-xs max-h-[80%] overflow-y-auto">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h4 className="font-black text-slate-900 text-sm">Chuyển Đổi Góc Nhìn Phân Cấp</h4>
+                <button onClick={() => setShowRoleSelectorSheet(false)} className="text-slate-400">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="space-y-2">
+                {[
+                  { id: 'TEAM_LEADER', label: '1. Tổ Trưởng Nông Trường', desc: 'Chấm công 1-chạm, nhập mủ, xuất 3 Sheet' },
+                  { id: 'PLANTATION_DIRECTOR', label: '2. Giám Đốc Nông Trường', desc: 'Quản lý quân số các tổ, duyệt đơn, tổng hợp công' },
+                  { id: 'OFFICE_STAFF', label: '3. Khối Văn Phòng', desc: 'Chấm công FaceID, đơn điện tử không giấy' },
+                  { id: 'HR_MANAGER', label: '4. Phòng Nhân Sự (HR)', desc: 'Báo cáo nhân sự 3 nông trường, văn phòng, bảng lương' },
+                  { id: 'ADMIN', label: '5. Ban Tổng Giám Đốc', desc: 'Bao quát toàn hệ thống & điều hành cấp cao' },
+                ].map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => {
+                      switchRole(r.id as Role);
+                      setShowRoleSelectorSheet(false);
+                      showToast(`✓ Đã chuyển sang góc nhìn ${r.label}!`);
+                    }}
+                    className={`w-full p-3 rounded-2xl border text-left flex flex-col gap-0.5 transition-all ${
+                      currentRole === r.id ? 'bg-orange-50 border-orange-500 text-orange-950 ring-2 ring-orange-500/20' : 'bg-slate-50 border-slate-200 text-slate-800 hover:bg-slate-100'
+                    }`}
+                  >
+                    <p className="font-bold text-xs">{r.label}</p>
+                    <p className="text-[10px] text-slate-500">{r.desc}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Modal: Nhập Sản Lượng Mủ (Yield) */}
         {showYieldModal && (
@@ -796,12 +1118,71 @@ export const MobileAppView: React.FC = () => {
           </div>
         )}
 
+        {/* Modal Sheet: Kiểm Tra Hiện Trường (Giám Đốc Nông Trường) */}
+        {showInspectionModal && (
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end justify-center">
+            <div className="bg-white rounded-t-3xl p-5 w-full shadow-2xl space-y-3 text-xs max-h-[85%] overflow-y-auto">
+              <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                <h4 className="font-black text-slate-900 text-sm">Check-in Kiểm Tra Thực Địa Lô Cạo</h4>
+                <button onClick={() => setShowInspectionModal(false)} className="text-slate-400">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveInspection} className="space-y-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Lô cạo kiểm tra</label>
+                  <input
+                    type="text"
+                    value={inspectionLot}
+                    onChange={(e) => setInspectionLot(e.target.value)}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-900 bg-slate-50"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Ghi chú kỹ thuật dăm cạo</label>
+                  <textarea
+                    value={inspectionNotes}
+                    onChange={(e) => setInspectionNotes(e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-slate-300 rounded-xl"
+                    required
+                  />
+                </div>
+
+                <div className="p-2.5 bg-blue-50 rounded-xl border border-blue-200 text-blue-900 text-[10px] flex items-center gap-2">
+                  <MapPin className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                  <span>GPS: 11.4590° N, 106.8935° E (Khớp 100% tọa độ Nông Trường 1)</span>
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => setShowInspectionModal(false)}
+                    className="px-3 py-1.5 bg-slate-100 font-bold rounded-xl"
+                  >
+                    Hủy
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-4 py-1.5 bg-blue-600 font-bold text-white rounded-xl shadow-xs"
+                  >
+                    Lưu Kết Quả
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* Modal Sheet: Tạo Đơn Từ Mới Trên Mobile */}
         {showNewRequestSheet && (
           <div className="absolute inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end justify-center">
             <div className="bg-white rounded-t-3xl p-5 w-full shadow-2xl space-y-3 text-xs max-h-[85%] overflow-y-auto">
               <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                <h4 className="font-black text-slate-900 text-sm">Tạo Đơn Phát Sinh Mới</h4>
+                <h4 className="font-black text-slate-900 text-sm">Tạo Đơn Điện Tử (Không Dùng Giấy)</h4>
                 <button onClick={() => setShowNewRequestSheet(false)} className="text-slate-400">
                   <X className="w-5 h-5" />
                 </button>
@@ -809,59 +1190,84 @@ export const MobileAppView: React.FC = () => {
 
               <form onSubmit={handleCreateSubmit} className="space-y-3">
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1">Loại Đơn</label>
+                  <label className="font-bold text-slate-700 block mb-1">Loại Đơn Điện Tử</label>
                   <select
                     value={reqType}
                     onChange={(e) => setReqType(e.target.value as RequestType)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-xl font-bold text-slate-900 bg-slate-50"
                   >
-                    <option value="DI_MUON">1. Đơn giải trình đi muộn</option>
-                    <option value="VE_SOM">2. Đơn xin về sớm</option>
-                    <option value="CON_OM">3. Đơn nghỉ con ốm (Luật BHXH)</option>
+                    <option value="PHEP_NAM">1. Đơn xin nghỉ phép năm (Trừ quỹ phép)</option>
+                    <option value="GIAI_TRINH_CONG">2. Đơn giải trình chấm công (Bổ sung công)</option>
+                    <option value="CON_OM">3. Đơn nghỉ chế độ con ốm (Mẫu C65-HD)</option>
                     <option value="OM_DAU">4. Đơn nghỉ ốm đau bản thân</option>
-                    <option value="PHEP_NAM">5. Đơn xin nghỉ phép năm</option>
-                    <option value="CONG_TAC">6. Đơn đăng ký công tác nông trường</option>
-                    <option value="LAM_THEM_GIO">7. Đơn đăng ký làm thêm giờ (OT)</option>
-                    <option value="CHOANG_LO">8. Đơn choàng lô / cạo thay</option>
+                    <option value="CONG_TAC">5. Đơn công tác / Làm việc bên ngoài</option>
+                    <option value="LAM_THEM_GIO">6. Đơn đăng ký làm thêm giờ (OT)</option>
+                    <option value="DI_MUON">7. Đơn giải trình đi muộn</option>
+                    <option value="VE_SOM">8. Đơn xin về sớm</option>
+                    <option value="CHOANG_LO">9. Đơn choàng lô / cạo thay</option>
                   </select>
                 </div>
 
-                {reqType === 'DI_MUON' && (
-                  <div className="p-2.5 bg-amber-50 rounded-xl space-y-1">
-                    <label className="font-bold text-amber-900 block">Số phút đi muộn</label>
-                    <input
-                      type="number"
-                      value={reqLateMinutes}
-                      onChange={(e) => setReqLateMinutes(Number(e.target.value))}
-                      className="w-full px-3 py-1.5 border border-amber-300 rounded-lg bg-white font-bold"
-                      required
-                    />
+                {reqType === 'GIAI_TRINH_CONG' && (
+                  <div className="p-2.5 bg-cyan-50 rounded-xl space-y-2">
+                    <div className="grid grid-cols-3 gap-1">
+                      {[
+                        { id: 'MAY_HONG', label: 'Máy hỏng' },
+                        { id: 'MAT_DIEN', label: 'Mất điện' },
+                        { id: 'QUEN_QUET_THE', label: 'Quên thẻ' },
+                      ].map((item) => (
+                        <button
+                          type="button"
+                          key={item.id}
+                          onClick={() => setMissedTimeType(item.id as any)}
+                          className={`py-1 rounded-lg text-[10px] font-bold border ${missedTimeType === item.id ? 'bg-cyan-600 text-white border-cyan-600' : 'bg-white text-cyan-900 border-cyan-200'}`}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="text-[10px] font-bold text-cyan-900 block">Giờ Vào</label>
+                        <input
+                          type="time"
+                          value={missedTimeIn}
+                          onChange={(e) => setMissedTimeIn(e.target.value)}
+                          className="w-full px-2 py-1 border border-cyan-300 rounded-lg bg-white font-mono"
+                          required
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[10px] font-bold text-cyan-900 block">Giờ Ra</label>
+                        <input
+                          type="time"
+                          value={missedTimeOut}
+                          onChange={(e) => setMissedTimeOut(e.target.value)}
+                          className="w-full px-2 py-1 border border-cyan-300 rounded-lg bg-white font-mono"
+                          required
+                        />
+                      </div>
+                    </div>
                   </div>
                 )}
 
                 {reqType === 'CON_OM' && (
                   <div className="p-2.5 bg-pink-50 rounded-xl space-y-2">
-                    <div>
-                      <label className="font-bold text-pink-900 block">Tên & Tuổi của con</label>
-                      <input
-                        type="text"
-                        placeholder="Ví dụ: Lê Gia Hưng (3 tuổi)"
-                        value={reqChildName}
-                        onChange={(e) => setReqChildName(e.target.value)}
-                        className="w-full px-2.5 py-1.5 border border-pink-300 rounded-lg bg-white"
-                        required
-                      />
-                    </div>
-                    <div>
-                      <label className="font-bold text-pink-900 block">Mã số giấy viện C65-HD</label>
-                      <input
-                        type="text"
-                        placeholder="BV-NHI-C65-88992"
-                        value={reqHospitalCode}
-                        onChange={(e) => setReqHospitalCode(e.target.value)}
-                        className="w-full px-2.5 py-1.5 border border-pink-300 rounded-lg bg-white font-mono"
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      placeholder="Họ tên & tuổi của con (Ví dụ: Lê Gia Hưng 3 tuổi)"
+                      value={reqChildName}
+                      onChange={(e) => setReqChildName(e.target.value)}
+                      className="w-full px-2.5 py-1.5 border border-pink-300 rounded-lg bg-white"
+                      required
+                    />
+                    <input
+                      type="text"
+                      placeholder="Mã số giấy viện C65-HD (BV-NHI-88992)"
+                      value={reqHospitalCode}
+                      onChange={(e) => setReqHospitalCode(e.target.value)}
+                      className="w-full px-2.5 py-1.5 border border-pink-300 rounded-lg bg-white font-mono"
+                    />
                   </div>
                 )}
 
@@ -894,7 +1300,7 @@ export const MobileAppView: React.FC = () => {
                     onChange={(e) => setReqReason(e.target.value)}
                     rows={2}
                     className="w-full px-3 py-1.5 border border-slate-300 rounded-xl"
-                    placeholder="Ghi rõ lý do..."
+                    placeholder="Ghi rõ lý do để quản lý phê duyệt..."
                     required
                   />
                 </div>
@@ -911,7 +1317,7 @@ export const MobileAppView: React.FC = () => {
                     type="submit"
                     className="px-4 py-1.5 bg-orange-600 font-bold text-white rounded-xl shadow-xs"
                   >
-                    Gửi Đơn Lên Quản Lý
+                    Gửi Đơn Điện Tử
                   </button>
                 </div>
               </form>
