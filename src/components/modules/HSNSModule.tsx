@@ -45,6 +45,9 @@ export const HSNSModule: React.FC = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
+  // PHÂN QUYỀN BẢO MẬT: Chỉ Ban Giám Đốc (BGĐ) và Nhân Sự (HR) mới được xem mức lương
+  const canViewSalary = ['ADMIN', 'EXECUTIVE_DIRECTOR', 'HR_MANAGER', 'HR_ADMIN'].includes(currentRole);
+
   // New employee form state
   const [newEmpForm, setNewEmpForm] = useState({
     fullName: '',
@@ -110,8 +113,13 @@ export const HSNSModule: React.FC = () => {
   };
 
   const handleExportExcel = () => {
-    exportBaoCaoNhanSuTongHop(employees);
-    showToast('✓ Đã xuất file Báo cáo Nhân sự Tổng hợp Excel chuẩn 1HRM Enterprise thành công!');
+    const sanitized = employees.map((e) => ({
+      ...e,
+      baseSalary: canViewSalary ? e.baseSalary : ('[BẢO MẬT BGĐ/HR]' as any),
+      allowance: canViewSalary ? e.allowance : ('[BẢO MẬT BGĐ/HR]' as any),
+    }));
+    exportBaoCaoNhanSuTongHop(sanitized);
+    showToast('✓ Đã xuất file Báo cáo Nhân sự Tổng hợp Excel thành công!');
   };
 
   const incompleteCount = employees.filter((e) => e.isProfileComplete === false).length;
@@ -139,20 +147,25 @@ export const HSNSModule: React.FC = () => {
                 <AlertTriangle className="w-3.5 h-3.5 text-amber-600" /> {incompleteCount} Hồ sơ cần bổ sung
               </span>
             )}
+            {!canViewSalary && (
+              <span className="text-[11px] px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold flex items-center gap-1 border border-slate-200">
+                <Lock className="w-3 h-3 text-amber-600" /> Lương bảo mật (Chỉ BGĐ & HR)
+              </span>
+            )}
           </div>
           <p className="text-xs text-slate-500 mt-1">
-            Quản lý hồ sơ số hóa toàn diện: Tự động fill thông tin Onboard từ tuyển dụng, theo dõi checklist tài liệu còn thiếu và xuất báo cáo chuẩn 1HRM Enterprise.
+            Quản lý hồ sơ số hóa toàn diện: Tự động fill thông tin Onboard từ tuyển dụng, theo dõi checklist tài liệu còn thiếu và xuất báo cáo chuẩn doanh nghiệp.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Export Excel 1HRM Enterprise Button */}
+          {/* Export Excel Button */}
           <button
             onClick={handleExportExcel}
             className="flex items-center gap-1.5 px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs transition-all cursor-pointer"
           >
             <FileSpreadsheet className="w-4 h-4" />
-            <span>Xuất Excel Nhân Sự (1HRM Enterprise)</span>
+            <span>Xuất Excel Nhân Sự</span>
           </button>
 
           <button
@@ -242,6 +255,7 @@ export const HSNSModule: React.FC = () => {
                 <th className="py-3 px-3">Phòng Ban / Nông Trường</th>
                 <th className="py-3 px-3">Vị Trí Chức Danh</th>
                 <th className="py-3 px-3">Hợp Đồng / Vào Làm</th>
+                <th className="py-3 px-3 text-right">Lương Cơ Bản</th>
                 <th className="py-3 px-4 text-center">Tiến Độ Hồ Sơ</th>
                 <th className="py-3 px-4">Cảnh Báo Giấy Tờ Thiếu</th>
                 <th className="py-3 px-4 text-center">Chi Tiết</th>
@@ -274,6 +288,17 @@ export const HSNSModule: React.FC = () => {
                     <td className="py-3 px-3">
                       <p className="font-semibold text-slate-800">{emp.contractType}</p>
                       <p className="text-[10px] text-slate-400 font-mono">Ngày vào: {emp.joinDate}</p>
+                    </td>
+
+                    {/* Mức lương có bảo mật (chỉ BGĐ và HR mới thấy) */}
+                    <td className="py-3 px-3 text-right font-black">
+                      {canViewSalary ? (
+                        <span className="text-slate-900">{emp.baseSalary.toLocaleString('vi-VN')} đ</span>
+                      ) : (
+                        <span className="text-slate-400 font-mono text-[10px] flex items-center justify-end gap-1">
+                          <Lock className="w-3 h-3 text-amber-500" /> [Bảo mật]
+                        </span>
+                      )}
                     </td>
 
                     <td className="py-3 px-4 text-center">
@@ -361,7 +386,7 @@ export const HSNSModule: React.FC = () => {
                     : 'border-transparent text-slate-500 hover:text-slate-700'
                 }`}
               >
-                1. Thông Tin Lý Lịch
+                1. Thông Tin Lý Lịch & Mức Lương
               </button>
 
               <button
@@ -397,9 +422,19 @@ export const HSNSModule: React.FC = () => {
                     <p className="font-bold text-slate-900">{selectedEmployee.address}</p>
                   </div>
                   <div className="p-3 bg-slate-50 rounded-xl space-y-1">
-                    <p className="text-slate-400 font-semibold text-[10px]">Tài Khoản Ngân Hàng</p>
-                    <p className="font-bold text-slate-900">{selectedEmployee.bankName}</p>
-                    <p className="font-mono text-slate-700">{selectedEmployee.bankAccount}</p>
+                    <p className="text-slate-400 font-semibold text-[10px]">Mức Lương Hợp Đồng</p>
+                    {canViewSalary ? (
+                      <div>
+                        <p className="font-black text-slate-900 text-sm">
+                          {selectedEmployee.baseSalary.toLocaleString('vi-VN')} đ
+                        </p>
+                        <p className="text-slate-500 text-[10px]">Phụ cấp: {selectedEmployee.allowance.toLocaleString('vi-VN')} đ</p>
+                      </div>
+                    ) : (
+                      <p className="text-slate-400 font-mono flex items-center gap-1">
+                        <Lock className="w-3.5 h-3.5 text-amber-500" /> [Bảo mật BGĐ & HR]
+                      </p>
+                    )}
                   </div>
                 </div>
               )}

@@ -21,7 +21,7 @@ import { SYSTEM_FORMULA_PRESETS, evaluateFormula } from '@/lib/formulaEngine';
 
 export const TienLuongModule: React.FC = () => {
   const { payslips, recalculatePayroll, currentRole, currentUser } = useHRM();
-  const isHR = currentRole === 'HR_MANAGER';
+  const canViewSalary = ['ADMIN', 'EXECUTIVE_DIRECTOR', 'HR_MANAGER', 'HR_ADMIN'].includes(currentRole);
   const [selectedPayslip, setSelectedPayslip] = useState<Payslip | null>(null);
   const [activeTab, setActiveTab] = useState<'payroll' | 'formula_playground' | 'banking'>('payroll');
   const [isCalculated, setIsCalculated] = useState(false);
@@ -86,12 +86,12 @@ export const TienLuongModule: React.FC = () => {
       {activeTab === 'payroll' && (
         <div className="space-y-4">
       {/* Role Security Alert */}
-      {!isHR && (
+      {!canViewSalary && (
         <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3 text-xs text-amber-900">
           <Lock className="w-4 h-4 text-amber-600 shrink-0" />
           <div>
             <strong>Phân Quyền Bảo Mật Lương:</strong> Bạn đang ở góc nhìn{' '}
-            <span className="font-bold underline">{currentRole}</span>. Mức lương và bảo hiểm của toàn thể nhân viên được bảo mật tuyệt đối, chỉ vai trò <strong className="text-orange-700">Trưởng Phòng Nhân Sự (HRM)</strong> mới có quyền xem toàn bộ. (Nhân viên chỉ xem được phiếu lương của chính mình).
+            <span className="font-bold underline">{currentRole}</span>. Mức lương và bảo hiểm của toàn thể nhân viên được bảo mật tuyệt đối, chỉ <strong className="text-orange-700">Ban Giám Đốc (BGĐ)</strong> và <strong className="text-orange-700">Nhân Sự (HR/HCTH)</strong> mới có quyền xem toàn bộ. (Nhân viên chỉ xem được phiếu lương của chính mình).
           </div>
         </div>
       )}
@@ -100,14 +100,14 @@ export const TienLuongModule: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-xs">
               <p className="text-xs text-slate-500 font-medium">Tổng Quỹ Lương Thực Nhận Tháng 08/2026</p>
-              {isHR ? (
+              {canViewSalary ? (
                 <p className="text-2xl font-black text-slate-900 mt-1">
                   {totalCompanyPayroll.toLocaleString('vi-VN')} đ
                 </p>
               ) : (
                 <p className="text-lg font-black text-slate-400 mt-1 font-mono flex items-center gap-1.5">
                   <Lock className="w-4 h-4 text-slate-400" />
-                  <span>****** đ (Bảo mật - Chỉ HR)</span>
+                  <span>****** đ (Bảo mật - Chỉ BGĐ & HR)</span>
                 </p>
               )}
               <p className="text-[11px] text-emerald-600 mt-1 font-semibold">Đã bao gồm Thuế & Bảo hiểm</p>
@@ -158,7 +158,7 @@ export const TienLuongModule: React.FC = () => {
                 <tbody className="divide-y divide-slate-100">
                   {payslips.map((p) => {
                     const isSelf = p.employeeId === currentUser.id;
-                    const canView = isHR || isSelf;
+                    const canView = canViewSalary || isSelf;
 
                     return (
                       <tr key={p.id} className="hover:bg-orange-50/30">

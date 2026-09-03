@@ -24,7 +24,8 @@ import { useHRM } from '@/context/HRMContext';
 import { Candidate } from '@/types';
 
 export const TuyenDungModule: React.FC = () => {
-  const { candidates, recruitmentPlans, updateCandidateStage, convertCandidateToEmployee, departments, positions } = useHRM();
+  const { candidates, recruitmentPlans, updateCandidateStage, convertCandidateToEmployee, departments, positions, currentRole } = useHRM();
+  const canViewSalary = ['ADMIN', 'EXECUTIVE_DIRECTOR', 'HR_MANAGER', 'HR_ADMIN'].includes(currentRole);
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [showOnboardModal, setShowOnboardModal] = useState<Candidate | null>(null);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
@@ -235,7 +236,7 @@ export const TuyenDungModule: React.FC = () => {
               <p><strong>Điện thoại:</strong> {selectedCandidate.phone}</p>
               <p><strong>Số CCCD:</strong> {selectedCandidate.idCard || '070098001122'}</p>
               <p><strong>Kinh nghiệm:</strong> {selectedCandidate.experienceYears} năm</p>
-              <p><strong>Mức lương kỳ vọng:</strong> {selectedCandidate.expectedSalary.toLocaleString('vi-VN')} đ</p>
+              <p><strong>Mức lương kỳ vọng:</strong> {canViewSalary ? `${selectedCandidate.expectedSalary.toLocaleString('vi-VN')} đ` : '[Bảo mật BGĐ & HR]'}</p>
             </div>
 
             {/* Stage Actions */}

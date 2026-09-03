@@ -30,7 +30,9 @@ import {
   Activity,
   Calendar,
   Flame,
-  FileText
+  FileText,
+  Lock,
+  Shield
 } from 'lucide-react';
 import { useHRM } from '@/context/HRMContext';
 import {
@@ -43,6 +45,7 @@ import {
 
 export const DashboardModule: React.FC = () => {
   const {
+    currentRole,
     employees,
     payslips,
     plantations,
@@ -57,6 +60,9 @@ export const DashboardModule: React.FC = () => {
   const [activeReportTab, setActiveReportTab] = useState<'HR_GENERAL' | 'COMPLIANCE' | 'INCOME' | 'TURNOVER' | 'RECRUITMENT_TRAINING'>('HR_GENERAL');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  // PHÂN QUYỀN BẢO MẬT: Chỉ Ban Giám Đốc (BGĐ) và Nhân Sự (HR) mới được xem mức lương
+  const canViewSalary = ['ADMIN', 'EXECUTIVE_DIRECTOR', 'HR_MANAGER', 'HR_ADMIN'].includes(currentRole);
+
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
@@ -65,10 +71,19 @@ export const DashboardModule: React.FC = () => {
   // Export handlers
   const handleExportExcel = () => {
     if (activeReportTab === 'HR_GENERAL') {
-      exportBaoCaoNhanSuTongHop(employees);
+      const sanitizedEmployees = employees.map((e) => ({
+        ...e,
+        baseSalary: canViewSalary ? e.baseSalary : ('[BẢO MẬT]' as any),
+        allowance: canViewSalary ? e.allowance : ('[BẢO MẬT]' as any),
+      }));
+      exportBaoCaoNhanSuTongHop(sanitizedEmployees);
     } else if (activeReportTab === 'COMPLIANCE') {
       exportBaoCaoDonTuVaNoiQuy(requests);
     } else if (activeReportTab === 'INCOME') {
+      if (!canViewSalary) {
+        showToast('⚠️ Bạn không có quyền xuất dữ liệu quỹ lương bảo mật!');
+        return;
+      }
       exportBaoCaoQuyLuong(payslips, incomePayrollData.totalPayrollMonth);
     } else if (activeReportTab === 'TURNOVER') {
       exportBaoCaoBienDongNhanSu(hrGeneralData);
@@ -113,6 +128,11 @@ export const DashboardModule: React.FC = () => {
               1HRM ENTERPRISE
             </span>
             <span className="text-slate-400 text-xs font-mono">Báo Cáo Tổng Hợp Dữ Liệu Bảng Biểu</span>
+            {!canViewSalary && (
+              <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold text-[10px] border border-amber-500/30 flex items-center gap-1">
+                <Lock className="w-3 h-3" /> Chế độ bảo mật lương đang bật
+              </span>
+            )}
           </div>
           <h1 className="text-2xl font-black tracking-tight mt-2 text-white">
             Trung Tâm Báo Cáo Phân Tích Nhân Sự & Nông Trường
@@ -134,6 +154,17 @@ export const DashboardModule: React.FC = () => {
           </button>
         </div>
       </div>
+
+      {/* Role Security Notice for Non-HR / Non-BGD */}
+      {!canViewSalary && (
+        <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-3 text-xs text-amber-900">
+          <Lock className="w-4 h-4 text-amber-600 shrink-0" />
+          <div>
+            <strong>Phân Quyền Bảo Mật Lương:</strong> Bạn đang ở góc nhìn{' '}
+            <span className="font-bold underline">{currentRole}</span>. Dữ liệu mức lương, quỹ lương và thu nhập nhân viên được bảo mật tuyệt đối, chỉ <strong className="text-orange-700">Ban Giám Đốc (BGĐ)</strong> và <strong className="text-orange-700">Nhân Sự (HR)</strong> mới có quyền truy cập.
+          </div>
+        </div>
+      )}
 
       {/* Incomplete Profile Alert Callout */}
       {incompleteProfilesCount > 0 && (
@@ -215,10 +246,14 @@ export const DashboardModule: React.FC = () => {
               <span className="p-1.5 rounded-lg bg-amber-100 text-amber-600">
                 <DollarSign className="w-4 h-4" />
               </span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700">Mẫu 3</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 flex items-center gap-1">
+                {!canViewSalary && <Lock className="w-2.5 h-2.5 text-amber-600" />} Mẫu 3
+              </span>
             </div>
             <div>
-              <p className="text-xs font-black">3. Tình Hình Quỹ Lương</p>
+              <p className="text-xs font-black flex items-center gap-1">
+                3. Tình Hình Quỹ Lương {!canViewSalary && <span className="text-[10px] text-amber-600 font-semibold">(Bảo Mật)</span>}
+              </p>
               <p className="text-[10px] text-slate-500 mt-0.5">Cơ cấu lương, BHXH, Thuế Luật 109</p>
             </div>
           </button>
@@ -310,12 +345,12 @@ export const DashboardModule: React.FC = () => {
             </div>
           </div>
 
-          {/* Bảng 1.2: Cơ Cấu Nhân Sự Theo Độ Tuổi, Giới Tính, Học Vấn (Fixed 4540% bug -> shows 45.4%) */}
+          {/* Bảng 1.2: Cơ Cấu Nhân Sự Theo Độ Tuổi, Giới Tính, Học Vấn */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
               <div className="p-4 bg-slate-50 border-b border-slate-200">
                 <h3 className="text-sm font-black text-slate-900">
-                  Bảng 1.2A: Cơ Cấu Độ Tuổi Lực Lượng Lao Động (Đã Chuẩn Hóa)
+                  Bảng 1.2A: Cơ Cấu Độ Tuổi Lực Lượng Lao Động
                 </h3>
               </div>
               <table className="w-full text-left text-xs">
@@ -387,7 +422,7 @@ export const DashboardModule: React.FC = () => {
             </div>
           </div>
 
-          {/* Bảng 1.3: Danh Sách Nhân Sự & Tiến Độ Hồ Sơ */}
+          {/* Bảng 1.3: Danh Sách Nhân Sự & Tiến Độ Hồ Sơ (Lương có bảo mật) */}
           <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
             <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
               <h3 className="text-sm font-black text-slate-900">
@@ -420,7 +455,15 @@ export const DashboardModule: React.FC = () => {
                       <td className="py-3 px-4 font-bold text-slate-900">{e.fullName}</td>
                       <td className="py-3 px-3 text-slate-700">{e.departmentName}</td>
                       <td className="py-3 px-3 text-slate-900 font-medium">{e.positionTitle}</td>
-                      <td className="py-3 px-3 text-right font-black text-slate-900">{e.baseSalary.toLocaleString('vi-VN')} đ</td>
+                      <td className="py-3 px-3 text-right font-black">
+                        {canViewSalary ? (
+                          <span className="text-slate-900">{e.baseSalary.toLocaleString('vi-VN')} đ</span>
+                        ) : (
+                          <span className="text-slate-400 font-mono text-[10px] flex items-center justify-end gap-1">
+                            <Lock className="w-3 h-3 text-amber-500" /> [Bảo mật BGĐ/HR]
+                          </span>
+                        )}
+                      </td>
                       <td className="py-3 px-3 text-center">
                         <span className={`px-2 py-0.5 rounded font-black text-[11px] ${e.isProfileComplete !== false ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
                           {e.profileCompleteness || 100}%
@@ -567,96 +610,115 @@ export const DashboardModule: React.FC = () => {
       )}
 
       {/* ========================================================================= */}
-      {/* MẪU 3: BÁO CÁO TÌNH HÌNH QUỸ LƯƠNG NHÂN SỰ & THUẾ TNCN */}
+      {/* MẪU 3: BÁO CÁO TÌNH HÌNH QUỸ LƯƠNG NHÂN SỰ & THUẾ TNCN (BẢO MẬT BGĐ & HR) */}
       {/* ========================================================================= */}
       {activeReportTab === 'INCOME' && (
         <div className="space-y-6">
-          {/* Bảng 3.1: Tổng Quan Quỹ Lương Theo Đơn Vị */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-              <h3 className="text-sm font-black text-slate-900">
-                Bảng 3.1: Tổng Quan Chi Trả Lương & Sản Lượng Mủ Thu Hoạch Toàn Hệ Thống
-              </h3>
-              <span className="text-xs font-black text-emerald-600">
-                Tổng quỹ: {(incomePayrollData.totalPayrollMonth / 1000000000).toFixed(2)} Tỷ VNĐ
-              </span>
+          {!canViewSalary ? (
+            <div className="p-12 bg-white rounded-2xl border border-slate-200 shadow-xs text-center space-y-4">
+              <div className="w-16 h-16 rounded-2xl bg-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-inner">
+                <Lock className="w-8 h-8" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="font-black text-slate-900 text-lg">Báo Cáo Quỹ Lương Thuộc Phạm Vi Bảo Mật Cấp Cao</h3>
+                <p className="text-xs text-slate-500 max-w-md mx-auto leading-relaxed">
+                  Chỉ thành viên <strong>Ban Tổng Giám Đốc (BGĐ)</strong> và <strong>Phòng Nhân Sự (HR/HCTH)</strong> mới được phân quyền truy cập thông tin bảng lương, thuế TNCN và tổng quỹ chi trả của công ty.
+                </p>
+              </div>
+              <p className="text-[11px] text-amber-800 bg-amber-50 px-4 py-2 rounded-xl inline-block border border-amber-200">
+                Vai trò hiện tại của bạn: <b>{currentRole}</b> • Vui lòng chuyển sang vai trò Ban Giám Đốc hoặc HR trên thanh Menu để xem.
+              </p>
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
-                    <th className="py-3 px-4">Nông Trường / Đơn Vị</th>
-                    <th className="py-3 px-3 text-right">Quân Số</th>
-                    <th className="py-3 px-3 text-right">Tổng Quỹ Lương (VNĐ)</th>
-                    <th className="py-3 px-3 text-right">Thu Nhập Bình Quân</th>
-                    <th className="py-3 px-3 text-right">Sản Lượng Mủ (Tấn)</th>
-                    <th className="py-3 px-4 text-right">Đơn Giá Tiền Lương/Kg</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {incomePayrollData.byPlantationComparison.map((p, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50">
-                      <td className="py-3 px-4 font-bold text-slate-900">{p.name}</td>
-                      <td className="py-3 px-3 text-right text-slate-700">{p.workers} người</td>
-                      <td className="py-3 px-3 text-right font-black text-slate-900">{p.payroll.toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-right font-black text-blue-600">{p.avgIncome.toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-right font-black text-orange-600">{p.latexTons > 0 ? `${p.latexTons} Tấn` : '-'}</td>
-                      <td className="py-3 px-4 text-right font-mono text-slate-600">{p.latexTons > 0 ? '8.570 đ/kg' : '-'}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          ) : (
+            <>
+              {/* Bảng 3.1: Tổng Quan Quỹ Lương Theo Đơn Vị */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                  <h3 className="text-sm font-black text-slate-900">
+                    Bảng 3.1: Tổng Quan Chi Trả Lương & Sản Lượng Mủ Thu Hoạch Toàn Hệ Thống
+                  </h3>
+                  <span className="text-xs font-black text-emerald-600">
+                    Tổng quỹ: {(incomePayrollData.totalPayrollMonth / 1000000000).toFixed(2)} Tỷ VNĐ
+                  </span>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                        <th className="py-3 px-4">Nông Trường / Đơn Vị</th>
+                        <th className="py-3 px-3 text-right">Quân Số</th>
+                        <th className="py-3 px-3 text-right">Tổng Quỹ Lương (VNĐ)</th>
+                        <th className="py-3 px-3 text-right">Thu Nhập Bình Quân</th>
+                        <th className="py-3 px-3 text-right">Sản Lượng Mủ (Tấn)</th>
+                        <th className="py-3 px-4 text-right">Đơn Giá Tiền Lương/Kg</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {incomePayrollData.byPlantationComparison.map((p, idx) => (
+                        <tr key={idx} className="hover:bg-slate-50">
+                          <td className="py-3 px-4 font-bold text-slate-900">{p.name}</td>
+                          <td className="py-3 px-3 text-right text-slate-700">{p.workers} người</td>
+                          <td className="py-3 px-3 text-right font-black text-slate-900">{p.payroll.toLocaleString('vi-VN')} đ</td>
+                          <td className="py-3 px-3 text-right font-black text-blue-600">{p.avgIncome.toLocaleString('vi-VN')} đ</td>
+                          <td className="py-3 px-3 text-right font-black text-orange-600">{p.latexTons > 0 ? `${p.latexTons} Tấn` : '-'}</td>
+                          <td className="py-3 px-4 text-right font-mono text-slate-600">{p.latexTons > 0 ? '8.570 đ/kg' : '-'}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
 
-          {/* Bảng 3.2: Bảng Thanh Toán Lương Chi Tiết */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
-            <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-              <h3 className="text-sm font-black text-slate-900">
-                Bảng 3.2: Bảng Thanh Toán Lương & Khấu Trừ Thuế TNCN (Luật 109/2025/QH15)
-              </h3>
-              <button
-                onClick={() => exportBaoCaoQuyLuong(payslips, incomePayrollData.totalPayrollMonth)}
-                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5" /> Xuất Bảng Lương Excel
-              </button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
-                <thead>
-                  <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
-                    <th className="py-3 px-4">Mã NV</th>
-                    <th className="py-3 px-4">Họ Và Tên</th>
-                    <th className="py-3 px-3">Phòng Ban</th>
-                    <th className="py-3 px-3 text-right">Lương Cơ Bản</th>
-                    <th className="py-3 px-3 text-right">Phụ Cấp</th>
-                    <th className="py-3 px-3 text-right">Thưởng KPI/Mủ</th>
-                    <th className="py-3 px-3 text-right">Tổng Thu Nhập</th>
-                    <th className="py-3 px-3 text-right">BHXH (10.5%)</th>
-                    <th className="py-3 px-3 text-right">Thuế TNCN (Luật 109)</th>
-                    <th className="py-3 px-3 text-right">Thực Lĩnh (NET)</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {payslips.map((p) => (
-                    <tr key={p.id} className="hover:bg-slate-50">
-                      <td className="py-3 px-4 font-mono font-bold text-slate-800">{p.employeeCode}</td>
-                      <td className="py-3 px-4 font-bold text-slate-900">{p.employeeName}</td>
-                      <td className="py-3 px-3 text-slate-700">{p.departmentName}</td>
-                      <td className="py-3 px-3 text-right font-medium">{p.baseSalary.toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-right font-medium">{(p.lunchAllowance + p.positionAllowance).toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-right font-medium text-orange-600">{(p.kpiBonus + p.commission).toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-right font-black text-slate-900">{p.totalIncome.toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-right font-medium text-rose-600">-{p.totalInsurance.toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-right font-medium text-amber-600">-{p.pitTax.toLocaleString('vi-VN')} đ</td>
-                      <td className="py-3 px-3 text-right font-black text-emerald-600">{p.netSalary.toLocaleString('vi-VN')} đ</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+              {/* Bảng 3.2: Bảng Thanh Toán Lương Chi Tiết */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
+                <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                  <h3 className="text-sm font-black text-slate-900">
+                    Bảng 3.2: Bảng Thanh Toán Lương & Khấu Trừ Thuế TNCN (Luật 109/2025/QH15)
+                  </h3>
+                  <button
+                    onClick={() => exportBaoCaoQuyLuong(payslips, incomePayrollData.totalPayrollMonth)}
+                    className="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-lg shadow-xs flex items-center gap-1"
+                  >
+                    <FileSpreadsheet className="w-3.5 h-3.5" /> Xuất Bảng Lương Excel
+                  </button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="bg-slate-100 text-slate-700 font-bold uppercase text-[11px] border-b border-slate-200">
+                        <th className="py-3 px-4">Mã NV</th>
+                        <th className="py-3 px-4">Họ Và Tên</th>
+                        <th className="py-3 px-3">Phòng Ban</th>
+                        <th className="py-3 px-3 text-right">Lương Cơ Bản</th>
+                        <th className="py-3 px-3 text-right">Phụ Cấp</th>
+                        <th className="py-3 px-3 text-right">Thưởng KPI/Mủ</th>
+                        <th className="py-3 px-3 text-right">Tổng Thu Nhập</th>
+                        <th className="py-3 px-3 text-right">BHXH (10.5%)</th>
+                        <th className="py-3 px-3 text-right">Thuế TNCN (Luật 109)</th>
+                        <th className="py-3 px-3 text-right">Thực Lĩnh (NET)</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {payslips.map((p) => (
+                        <tr key={p.id} className="hover:bg-slate-50">
+                          <td className="py-3 px-4 font-mono font-bold text-slate-800">{p.employeeCode}</td>
+                          <td className="py-3 px-4 font-bold text-slate-900">{p.employeeName}</td>
+                          <td className="py-3 px-3 text-slate-700">{p.departmentName}</td>
+                          <td className="py-3 px-3 text-right font-medium">{p.baseSalary.toLocaleString('vi-VN')} đ</td>
+                          <td className="py-3 px-3 text-right font-medium">{(p.lunchAllowance + p.positionAllowance).toLocaleString('vi-VN')} đ</td>
+                          <td className="py-3 px-3 text-right font-medium text-orange-600">{(p.kpiBonus + p.commission).toLocaleString('vi-VN')} đ</td>
+                          <td className="py-3 px-3 text-right font-black text-slate-900">{p.totalIncome.toLocaleString('vi-VN')} đ</td>
+                          <td className="py-3 px-3 text-right font-medium text-rose-600">-{p.totalInsurance.toLocaleString('vi-VN')} đ</td>
+                          <td className="py-3 px-3 text-right font-medium text-amber-600">-{p.pitTax.toLocaleString('vi-VN')} đ</td>
+                          <td className="py-3 px-3 text-right font-black text-emerald-600">{p.netSalary.toLocaleString('vi-VN')} đ</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
         </div>
       )}
 
