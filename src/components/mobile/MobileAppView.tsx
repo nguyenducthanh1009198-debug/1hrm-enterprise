@@ -70,6 +70,8 @@ export const MobileAppView: React.FC = () => {
     teamBatches,
     updateWorkerAttendanceStatus,
     updateRubberYield,
+    lockDailyAttendance,
+    unlockDailyAttendance,
     toggleOfflineSync,
     approveTeamBatch,
     toggleDocumentUpload,
@@ -83,6 +85,8 @@ export const MobileAppView: React.FC = () => {
   const [showMobileNotifSheet, setShowMobileNotifSheet] = useState(false);
   const [showRoleSelectorSheet, setShowRoleSelectorSheet] = useState(false);
   const [showYieldModal, setShowYieldModal] = useState<any | null>(null);
+  const [showDailyLockModal, setShowDailyLockModal] = useState(false);
+  const [dailyLockNote, setDailyLockNote] = useState('Đã hoàn thành cạo mủ ca sáng và giao mủ đủ tại trạm.');
   const [showInspectionModal, setShowInspectionModal] = useState(false);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
@@ -484,6 +488,41 @@ export const MobileAppView: React.FC = () => {
             <div className="space-y-3">
               {isTeamLeader && (
                 <>
+                  {/* Daily Lock Status Banner on Mobile */}
+                  {activeBatch.isDailyLocked ? (
+                    <div className="p-3 bg-[#ECFDF5] rounded-2xl border border-[#BBF7D0] flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-4 h-4 text-[#047857] shrink-0" />
+                        <div>
+                          <p className="font-bold text-[#0F172A] text-xs">✓ ĐÃ CHỐT CÔNG NGÀY</p>
+                          <p className="text-[10px] text-[#065F46] font-mono">{activeBatch.dailyLockedAt || '13:30'}</p>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          unlockDailyAttendance(activeBatch.id);
+                          showToast('Đã mở khóa bảng công để chỉnh sửa!');
+                        }}
+                        className="btn-secondary text-[11px] py-1 px-2.5"
+                      >
+                        Mở Khóa
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-[#FFFBEB] rounded-2xl border border-[#FDE68A] flex items-center justify-between">
+                      <div>
+                        <p className="font-bold text-[#0F172A] text-xs">Ca Cạo Sáng Đang Diễn Ra</p>
+                        <p className="text-[10px] text-[#B45309]">Hết ca bấm "Chốt Công Ngày" để nộp</p>
+                      </div>
+                      <button
+                        onClick={() => setShowDailyLockModal(true)}
+                        className="btn-primary text-[11px] py-1.5 px-3"
+                      >
+                        <Lock className="w-3.5 h-3.5" /> Chốt Công
+                      </button>
+                    </div>
+                  )}
+
                   <div className="p-3.5 bg-white rounded-2xl border border-[#E2E8F0] shadow-xs flex items-center justify-between">
                     <div>
                       <h3 className="font-semibold text-[#0F172A] text-xs">Chấm Công Danh Sách Tổ</h3>
@@ -548,6 +587,7 @@ export const MobileAppView: React.FC = () => {
                           ].map((st) => (
                             <button
                               key={st.id}
+                              disabled={activeBatch.isDailyLocked}
                               onClick={() => {
                                 updateWorkerAttendanceStatus(activeBatch.id, worker.workerId, st.id as WorkerAttendanceStatus);
                                 showToast(`Đã cập nhật ${worker.workerName}: ${st.label}`);
@@ -942,6 +982,61 @@ export const MobileAppView: React.FC = () => {
                     <p className="text-[11px] text-slate-500">{r.desc}</p>
                   </button>
                 ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Modal: Chốt Bảng Công Ngày (Tổ Trưởng Mobile) */}
+        {showDailyLockModal && (
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-end justify-center">
+            <div className="bg-white rounded-t-3xl p-5 w-full shadow-2xl space-y-3 text-xs border-t border-[#E2E8F0]">
+              <div className="flex justify-between items-center border-b border-[#F1F5F9] pb-2">
+                <div className="flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-[#047857]" />
+                  <h4 className="font-semibold text-[#0F172A] text-sm">Chốt Bảng Chấm Công Ngày</h4>
+                </div>
+                <button onClick={() => setShowDailyLockModal(false)} className="text-slate-400">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="p-3 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] space-y-1">
+                <p className="text-slate-500">Tổ: <b className="text-[#0F172A]">{activeBatch.teamName}</b></p>
+                <p className="text-slate-500">Đi làm đủ: <b className="text-[#047857]">{activeBatch.presentCount}/{activeBatch.totalMembers} CN</b></p>
+                <p className="text-slate-500">Tổng mủ: <b className="text-[#0F172A]">{activeBatch.totalLatexYieldKg} kg</b> • Độ TSC: <b className="text-[#047857]">{activeBatch.avgTscDegree}°</b></p>
+              </div>
+
+              <div>
+                <label className="font-semibold text-slate-700 block mb-1">Ghi chú xác nhận của Tổ Trưởng</label>
+                <textarea
+                  value={dailyLockNote}
+                  onChange={(e) => setDailyLockNote(e.target.value)}
+                  rows={2}
+                  className="w-full px-3 py-2 border border-[#CBD5E1] rounded-lg"
+                  required
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#F1F5F9]">
+                <button
+                  type="button"
+                  onClick={() => setShowDailyLockModal(false)}
+                  className="btn-secondary text-xs py-1.5 px-3"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    lockDailyAttendance(activeBatch.id, dailyLockNote);
+                    setShowDailyLockModal(false);
+                    showToast('✓ Đã chốt công trong ngày và chuyển Giám đốc Nông trường duyệt!');
+                  }}
+                  className="btn-primary text-xs py-1.5 px-4"
+                >
+                  <Check className="w-4 h-4" /> Xác Nhận Chốt
+                </button>
               </div>
             </div>
           </div>

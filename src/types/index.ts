@@ -263,7 +263,11 @@ export interface TeamAttendanceBatch {
   totalLatexYieldKg: number;
   avgTscDegree: number;
   isOfflineSync: boolean;
-  status: 'PENDING_SUPERVISOR' | 'APPROVED_SUPERVISOR' | 'FINALIZED_HR' | 'REJECTED';
+  isDailyLocked?: boolean;
+  dailyLockedAt?: string;
+  dailyLockedBy?: string;
+  dailyLockNote?: string;
+  status: 'DRAFT' | 'LOCKED_BY_LEADER' | 'PENDING_SUPERVISOR' | 'APPROVED_SUPERVISOR' | 'FINALIZED_HR' | 'REJECTED';
   supervisorComment?: string;
   approvedAt?: string;
   items: TeamWorkerAttendanceItem[];

@@ -98,6 +98,8 @@ interface HRMContextType {
     cupLumpKg: number,
     tsc: number
   ) => void;
+  lockDailyAttendance: (batchId: string, note?: string) => void;
+  unlockDailyAttendance: (batchId: string) => void;
   approveTeamBatch: (batchId: string, supervisorComment?: string) => void;
   addFieldInspection: (inspection: Omit<FieldInspectionCheckIn, 'id' | 'timestamp'>) => void;
   approveMonthlySubmission: (submissionId: string) => void;
@@ -547,6 +549,40 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   };
 
+  const lockDailyAttendance = (batchId: string, note = 'Đã hoàn thành cạo mủ và nghiệm thu sản lượng trong ngày') => {
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) + ' - ' + now.toLocaleDateString('vi-VN');
+    setTeamBatches((prevBatches) =>
+      prevBatches.map((b) =>
+        b.id === batchId
+          ? {
+              ...b,
+              isDailyLocked: true,
+              dailyLockedAt: timeStr,
+              dailyLockedBy: currentUser.fullName,
+              dailyLockNote: note,
+              status: 'PENDING_SUPERVISOR',
+            }
+          : b
+      )
+    );
+  };
+
+  const unlockDailyAttendance = (batchId: string) => {
+    setTeamBatches((prevBatches) =>
+      prevBatches.map((b) =>
+        b.id === batchId
+          ? {
+              ...b,
+              isDailyLocked: false,
+              dailyLockedAt: undefined,
+              status: 'DRAFT',
+            }
+          : b
+      )
+    );
+  };
+
   const approveTeamBatch = (batchId: string, supervisorComment = 'Đã kiểm tra nghiệm thu lô cạo') => {
     setTeamBatches((prev) =>
       prev.map((b) =>
@@ -642,6 +678,8 @@ export const HRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         updateWorkerAttendanceStatus,
         updateRubberYield,
+        lockDailyAttendance,
+        unlockDailyAttendance,
         approveTeamBatch,
         addFieldInspection,
         approveMonthlySubmission,
