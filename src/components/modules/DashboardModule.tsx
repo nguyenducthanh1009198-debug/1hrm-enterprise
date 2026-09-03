@@ -59,10 +59,27 @@ export const DashboardModule: React.FC = () => {
   } = useHRM();
 
   const [activeReportTab, setActiveReportTab] = useState<'HR_GENERAL' | 'COMPLIANCE' | 'INCOME' | 'TURNOVER' | 'RECRUITMENT_TRAINING'>('HR_GENERAL');
+  const [selectedUnitFilter, setSelectedUnitFilter] = useState<string>('ALL');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // PHÂN QUYỀN BẢO MẬT: Chỉ Ban Giám Đốc (BGĐ) và Nhân Sự (HR) mới được xem mức lương
   const canViewSalary = ['ADMIN', 'EXECUTIVE_DIRECTOR', 'HR_MANAGER', 'HR_ADMIN'].includes(currentRole);
+
+  // Bộ lọc theo từng Nông trường & Văn phòng cho HR
+  const filteredEmployees = employees.filter((e) => {
+    if (selectedUnitFilter === 'ALL') return true;
+    return e.departmentName.includes(selectedUnitFilter) || e.departmentId === selectedUnitFilter;
+  });
+
+  const filteredPayslips = payslips.filter((p) => {
+    if (selectedUnitFilter === 'ALL') return true;
+    return p.departmentName.includes(selectedUnitFilter);
+  });
+
+  const filteredRequests = requests.filter((r) => {
+    if (selectedUnitFilter === 'ALL') return true;
+    return r.departmentName.includes(selectedUnitFilter);
+  });
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -72,7 +89,7 @@ export const DashboardModule: React.FC = () => {
   // Export handlers
   const handleExportExcel = () => {
     if (activeReportTab === 'HR_GENERAL') {
-      const sanitizedEmployees = employees.map((e) => ({
+      const sanitizedEmployees = filteredEmployees.map((e) => ({
         ...e,
         baseSalary: canViewSalary ? e.baseSalary : ('[BẢO MẬT]' as any),
         allowance: canViewSalary ? e.allowance : ('[BẢO MẬT]' as any),
@@ -214,6 +231,38 @@ export const DashboardModule: React.FC = () => {
           </button>
         </div>
       )}
+
+      {/* Unit Filter Bar for HR (Từng Nông Trường & Các Khối Văn Phòng) */}
+      <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2">
+          <Building2 className="w-4 h-4 text-orange-600 shrink-0" />
+          <span className="font-black text-slate-900">Phạm Vi Báo Cáo HR:</span>
+          <span className="text-slate-500 text-[11px] hidden sm:inline">Xem theo từng Nông trường hoặc Văn phòng</span>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
+          {[
+            { id: 'ALL', label: 'Toàn Công Ty (Tổng Hợp)' },
+            { id: 'Nông Trường 1', label: 'Nông Trường 1 (Bình Phước)' },
+            { id: 'Nông Trường 2', label: 'Nông Trường 2 (Bình Dương)' },
+            { id: 'Nông Trường 3', label: 'Nông Trường 3 (Tây Ninh)' },
+            { id: 'Khối Văn Phòng', label: 'Khối Văn Phòng Tổng CT' },
+            { id: 'Hành Chính', label: 'Phòng HCTH & HR' },
+          ].map((unit) => (
+            <button
+              key={unit.id}
+              onClick={() => setSelectedUnitFilter(unit.id)}
+              className={`px-3 py-1.5 rounded-xl font-bold transition-all text-xs ${
+                selectedUnitFilter === unit.id
+                  ? 'bg-orange-600 text-white shadow-xs'
+                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+              }`}
+            >
+              {unit.label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Tab Selector for 5 Comprehensive Report Suites */}
       <div className="bg-white p-2 rounded-2xl border border-slate-200 shadow-xs">
@@ -473,7 +522,7 @@ export const DashboardModule: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {employees.map((e) => (
+                  {filteredEmployees.map((e) => (
                     <tr key={e.id} className="hover:bg-slate-50">
                       <td className="py-3 px-4 font-mono font-bold text-slate-800">{e.code}</td>
                       <td className="py-3 px-4 font-bold text-slate-900">{e.fullName}</td>
@@ -544,7 +593,7 @@ export const DashboardModule: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200">
-                  {requests.map((r) => (
+                  {filteredRequests.map((r) => (
                     <tr key={r.id} className="hover:bg-slate-50">
                       <td className="py-3 px-4 font-mono font-bold text-slate-800">{r.code}</td>
                       <td className="py-3 px-4 font-bold text-slate-900">{r.employeeName}</td>
@@ -723,7 +772,7 @@ export const DashboardModule: React.FC = () => {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200">
-                      {payslips.map((p) => (
+                      {filteredPayslips.map((p) => (
                         <tr key={p.id} className="hover:bg-slate-50">
                           <td className="py-3 px-4 font-mono font-bold text-slate-800">{p.employeeCode}</td>
                           <td className="py-3 px-4 font-bold text-slate-900">{p.employeeName}</td>
